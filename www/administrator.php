@@ -283,7 +283,7 @@ try {
 	}
 	elseif ($ctg == 'search_users') {
 		if (G_VERSIONTYPE == 'educational') {	#cpp#ifdef EDUCATIONAL
-			require_once("hcd/reports.php");
+			require_once("user_search.php");
 		}	#cpp#endif
 	}
 	elseif ($ctg == 'digests') {

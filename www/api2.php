@@ -1137,6 +1137,7 @@ In case of error it returns also a message entity with description of the error 
 							try {
 								$user 			= EfrontUserFactory :: factory($_GET['login']);
 								$lessonsList	= $user -> getLessons(true);
+								
 								echo "<xml>";
 								foreach ($lessonsList as $key => $lesson) {
 									$info 			= $lesson -> getStatisticInformation();
@@ -1151,6 +1152,8 @@ In case of error it returns also a message entity with description of the error 
 									echo "<currency>".$GLOBALS['configuration']['currency']."</currency>";
 									echo "</price>";
 									echo "<language>".$info['language']."</language>";
+									echo "<completed>".$lesson->userStatus['completed']."</completed>";
+									echo "<score>".$lesson->userStatus['score']."</score>";
 									echo "<info>";
 									foreach ($lesson_info as $key => $value) {
 										echo "<".$key.">".$value."</".$key.">";
@@ -1289,6 +1292,8 @@ In case of error it returns also a message entity with description of the error 
 									echo "<course>";
 									echo "<id>".$course -> course['id']."</id>";
 									echo "<name>".$course -> course['name']."</name>";
+									echo "<completed>".$course->course['completed']."</completed>";
+									echo "<score>".$course->course['score']."</score>";
 									echo "<info>";
 									foreach ($info as $key => $value) {
 										echo "<".$key.">".$value."</".$key.">";

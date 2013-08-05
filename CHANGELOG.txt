@@ -17,6 +17,8 @@
 - Outlook module invitations is now hidden for "student" supervisors
 - Supervised groups are now invisible for branches different than their assigned ones
 - Fixed professor-created courses preventing lessons list from appearing
+- Fixed catalog showing nothing under certain circumstances
+- Added completed,score information on api2's user_lessons and user_courses actions
 - Performance updates 
 
 === Version 3.6.13.3 - build 18006 ===
