@@ -299,7 +299,8 @@ function formatLogin_old($login, $fields = array(), $duplicate = true) {
 //
 	    if (!isset($GLOBALS['_usernames'])) {
 	    	$GLOBALS['_usernames'] = array();
-	    	if (function_exists('apc_fetch') && $usernames = apc_fetch(G_DBNAME.':_usernames')) {
+	    	
+	    	if ($usernames = EfrontCache::getInstance()->getCache('usernames')) {
 	    		$GLOBALS['_usernames'] = $usernames;
 	    	} else {
 		    	$result = eF_getTableDataFlat("users", "login, name, surname, user_type");
@@ -319,9 +320,7 @@ function formatLogin_old($login, $fields = array(), $duplicate = true) {
 		    			$GLOBALS['_usernames'][$key] 		 = $value.' ('.$key.')';
 		    		}
 		    	}
-		    	if (function_exists('apc_store')) {
-		    		apc_store(G_DBNAME.':_usernames', $GLOBALS['_usernames']);
-		    	}
+		    	EfrontCache::getInstance()->setCache('usernames', $GLOBALS['_usernames']);
 	    	}
 
 	    }
@@ -342,7 +341,7 @@ function formatLogin($login, $fields = array(), $duplicate = true) {
 		return $login;
 	}
 	
-	if (function_exists('apc_fetch') && $usernames = apc_fetch(G_DBNAME.':_usernames')) {
+	if ($usernames = EfrontCache::getInstance()->getCache('usernames')) {
 		$GLOBALS['_usernames'] = $usernames;
 		if (isset($GLOBALS['_usernames'][$login])) {
 			return $GLOBALS['_usernames'][$login];
@@ -368,10 +367,7 @@ function formatLogin($login, $fields = array(), $duplicate = true) {
 		
 		$GLOBALS['_usernames'][$login] = $format;
 	}
-	
-	if (function_exists('apc_store')) {
-		apc_store(G_DBNAME.':_usernames', $GLOBALS['_usernames']);
-	}
+	EfrontCache::getInstance()->setCache('usernames', $GLOBALS['_usernames']);
 	
 	return $GLOBALS['_usernames'][$login];
 }
@@ -1762,9 +1758,8 @@ function eF_loadAllModules($onlyActive = true, $disregardUser = false) {
 		return array();
 	}	
 	
-	if (function_exists('apc_fetch') && $modules = apc_fetch(G_DBNAME.':modules')) {
-		
-	} else {
+	$modules = EfrontCache::getInstance()->getCache('modules');
+	if (!$modules) {
 		$modulesDB = eF_getTableData("modules","*","active=1");
 		$modules = array();
 		
@@ -1781,9 +1776,7 @@ function eF_loadAllModules($onlyActive = true, $disregardUser = false) {
 			}
 		}
 
-		if (function_exists('apc_store')) {
-			apc_store(G_DBNAME.':modules', $modules);
-		}		
+		EfrontCache::getInstance()->setCache('modules', $modules);
 	}
 	
 	foreach ($modules as $className => $folder) {

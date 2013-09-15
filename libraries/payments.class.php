@@ -35,7 +35,8 @@ class payments extends EfrontEntity
      */
     public static $methods = array('paypal'  => _PAYPAL,
     							   'manual'  => _MANUAL,
-                                   'balance' => _BALANCE);
+                                   'balance' => _BALANCE,
+    							   'free' => _FREE);
 
     /**
      * (non-PHPdoc)

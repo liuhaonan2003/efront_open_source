@@ -4299,4 +4299,5 @@ define("_USERSTOLESSONS", "Αναθέσεις μαθημάτων σε χρήστ
 define("_NEWLESSONASSIGNMENT", "Νέα ανάθεση μαθήματος");
 define("_COULDNOTFINDLESSON", "Το μάθημα δε βρέθηκε");
 define("_AFORUMDOESNOTEXISTFORTHISLESSONCREATE", "Δεν υπάρχει φόρουμ για αυτό το μάθημα, αλλά μπορείτε να δημιουργήσετε");
+define("_TESTGLOSSARY","Γλωσσάρι στις αξιολογήσεις");
 ?>

@@ -203,7 +203,7 @@ try {
             $layoutTheme -> layout['custom_blocks'] = $customBlocks;
             $layoutTheme -> persist();
 
-            apc_delete(G_DBNAME.':themes');
+            EfrontCache::getInstance()->delete(G_DBNAME.':themes');
             eF_redirect(basename($_SERVER['PHP_SELF'])."?ctg=themes&theme=".$layoutTheme -> {$layoutTheme -> entity}['id'].(isset($_GET['theme_layout']) ? '&theme_layout='.$_GET['theme_layout'] : ''));
         }
 
@@ -235,7 +235,7 @@ try {
                     $layoutTheme -> persist();
                 }
 
-                apc_delete(G_DBNAME.':themes');
+                EfrontCache::getInstance()->delete(G_DBNAME.':themes');
                 eF_redirect(basename($_SERVER['PHP_SELF'])."?ctg=themes&theme=".$layoutTheme -> {$layoutTheme -> entity}['id'].(isset($_GET['theme_layout']) ? '&theme_layout='.$_GET['theme_layout'] : '')."&message=".rawurlencode(_SETTINGSIMPORTEDSUCCESFULLY)."&message_type=success");
                 //$message      = _SETTINGSIMPORTEDSUCCESFULLY;
                 //$message_type = 'success';
@@ -391,11 +391,12 @@ try {
                 unset($value -> options['browsers']);
                 $value -> persist();
             }
+            
             $theme = new themes($_GET['set_theme']);
             if ($theme -> options['sidebar_interface'] > 0) {
-                echo basename($_SERVER['PHP_SELF']).'?ctg=themes&tab=set_theme';
+                echo json_encode(array('success' => true, 'data' => array('url' => basename($_SERVER['PHP_SELF']).'?ctg=themes&tab=set_theme')));
             } else {
-                echo basename($_SERVER['PHP_SELF'], '.php').'page.php?ctg=themes&tab=set_theme';
+                echo json_encode(array('success' => true, 'data' => array('url' => basename($_SERVER['PHP_SELF'], '.php').'page.php?ctg=themes&tab=set_theme')));
             }
 
             if (!isset($_GET['ajax'])) {

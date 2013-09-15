@@ -113,6 +113,7 @@
 			    {$T_CHECKOUT_FORM.hidden}
 	    		{$T_CHECKOUT_FORM.coupon.html}
 			    {$T_CHECKOUT_FORM.submit_order.html}
+			    {$T_CHECKOUT_FORM.submit_enroll.html}
 			    {$T_CHECKOUT_FORM.submit_checkout_balance.html}
 			</form>
 {*

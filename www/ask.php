@@ -27,6 +27,7 @@ eF_checkParameter(trim($_POST['preffix']), 'text') OR $_POST['preffix'] = '%';
 $_POST['preffix'] = eF_mysql_escape_strings($_POST['preffix']);
 
 switch ($_GET['ask_type']) {
+	case 'custom_fields': 		askCustomFields(); 	  break;
 	case 'users': 		askUsers(); 	  break;
 	case 'tests': 		askTests();	 	  break;
 	case 'feedback': 	askFeedback();	  break;
@@ -45,6 +46,41 @@ function highlightSearch($search_results, $search_criteria, $bgcolor='Yellow'){
 	$search_results = str_ireplace($search_criteria, $start_tag . $search_criteria . $end_tag, html_entity_decode($search_results));	//html_entity_decode(), otherwise searching for 's' for example, will catch &nbsp; as well
 	return $search_results;
 }
+
+function askCustomFields() {
+	if (isset($_POST['preffix'])) {
+		if (mb_strpos($_POST['preffix'], ";") === false) {
+			$custom_field = $_POST['preffix'];
+		} else {
+			$custom_field = trim(mb_substr(strrchr($_POST['preffix'], ";"), 1));
+		}
+	}
+
+	
+	$custom_fields = array();
+	if (isset($custom_field) && $custom_field) {
+		$preffix   = $custom_field;
+		
+		$userProfile = eF_getTableData("user_profile", "*", "active=1 AND type <> 'branchinfo' AND type <> 'groupinfo' AND description like '$preffix%' ", "field_order");
+		foreach ($userProfile as $key => $value) {
+			$custom_fields[] = array('name' => $value['name'], 'description' => $value['description']);
+		}		
+		
+	}
+		
+	$strs = array();
+	$strs[] =  '<ul>';
+	for ($k = 0; $k < sizeof($custom_fields); $k++){
+		$strs[] = '<li id="'.htmlentities($custom_fields[$k]['name']).'">'.htmlentities($custom_fields[$k]['description']).'</li>';
+		
+	}
+	
+	$strs[] = '</ul>';
+	
+	echo implode("", $strs);	
+	
+}
+
 
 function askUsers() {
 	if (G_VERSIONTYPE == 'enterprise') { #cpp#ifdef ENTERPRISE

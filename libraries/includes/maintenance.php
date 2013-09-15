@@ -207,8 +207,10 @@ if (!isset($currentUser -> coreAccess['maintenance']) || $currentUser -> coreAcc
         }
     }
 
-    if (function_exists('apc_clear_cache')) {
-    	$smarty -> assign("T_APC", true);
+    if (function_exists('apcu_clear_cache')) {
+    	$smarty -> assign("T_CACHE_PANEL", "apcu");
+    } else if (function_exists('apc_clear_cache')) {
+    	$smarty -> assign("T_CACHE_PANEL", "apc");
     }
 
     $logSize = eF_getTableData("logs", "count(id) as count");

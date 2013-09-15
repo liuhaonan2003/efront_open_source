@@ -234,11 +234,11 @@ class EfrontCourse
 		if ($this -> course['show_catalog']) {
 			return $this -> course['id'];
 		} else {
-			$instances = $this -> getInstances();
-			if (!empty($instances)) {
-				foreach ($instances as $instance) {
-					if ($instance -> course['show_catalog']) {
-						return $instance -> course['id'];
+			$result = eF_getTableData("courses", "id,show_catalog", "instance_source is not null");
+			if (!empty($result)) {
+				foreach ($result as $value) {
+					if ($value['show_catalog']) {
+						return $value['id'];
 					}
 				}
 			} else {
@@ -464,7 +464,7 @@ class EfrontCourse
 	 * @since 3.5.0
 	 * @access public
 	 */
-	public function addLessons($lessons) {
+	public function addLessons($lessons, $courseData) {
 
 		$lessonObjects = $this -> verifyLessonsList($lessons);
 		$lastLessonId  = $this -> getCourseLastLesson();
@@ -475,7 +475,11 @@ class EfrontCourse
 			if (!in_array($key, $result['lessons_ID'])) {
 				eF_insertTableData("lessons_to_courses", array('courses_ID' 		 => $this -> course['id'],
 									                           'lessons_ID' 		 => $key,
-															   'previous_lessons_ID' => $lastLessonId));
+															   'previous_lessons_ID' => $lastLessonId,
+															   'start_date' 		 => $courseData[$key]['start_date'],
+															   'end_date' 			 => $courseData[$key]['end_date'],
+															   'start_period' 		 => $courseData[$key]['start_period'],
+															   'end_period' 		 => $courseData[$key]['end_period']));
 				$this -> addCourseUsersToLesson($lesson, $courseUsers);
 
 				if (G_VERSIONTYPE == 'educational') { #cpp#ifdef EDUCATIONAL
@@ -2330,17 +2334,32 @@ class EfrontCourse
 		$instanceSourceLessonsThatAreUnique = array_combine($result['id'], $result['instance_source']);
 		$instanceSourceLessons 			    = $instanceSource -> getCourseLessons();
 
-		$newLessons = array();
+		$newLessons 		= array();
+		$lessonsSchedule 	= array();
 		foreach ($instanceSourceLessons as $key => $foo) {		//Do this to get the lessons in the correct order
 			$value = $instanceSourceLessonsThatAreUnique[$key];
 			if ($value) {
 				$lessonInstance = EfrontLesson :: createInstance($value, $instance -> course['id']);
 				$newLessons[]   = $lessonInstance -> lesson['id'];
+				$lessonsSchedule[$lessonInstance -> lesson['id']] = array(	'start_date' 	=> $foo -> lesson['start_date'],
+																			'end_date' 		=> $foo -> lesson['end_date'],
+																			'start_period' 	=> $foo -> lesson['start_period'],
+																			'end_period' 	=> $foo -> lesson['end_period']);
+																	
 			} else {
 				$newLessons[] = $key;
+				$lessonsSchedule[$key] = array(	'start_date' 	=> $foo -> lesson['start_date'],
+						'end_date' 		=> $foo -> lesson['end_date'],
+						'start_period' 	=> $foo -> lesson['start_period'],
+						'end_period' 	=> $foo -> lesson['end_period']);
+				
 			}
+			
+			
 		}
-		$instance -> addLessons($newLessons);
+				
+		
+		$instance -> addLessons($newLessons, $lessonsSchedule);
 	}
 
 	private static function assignSourceSkillsToInstance($instanceSource, $instance) {
@@ -3072,7 +3091,7 @@ class EfrontCourse
 		$data['courses'] = eF_getTableData("courses", "*", "id=".$this -> course['id']);
 		unset($data['courses'][0]['instance_source']);
 		foreach ($this -> getCourseLessons() as $value) {
-			$data['lessons_to_courses'][] = array('courses_ID' => $this -> course['id'], 'lessons_ID' => $value->lesson['id']);
+			$data['lessons_to_courses'][] = array('courses_ID' => $this -> course['id'], 'lessons_ID' => $value->lesson['id'], 'start_date' => $value->lesson['start_date'] , 'end_date' => $value->lesson['end_date'], 'start_period' => $value->lesson['start_period'] , 'end_period' => $value->lesson['end_period'], 'previous_lessons_ID' => $value->lesson['previous_lessons_ID']);
 		}
 
 		$modules = eF_loadAllModules();
@@ -3207,15 +3226,22 @@ class EfrontCourse
 	private function importLessonsToCourse($data, $courseFile) {
 		$data['lessons_to_courses'] = $this -> setCorrectLessonOrder($data['lessons_to_courses']);
 
+		$lessonsSchedule = array();
 		foreach ($data['lessons_to_courses'] as $value) {
 			$lesson  = EfrontLesson :: createLesson(array('name' 	      => 'imported_lesson',		//This is changed right below, during import
 														  'course_only'   => true,
 														  'directions_ID' => $this -> course['directions_ID']));
-
 			$lessonFile = new EfrontFile($courseFile['directory'].'/'.$value['lessons_ID'].'_exported.zip');
 			$lessonFile = $lessonFile -> copy($lesson -> getDirectory());
 			$lesson -> import($lessonFile, false, false, true);
-			$this -> addLessons($lesson);
+			
+			$lessonsSchedule[$lesson -> lesson['id']] = array(	'start_date' => $value['start_date'],
+																'end_date' => $value['end_date'],
+																'start_period' => $value['start_period'],
+																'end_period' => $value['end_period']);
+			
+
+			$this -> addLessons($lesson, $lessonsSchedule);
 			$this -> replaceLessonInCourseRules($value['lessons_ID'], $lesson);
 		}
 	}
@@ -4337,7 +4363,7 @@ class EfrontCourse
 	}
 
 	private function handlePostAjaxRequestForUsersAddAll() {
-		$constraints   = array('archive' => false, 'active' => true, 'condition' => 'r.courses_ID is null');
+		$constraints   = array('archive' => false, 'active' => true, 'condition' => 'uc.courses_ID is null');
 		$users = $this -> getCourseUsersIncludingUnassigned($constraints);
 		$users = EfrontUser :: convertUserObjectsToArrays($users);
 
@@ -4363,7 +4389,7 @@ class EfrontCourse
 	}
 
 	private function handlePostAjaxRequestForUsersRemoveAll() {
-		$constraints   = array('archive' => false, 'active' => true, 'condition' => 'r.courses_ID is not null');
+		$constraints   = array('archive' => false, 'active' => true, 'condition' => 'uc.courses_ID is not null');
 		$users = $this -> getCourseUsersIncludingUnassigned($constraints);
 		$users = EfrontUser :: convertUserObjectsToArrays($users);
 		isset($_GET['filter']) ? $users = eF_filterData($users, $_GET['filter']) : null;
@@ -4381,8 +4407,8 @@ class EfrontCourse
 	 */	
 	public static function checkCertificateExpire() {
 		$courses 		=  eF_getTableData("courses", "id,reset_interval,reset", "certificate_expiration !=0" );
-		$notifications 	=  eF_getTableData("event_notifications", "id,event_type,after_time,send_conditions", "event_type=-59 and active=1");
-		$notifications_on_event 	=  eF_getTableData("event_notifications", "id,event_type,after_time,send_conditions", "event_type=59 and active=1");
+		$notifications 	=  eF_getTableData("event_notifications", "id,event_type,after_time,send_conditions", "event_type=-56 and active=1");
+		$notifications_on_event 	=  eF_getTableData("event_notifications", "id,event_type,after_time,send_conditions", "event_type=56 and active=1");
 		
 		foreach ($courses as $value) {
 			$course = new EfrontCourse($value['id']);				
@@ -4425,7 +4451,7 @@ class EfrontCourse
 							}
 						}			
 					}	
-					if (!$course -> course['reset'] && !$course -> course['reset_interval']) {
+					if (!$course -> course['reset'] && !$course -> course['reset_interval']) {						
 						if ($expirationTimestamp < time()) {
 							eF_updateTableData("users_to_courses", array("issued_certificate" => ""), "users_LOGIN='".$login."' and courses_ID = ".$course -> course['id']);
 							foreach ($notifications_on_event as $notification) {
@@ -4433,7 +4459,7 @@ class EfrontCourse
 								$courses_ID 		= $send_conditions['courses_ID'];
 								if ($courses_ID == $value['id'] || $courses_ID == 0) {
 									if ($notification['after_time'] == 0) {		
-										EfrontEvent::triggerEvent(array("type" => EfrontEvent::COURSE_CERTIFICATE_EXPIRY,
+										EfrontEvent::triggerEvent(array("type" => EfrontEvent::COURSE_CERTIFICATE_REVOKE,
 											"users_LOGIN"  => $login,
 											"lessons_ID"   => $course	-> course['id'],
 											"lessons_name" => $course	-> course['name'],

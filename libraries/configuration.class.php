@@ -282,14 +282,11 @@ class EfrontConfiguration
     * @static
     */
     public static function getValues() {
-    	if (function_exists('apc_fetch') && $apcOptions = apc_fetch(G_DBNAME.':configuration')) {
-    		$options = $apcOptions;
-    	} else {
+    	$options = EfrontCache::getInstance()->getCache('configuration');
+    	if (!$options) {
         	$options = eF_getTableDataFlat("configuration", "*");
         	sizeof($options) > 0 ? $options = array_combine($options['name'], $options['value']) : $options = array();
-        	if (function_exists('apc_store')) {
-        		apc_store(G_DBNAME.':configuration', $options);
-        	}
+        	EfrontCache::getInstance()->setCache('configuration', $options);
     	}
 
         foreach (EfrontConfiguration :: $defaultOptions as $key => $value) {
@@ -348,9 +345,7 @@ class EfrontConfiguration
         }
         $GLOBALS['configuration'][$name] = $value;
 
-    	if (function_exists('apc_delete')) {
-    		apc_delete(G_DBNAME.':configuration');
-    	}
+        EfrontCache::getInstance()->deleteCache('configuration');
 
         return true;
     }
@@ -365,9 +360,7 @@ class EfrontConfiguration
      * @static
      */
     public static function deleteValue($name) {
-    	if (function_exists('apc_delete')) {
-    		apc_delete(G_DBNAME.':configuration');
-    	}
+    	EfrontCache::getInstance()->deleteCache('configuration');
 
     	eF_deleteTableData("configuration", "name = '$name'");
     	unset($GLOBALS['configuration'][$name]);

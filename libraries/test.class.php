@@ -195,7 +195,7 @@ class EfrontTest
         }
         eF_deleteTableData("tests", "id=".$this -> test['id']);
 
-        Cache::resetCache('test:'.$this -> test['id']);
+        EfrontCache::getInstance()->deleteCache('test:'.$this -> test['id']);
 
         return true;
     }
@@ -271,7 +271,8 @@ class EfrontTest
                         'lessons_ID'    => $this -> test['lessons_ID'],
                         'publish'       => $this -> test['publish'],
         				'keep_best'     => $this -> test['keep_best']);
-        Cache::resetCache('test:'.$this -> test['id']);
+        EfrontCache::getInstance()->deleteCache('test:'.$this -> test['id']);
+        
         eF_updateTableData("tests", $fields, "id=".$this -> test['id']) && eF_updateTableData("content", array("publish" => $this -> test['publish']), "id=".$this -> test['content_ID']);
         
         $result = eF_getTableData("content c, tests t", "t.id, t.content_ID", "c.id=t.content_ID and c.linked_to={$this->test['content_ID']}");
@@ -438,7 +439,7 @@ class EfrontTest
      * @access public
      */
     public function addQuestions($questions) {
-        Cache::resetCache('test:'.$this -> test['id']);
+        EfrontCache::getInstance()->deleteCache('test:'.$this -> test['id']);
 
         $testQuestions    = $this -> getQuestions();
         $nonTestQuestions = $this -> getNonQuestions();
@@ -487,7 +488,7 @@ class EfrontTest
      * @access public
      */
     public function removeQuestions($questionIds = false) {
-    	Cache::resetCache('test:'.$this -> test['id']);
+    	EfrontCache::getInstance()->deleteCache('test:'.$this -> test['id']);
 
         if ($questionIds === false) {
             eF_deleteTableData("tests_to_questions", "tests_ID = ".$this -> test['id']);
@@ -1491,7 +1492,8 @@ class EfrontTest
     	$storeCache = false;
 
     	if (!$questionId && !$done && !$this -> options['random_pool'] && !$this -> options['shuffle_questions'] && !$this -> options['shuffle_answers'] && !$nocache) {
-    		if ($testString = Cache::getCache('test:'.$this -> test['id'])) {
+    		if ($testString = EfrontCache::getInstance()->getCache('test:'.$this -> test['id'])) {
+    			
     		    return $testString;
     		} else  {
 	    		$storeCache = true;
@@ -1727,7 +1729,7 @@ class EfrontTest
 */
 
         if ($storeCache) {
-        	Cache::setCache('test:'.$this -> test['id'], $testString);
+        	EfrontCache::getInstance()->setCache('test:'.$this -> test['id'], $testString);
         }
         return $testString;
     }
@@ -5567,7 +5569,7 @@ abstract class Question
         				"answers_explanation" => $this -> question['answers_explanation'],
 						"settings" 	  => $this -> question['settings']);
         foreach ($this -> getTests() as $id => $test) {
-        	Cache::resetCache('test:'.$id);
+        	EfrontCache::getInstance()->deleteCache('test:'.$id);
         }
 
         eF_updateTableData("questions", $fields, "id=".$this -> question['id']);

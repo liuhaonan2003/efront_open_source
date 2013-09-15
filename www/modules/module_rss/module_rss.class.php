@@ -188,7 +188,7 @@ class module_rss extends EfrontModule
                 } else {
                     eF_updateTableData("module_rss_feeds", $fields, "id=".$_GET['edit_feed']);
                     $smarty -> assign("T_RSS_RSS_MESSAGE", _RSS_SUCCESSFULLYEDITEDFEED);
-                    Cache::resetCache('rss_cache:'.$_GET['edit_feed']);
+                    EfrontCache::getInstance()->deleteCache('rss_cache:'.$_GET['edit_feed']);
                 }
             }
             $smarty -> assign("T_RSS_ADD_RSS_FORM", $form -> toArray());
@@ -302,7 +302,7 @@ class module_rss extends EfrontModule
     		if ($feed['lessons_ID'] && $_SESSION['s_lessons_ID'] && $feed['lessons_ID'] != $_SESSION['s_lessons_ID']) {
     			unset ($feeds[$key]);
     		} else {
-    			if (!$refresh && $str = Cache::getCache('rss_cache:'.$key)) {
+    			if (!$refresh && $str = EfrontCache::getInstance()->getCache('rss_cache:'.$key)) {
     				$rssStrings[] = $str;
     			} else  {
     				if ($feed['title'] != $feedTitle) {
@@ -322,7 +322,7 @@ class module_rss extends EfrontModule
     				}
     				$rssStrings[] = $str;
 
-    				Cache::setCache('rss_cache:'.$key, $str, 3600*24);
+    				EfrontCache::getInstance()->setCache('rss_cache:'.$key, $str, 3600*24);
     			}
     		}
     	}

@@ -38,7 +38,9 @@ function onUseTheme(el, response) {
     el.writeAttribute({alt: activetheme, title: activetheme});
     setImageSrc(el, 16, 'pin_green.png');
     //top.location.reload();
-    top.location = response;
+    if (response.evalJSON(true).data.url) {
+    	top.location = response.evalJSON(true).data.url;
+    }
     
     //Can't do a top.location=top.location+'&tab=set_theme' because of sidebar;
 /*    

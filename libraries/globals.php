@@ -7,7 +7,7 @@
 */
 define("G_VERSIONTYPE_CODEBASE", "community");
 define("G_VERSIONTYPE", "community");
-define("G_BUILD", "18009");
+define("G_BUILD", "18010");
 
 //This file cannot be called directly, only included.
 if (str_replace(DIRECTORY_SEPARATOR, "/", __FILE__) == $_SERVER['SCRIPT_FILENAME']) {
@@ -37,7 +37,8 @@ $debugMode = 0;
 //header('Content-Type: text/html; charset=utf-8');
 
 error_reporting( E_ERROR );
-//error_reporting( E_ALL );ini_set("display_errors", true);define("NO_OUTPUT_BUFFERING", true);        //Uncomment this to get a full list of errors
+//error_reporting( E_ALL );ini_set("display_errors", true);
+define("NO_OUTPUT_BUFFERING", true);        //Uncomment this to get a full list of errors
 
 //Prepend the include path with efront folders
 set_include_path($path.'../PEAR/'
@@ -365,12 +366,13 @@ function setDefines() {
 			//$_SERVER['PHP_SELF'] = G_OFFSET.G_BRANCH_URL.str_replace(G_OFFSET, '', $_SERVER['PHP_SELF']);
 			$_SERVER['PHP_SELF'] = G_OFFSET.G_BRANCH_URL.preg_replace('#^'.G_OFFSET.'#', '', $_SERVER['PHP_SELF']);
 		}
-		define('G_SERVERNAME', $protocol.'://'.$_SERVER["HTTP_HOST"].G_OFFSET.G_BRANCH_URL);
+		define('G_SERVERNAME', $protocol.'://'.getHttpHost().G_OFFSET.G_BRANCH_URL);
 	} else { #cpp#else
-		define('G_SERVERNAME', $protocol.'://'.$_SERVER["HTTP_HOST"].G_OFFSET);
+		define('G_SERVERNAME', $protocol.'://'.getHttpHost().G_OFFSET);
 	} #cpp#endif
 	
-
+	//var_dump($_SERVER);exit;
+	
     /*Define default encoding to be utf-8*/
     mb_internal_encoding('utf-8');
 
@@ -818,3 +820,9 @@ function Efront_Autoload($className) {
     #cpp#endif
 }
 
+function getHttpHost() {
+	if (isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
+		return $_SERVER['HTTP_X_FORWARDED_HOST'];
+	}
+	return $_SERVER['HTTP_HOST'];
+}

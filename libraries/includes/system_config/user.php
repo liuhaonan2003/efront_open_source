@@ -53,9 +53,7 @@ if (isset($currentUser -> coreAccess['configuration']) && $currentUser -> coreAc
 			eF_updateTableData("users", array("viewed_license" => 0), "viewed_license = 1");
 		}
 		if ($values['username_format']) {
-			if (function_exists('apc_delete')) {
-				apc_delete(G_DBNAME.':_usernames');
-			}
+			EfrontCache::getInstance()->delete(G_DBNAME.':_usernames');
 		}
 		if ($values['time_reports'] != $GLOBALS['configuration']['time_reports']) {
 			EfrontSystem::switchLessonReportingMode($values['time_reports']);

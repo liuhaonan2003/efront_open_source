@@ -800,7 +800,9 @@ function showTestQuestion(question_num) {
 function checkQuestions() {
 	
 	var finished = new Array();
-	var count = 0;
+	var count = 0;	
+	var editor_count = 0;
+
 	$$('.unsolvedQuestion').each(function (r) {
 		finished[count] = 0;
     	if (r.hasClassName('trueFalseQuestion')) {
@@ -817,11 +819,9 @@ function checkQuestions() {
     		r.select('select').each(function (s) {s.value ? finished[count] = 1 : null;});
     	} else if (r.hasClassName('rawTextQuestion')) {
     		if (typeof(tinyMCE) != 'undefined') {
-    			for (var i = 0; i <  tinyMCE.editors.length; i++) {
-    				if (tinyMCE.editors[i].getContent()) {
-    					finished[count] = 1;
-    				}
-    			};
+    			if (typeof(tinyMCE.editors[editor_count]) != 'undefined' && tinyMCE.editors[editor_count++].getContent()) {
+    				finished[count] = 1;
+    			}
     		} else {
     			r.select('textarea').each(function (s) {s.value ? finished[count] = 1 : null;});
     		}

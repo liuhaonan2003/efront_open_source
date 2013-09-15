@@ -49,7 +49,7 @@ try {
 		
 		$urlParts = parse_url($url);
 		
-		$filePath = G_ROOTPATH.'www/'.str_replace(G_SERVERNAME, '', G_PROTOCOL.'://'.$_SERVER['HTTP_HOST'].$urlParts['path']);
+		$filePath = G_ROOTPATH.'www/'.str_replace(G_SERVERNAME, '', G_PROTOCOL.'://'.getHttpHost().$urlParts['path']);
 		
 		try {
 			$file = new EfrontFile(urldecode($filePath));

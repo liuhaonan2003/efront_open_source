@@ -40,6 +40,14 @@ $smarty -> assign("T_EXTERNAL_MAIN_FORM", $externalMainForm -> toArray());
 
 
 if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
+	$all_social_enabled_value = pow(2,SOCIAL_MODULES_ALL);
+	if (!isset($GLOBALS['configuration']['social_modules_activated'])) {
+		EfrontConfiguration :: setValue('social_modules_activated', pow(2,SOCIAL_MODULES_ALL)-1);
+		$socialModulesActivated = $all_social_enabled_value-1;
+	} else {
+		$socialModulesActivated = intval($GLOBALS['configuration']['social_modules_activated']);
+	}
+	
 	$externalFacebookForm	 = new HTML_QuickForm("external_fb_form", "post", basename($_SERVER['PHP_SELF'])."?ctg=system_config&op=external&tab=facebook", "", null, true);
 	$externalFacebookForm -> registerRule('checkParameter', 'callback', 'eF_checkParameter');
 	$externalFacebookForm -> addElement("advcheckbox", "social_" . FB_FUNC_DATA_ACQUISITION,  _FACEBOOKDATAACQUISITION, null, 'class = "inputCheckBox"', array(0, 1));
@@ -48,6 +56,7 @@ if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
 	$externalFacebookForm -> addElement("text", "facebook_api_key",   _FACEBOOKAPIKEY,	 'class = "inputText"');
 	$externalFacebookForm -> addElement("text", "facebook_secret",	_FACEBOOKSECRET,	 'class = "inputText"');
 	// Initialize values
+	
 	for ($i = 1; $i < $all_social_enabled_value; $i = $i << 1) {
 		if ($i & $socialModulesActivated) {
 			$externalFacebookForm -> setDefaults(array('social_'.$i => 1));
@@ -179,11 +188,15 @@ if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
 						}
 						eF_redirect(basename($_SERVER['PHP_SELF'])."?ctg=system_config&op=external&tab=ldap&message=".urlencode(_SUCCESFULLYUPDATECONFIGURATION)."&message_type=success");
 					} else {
+							//debug();
+							//ldap_set_option(NULL, LDAP_OPT_DEBUG_LEVEL, 7);
+							//pr($values);
 						if (!($ds = ldap_connect($values['ldap_server'], $values['ldap_port']))) {
 							$message	  = _CANNOTCONNECTLDAPSERVER;
 							$message_type = 'failure';
 						} else {
 							ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, $values['ldap_protocol']);
+							//ldap_set_option($ds, LDAP_, $values['ldap_protocol']);
 							if (!($bind = ldap_bind($ds, $values['ldap_binddn'], $values['ldap_password']))) {
 								$message	  = _CANNOTBINDLDAPSERVER;
 								$message_type = 'failure';
@@ -191,6 +204,7 @@ if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
 								$message	  = _SUCESSFULLYCONNECTEDTOLDAPSERVER;
 								$message_type = 'success';
 							}
+							//debug(false);
 						}
 					}
 				}

@@ -467,9 +467,8 @@ class EfrontSystem
 	 * @access public
 	 */
 	public static function getLanguages($reduced = false, $only_active = false) {
-		if (function_exists('apc_fetch') && $apcLanguages = apc_fetch(G_DBNAME.':languages')) {
-			$languages = $apcLanguages;
-		} else {
+		$languages = EfrontCache::getInstance()->getCache('languages');
+		if (!$languages) {
 			$languages = array();
 			$result = eF_getTableData("languages", "*", "", "translation asc");
 			foreach ($result as $value) {
@@ -481,9 +480,7 @@ class EfrontSystem
 				}
 			}
 				
-			if (function_exists('apc_store')) {
-				apc_store(G_DBNAME.':languages', $languages);
-			}
+			EfrontCache::getInstance()->setCache('languages', $languages);
 		}
 
 		if ($only_active) {
@@ -506,9 +503,8 @@ class EfrontSystem
 	}
 
 	public static function setFaviconFile($currentTheme) {
-		if (function_exists('apc_fetch') && $favicon = apc_fetch(G_DBNAME.':favicon')) {
-			return $favicon;
-		} else {
+		$favicon = EfrontCache::getInstance()->getCache('favicon');
+		if (!$favicon) {
 			try {
 				try {
 					$faviconFile  = new EfrontFile($GLOBALS['configuration']['favicon']);
@@ -521,17 +517,14 @@ class EfrontSystem
 				$favicon = "images/favicon.png";
 			}
 
-			if (function_exists('apc_store')) {
-				apc_store(G_DBNAME.':favicon', $favicon);
-			}
+			EfrontCache::getInstance()->setCache('favicon', $favicon);
 		}
 		return $favicon;		
 	}
 	
 	public static function setLogoFile($currentTheme) {
-		if (function_exists('apc_fetch') && $logo = apc_fetch(G_DBNAME.':logo')) {
-			return $logo;
-		} else {
+		$logo = EfrontCache::getInstance()->getCache('logo');
+		if (!$logo) {
 			try {
 				if ($GLOBALS['configuration']['use_logo'] == 2 && defined('G_BRANCH_URL') && G_BRANCH_URL && is_file(G_CURRENTTHEMEPATH.'images/logo/logo.png')) {
 					$logo = 'images/logo/logo.png';
@@ -546,9 +539,7 @@ class EfrontSystem
 			} catch (EfrontFileException $e) {
 				$logo = "images/logo.png";
 			}
-			if (function_exists('apc_store')) {
-				apc_store(G_DBNAME.':logo', $logo);
-			}
+			EfrontCache::getInstance()->setCache('logo', $logo);
 		}		
 		
 		return $logo;

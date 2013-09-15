@@ -400,9 +400,7 @@ abstract class EfrontUser
 			$module -> onNewUser($userProperties['login']);
 		}
 
-		if (function_exists('apc_delete')) {
-			apc_delete(G_DBNAME.':_usernames');
-		}
+		EfrontCache::getInstance()->deleteCache('usernames');
 
 		if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
 			if (G_VERSIONTYPE != 'standard') { #cpp#ifndef STANDARD
@@ -586,7 +584,7 @@ abstract class EfrontUser
 		!empty($constraints) OR $constraints = array('archive' => false, 'active' => true);
 	
 		list($where, $limit, $orderby) = EfrontUser :: convertUserConstraintsToSqlParameters($constraints);
-		$select  = "u.login,u.user_type,u.user_types_ID,u.active,u.timestamp,u.archive, u.last_login";
+		$select  = "u.login,u.user_type,u.user_types_ID,u.active,u.timestamp,u.archive, u.last_login,u.balance";
 		$from    = "users u";
 	
 		$result  = eF_getTableData($from, $select, implode(" and ", $where), $orderby, $groupby, $limit);
@@ -1239,6 +1237,7 @@ abstract class EfrontUser
 		// Get all modules (NOT only the ones that have to do with the user type)
 		$modules = eF_loadAllModules();
 		// Trigger all necessary events. If the function has not been re-defined in the derived module class, nothing will happen
+		
 		foreach ($modules as $module) {
 			$module -> onDeleteUser($this -> user['login']);
 		}
@@ -1280,10 +1279,12 @@ abstract class EfrontUser
 		eF_deleteTableData("profile_comments", "users_LOGIN='".$this -> user['login']."'");
 		eF_deleteTableData("users_to_content", "users_LOGIN='".$this -> user['login']."'");
 		
+		
+		
 		if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
 			eF_deleteTableData("payments", "users_LOGIN='".$this -> user['login']."'");
 			eF_deleteTableData("facebook_connect", "users_LOGIN='".$this -> user['login']."'");
-
+			eF_deleteTableData("users_to_skillgap_tests", "users_LOGIN='".$this -> user['login']."'");
 
 		} #cpp#endif
 
@@ -1292,10 +1293,12 @@ abstract class EfrontUser
 		//This line was in EfrontProfessor and EfrontStudent without an obvious reason. Admins may also be members of groups
 		eF_deleteTableData("users_to_groups", "users_LOGIN='".$this -> user['login']."'");
 
-		eF_deleteTableData("users", "login='".$this -> user['login']."'");
-
+		//Changing order of these lines because of #4318, where system removal notification was set (user triggering the event)  
 		eF_deleteTableData("notifications", "recipient='".$this -> user['login']."'");
 		EfrontEvent::triggerEvent(array("type" => EfrontEvent::SYSTEM_REMOVAL, "users_LOGIN" => $this -> user['login'], "users_name" => $this -> user['name'], "users_surname" => $this -> user['surname']));
+		
+		eF_deleteTableData("users", "login='".$this -> user['login']."'");
+
 
 		return true;
 	}
@@ -1376,9 +1379,7 @@ abstract class EfrontUser
 
 		eF_updateTableData("users", $fields, "login='".$this -> user['login']."'");
 
-		if (function_exists('apc_delete')) {
-			apc_delete(G_DBNAME.':_usernames');
-		}
+		EfrontCache::getInstance()->deleteCache('usernames');
 
 		///MODULES1 - Module user add events
 		// Get all modules (NOT only the ones that have to do with the user type)
@@ -2109,7 +2110,7 @@ abstract class EfrontLessonUser extends EfrontUser
 		eF_deleteTableData("users_to_lessons", "users_LOGIN = '".$this -> user['login']."' and lessons_ID in (".implode(",", $lessonIds).")");	//delete lessons from list
 		foreach ($lessonIds as $lessonId) {
 			$cacheKey = "user_lesson_status:lesson:".$lessonId."user:".$this -> user['login'];
-			Cache::resetCache($cacheKey);
+			EfrontCache::getInstance()->deleteCache($cacheKey);			
 		}
 
 		//Timelines event
@@ -2304,7 +2305,7 @@ abstract class EfrontLessonUser extends EfrontUser
 						$this -> lessons[$lessonId] = $userType;
 						eF_updateTableData("users_to_lessons", array("user_type" => $userType), "lessons_ID=$lessonId and users_LOGIN='".$this -> user['login']."'");
 						$cacheKey = "user_lesson_status:lesson:".$lessonId."user:".$this -> user['login'];
-						Cache::resetCache($cacheKey);
+						EfrontCache::getInstance()->deleteCache($cacheKey);
 					}
 				}
 				unset($userType);
@@ -2866,7 +2867,7 @@ abstract class EfrontLessonUser extends EfrontUser
 		foreach ($lessons as $lesson) {
 			eF_updateTableData("users_to_lessons", array("archive" => time()), "users_LOGIN='".$this -> user['login']."' and lessons_ID=$lesson");
 			$cacheKey = "user_lesson_status:lesson:".$lesson."user:".$this -> user['login'];
-			Cache::resetCache($cacheKey);
+			EfrontCache::getInstance()->deleteCache($cacheKey);
 		}
 
 		$this -> lessons = false;					//Reset users cache
@@ -3216,7 +3217,7 @@ abstract class EfrontLessonUser extends EfrontUser
 		eF_deleteTableData("users_to_courses", "users_LOGIN = '".$this -> user['login']."' and courses_ID in (".implode(",", $courseIds).")");	//delete courses from list
 		foreach ($courseIds as $id) {
 			$cacheKey = "user_course_status:course:".$id."user:".$this -> user['login'];
-			Cache::resetCache($cacheKey);
+			EfrontCache::getInstance()->deleteCache($cacheKey);
 		}
 
 		EfrontEvent::triggerEvent(array("type" => EfrontEvent::COURSE_REMOVAL, "users_LOGIN" => $this -> user['login'], "lessons_ID" => $courseIds));
@@ -3262,7 +3263,7 @@ abstract class EfrontLessonUser extends EfrontUser
 		if ($lessonId && eF_checkParameter($lessonId, 'id')) {
 			eF_updateTableData("users_to_lessons", $fields, "users_LOGIN='".$this -> user['login']."' and lessons_ID=$lessonId");
 			$cacheKey = "user_lesson_status:lesson:".$lessonId."user:".$this -> user['login'];
-			Cache::resetCache($cacheKey);
+			EfrontCache::getInstance()->deleteCache($cacheKey);
 		} else {
 			eF_updateTableData("users_to_lessons", $fields, "users_LOGIN='".$this -> user['login']."'");
 		}
@@ -3342,7 +3343,7 @@ abstract class EfrontLessonUser extends EfrontUser
 	* @access public
 	*/
 	public function getCourseRoles($courseId) {//PROTONC
-		$roles = EfrontUser::getAvailableRoles();//roles are roles - course or lesson does not matter
+		$roles = EfrontLessonUser::getAvailableRoles();//roles are roles - course or lesson does not matter
 		if ($courseId instanceof EfrontCourse) {
 			$courseId = $courseId -> course['id'];
 		}
@@ -3667,7 +3668,7 @@ class EfrontProfessor extends EfrontLessonUser
 /*
 		foreach ($this -> getCourses() as $id => $value) {
 			$cacheKey = "user_course_status:course:".$id."user:".$this -> user['login'];
-			Cache::resetCache($cacheKey);
+			EfrontCache::getInstance()->deleteCache($cacheKey);
 		}
 */
 	}
@@ -3716,7 +3717,7 @@ class EfrontStudent extends EfrontLessonUser
 /*
 		foreach ($this -> getCourses() as $id => $value) {
 			$cacheKey = "user_course_status:course:".$id."user:".$this -> user['login'];
-			Cache::resetCache($cacheKey);
+			EfrontCache::getInstance()->deleteCache($cacheKey);
 		}
 */
 		eF_deleteTableData("users_to_projects",	 "users_LOGIN='".$this -> user['login']."'");
@@ -3756,7 +3757,7 @@ class EfrontStudent extends EfrontLessonUser
 							'comments'	   => $comments);
 			eF_updateTableData("users_to_lessons", $fields, "users_LOGIN = '".$this -> user['login']."' and lessons_ID=".$lesson -> lesson['id']);
 			//$cacheKey = "user_lesson_status:lesson:".$lesson -> lesson['id']."user:".$this -> user['login'];
-			//Cache::resetCache($cacheKey);
+			//EfrontCache::getInstance()->deleteCache($cacheKey);
 
 			// Timelines event
 			EfrontEvent::triggerEvent(array("type" => EfrontEvent::LESSON_COMPLETION, "users_LOGIN" => $this -> user['login'], "lessons_ID" => $lesson -> lesson['id'], "lessons_name" => $lesson -> lesson['name']));
@@ -3951,7 +3952,7 @@ class EfrontStudent extends EfrontLessonUser
 
 		eF_updateTableData("users_to_lessons", array('done_content' => $doneContent, 'current_unit' => $current_unit), "users_LOGIN='".$this -> user['login']."' and lessons_ID=".$lesson);
 //		$cacheKey = "user_lesson_status:lesson:".$lesson."user:".$this -> user['login'];
-//		Cache::resetCache($cacheKey);
+//		EfrontCache::getInstance()->deleteCache($cacheKey);
 
 		if ($current_unit && $seen) {
 			EfrontEvent::triggerEvent(array("type" => EfrontEvent::CONTENT_COMPLETION, "users_LOGIN" => $this -> user['login'], "lessons_ID" => $lesson, "entity_ID" => $current_unit));

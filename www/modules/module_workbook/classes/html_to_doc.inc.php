@@ -13,7 +13,8 @@
 		var $htmlHead="";
 		var $htmlBody="";
 		
-		
+		var $localimgs = array();
+		var $lessonDirectory = NULL;
 		/**
 		 * Constructor
 		 *
@@ -177,23 +178,44 @@ EOH;
 			
 			$this->_parseHtml($html);
 			$this->setDocFileName($file);
-			$doc=$this->getHeader();
-			$doc.=$this->htmlBody;
-			$doc.=$this->getFotter();
-							
+			$doc  = $this->getHeader();
+			$doc .= $this->htmlBody;
+			$doc .= $this->getFotter();
+
+			
+
 			if($download)
 			{
-				@header("Cache-Control: ");// leave blank to avoid IE errors
-				@header("Pragma: ");// leave blank to avoid IE errors
-				@header("Content-type: application/octet-stream");
-				@header("Content-Disposition: attachment; filename=\"$this->docFile\"");
-				echo $doc;
+				if(!empty($this->localimgs)) {
+					$tmpDir = EfrontDirectory::createDirectory($this->lessonDirectory.$file);
+					$array_cp = $tmpDir->getArrayCopy();
+					
+					foreach ($this->localimgs as $img) {
+						$file = new EfrontFile($this->lessonDirectory.$img);
+						$file->copy($array_cp['path']."/".$img);
+					}
+					
+					$this->write_file($array_cp['path']."/".$this->docFile,$doc);
+					$zipfile = $tmpDir->compress();
+					$tmpDir->delete();
+					$zipfile->sendFile();	
+								
+				} else {
+					@header("Cache-Control: ");// leave blank to avoid IE errors
+					@header("Pragma: ");// leave blank to avoid IE errors
+					@header("Content-type: application/octet-stream");
+					@header("Content-Disposition: attachment; filename=\"$this->docFile\"");
+					
+					echo $doc;	
+				}
 				return true;
 			}
 			else 
 			{
 				return $this->write_file($this->docFile,$doc);
 			}
+			
+			
 		}
 		
 		/**
@@ -206,7 +228,7 @@ EOH;
 		
 		function _parseHtml($html)
 		{
-			$html=preg_replace("/<!DOCTYPE((.|\n)*?)>/ims","",$html);
+			$html=preg_replace("/<!DOCTYPE((.|\n)*?)>/ims","",$html);			
 			$html=preg_replace("/<script((.|\n)*?)>((.|\n)*?)<\/script>/ims","",$html);
 			preg_match("/<head>((.|\n)*?)<\/head>/ims",$html,$matches);
 			$head=$matches[1];
@@ -216,7 +238,26 @@ EOH;
 			$head=preg_replace("/<title>((.|\n)*?)<\/title>/ims","",$head);
 			$head=preg_replace("/<\/?head>/ims","",$head);
 			$html=preg_replace("/<\/?body((.|\n)*?)>/ims","",$html);
+						
 			$this->htmlHead=$head;
+
+			$DOM = new DOMDocument;
+			$DOM->loadHTML($html);
+			$imgs = $DOM->getElementsByTagName('img');
+			foreach($imgs as $img){
+			    $src = $img->getAttribute('src');
+				if(strpos($src, "http://") === false ){
+					$this->localimgs[] = substr($src, strlen("/content/lessons/".$_SESSION['s_lessons_ID']."/")-1);//substr($src,8);
+					$src = substr($src, strlen("/content/lessons/".$_SESSION['s_lessons_ID']."/")-1);//substr($src,8);
+				}
+			    $img->setAttribute('src', $src);
+			}
+			$html = $DOM->saveHTML();
+			
+			
+			$lesson = new EfrontLesson($_SESSION['s_lessons_ID']);
+			$this->lessonDirectory = $lesson->getDirectory();			
+													
 			$this->htmlBody=$html;
 			return;
 		}

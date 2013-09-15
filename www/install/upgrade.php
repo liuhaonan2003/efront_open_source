@@ -1,5 +1,24 @@
 <?php
 $failed_queries = array();
+
+// Added this in order to avoid non-existing table erros when upgrading to different editions
+if (strcmp($GLOBALS['configuration']['version_type'], G_VERSIONTYPE_CODEBASE) != 0) {
+	try {	
+		$GLOBALS['db'] -> Execute("set foreign_key_checks=0");
+		foreach (explode(";\n", file_get_contents(G_VERSIONTYPE.'.sql')) as $command) {
+			if (trim($command)) {
+				$GLOBALS['db'] -> execute(trim($command));
+			}
+		}
+		$GLOBALS['db'] -> Execute("set foreign_key_checks=1");
+	} catch (Exception $e) {
+		if ($e ->getCode() != 1050) {
+			$failed_queries[] = $e->getMessage();
+		}
+	}
+}
+
+
 //3.6.12 queries
 if (version_compare($dbVersion, '3.6.12') == -1) {
 	try {
@@ -137,6 +156,13 @@ if (version_compare($dbVersion, '3.6.13') == 0) {
 		$failed_queries[] = $e->getMessage();
 	}
 }
+
+
+
+
+
+
+
 
 if (!empty($failed_queries)) {
 	throw new Exception(implode('<br/>', $failed_queries));

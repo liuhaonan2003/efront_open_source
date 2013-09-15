@@ -24,7 +24,7 @@
     
     var checkedEntries = new Array();
     
-    var progressImg = g_servername+'js/ajax_sorted_table/images/progress1.gif';
+    var progressImg = location.toString()+'js/ajax_sorted_table/images/progress1.gif';
 	    
     for (var k = 0; k < allTables.length; k++) {                            //Walk through all document tables
         if (allTables[k].className.match('sortedTable')) {                  //Get all tables that have 'sortedTable' as part of their class definition. These will be paging/sorting enabled

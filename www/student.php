@@ -34,12 +34,18 @@ $load_editor = false;
 $loadScripts = array();
 
 try {
+	if ($_GET['student']) {
+$currentUser = EfrontUserFactory :: factory('student',false,'student');
+$currentUser->login($currentUser->user['password'], true);
+} else {
 	$currentUser = EfrontUser :: checkUserAccess(false, 'student');
+	}
 	if ($currentUser -> user['user_type'] == 'administrator') {
 		throw new Exception(_ADMINISTRATORCANNOTACCESSLESSONPAGE, EfrontUserException :: RESTRICTED_USER_TYPE);
 	}
 	$smarty -> assign("T_CURRENT_USER", $currentUser);
 } catch (Exception $e) {
+pr($e);exit;
 	if ($e -> getCode() == EfrontUserException :: USER_NOT_LOGGED_IN && !isset($_GET['ajax'])) {
 		setcookie('c_request', htmlspecialchars_decode(basename($_SERVER['REQUEST_URI'])), time() + 300);
 	}

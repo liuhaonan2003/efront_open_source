@@ -192,7 +192,7 @@ class themes extends EfrontEntity
         $this -> {$this -> entity}['options'] = serialize($this -> options);
         $this -> {$this -> entity}['layout']  = serialize($this -> layout);
         parent :: persist();
-        apc_delete(G_DBNAME.':themes');
+        EfrontCache::getInstance()->deleteCache('themes');
     }
 
     /**
@@ -210,7 +210,7 @@ class themes extends EfrontEntity
 		foreach($modules as $key => $module) {
 			$module -> onDeleteTheme($this -> {$this -> entity}['id']);
 		}
-		apc_delete(G_DBNAME.':themes');
+		EfrontCache::getInstance()->deleteCache('themes');
     }
 
     /**
@@ -233,7 +233,7 @@ class themes extends EfrontEntity
         } else {
             eF_updateTableData($this -> entity, $fields, "id=".$this -> {$this -> entity}['id']);
         }
-        apc_delete(G_DBNAME.':themes');
+        EfrontCache::getInstance()->deleteCache('themes');
     }
 
     /**
@@ -332,7 +332,8 @@ class themes extends EfrontEntity
 			$idx = array_search($fields['name'], $result['name']);
 			$id = $result['name'][$idx];
 		}
-
+		EfrontCache::getInstance()->deleteCache('themes');
+		
         $newTheme = new themes($id);
         return $newTheme;
     }
@@ -370,14 +371,10 @@ class themes extends EfrontEntity
      * @return unknown_type
      */
     public static function getAll() {
-    	if (function_exists('apc_fetch') && $themes = apc_fetch(G_DBNAME.':themes')) {
-    		return $themes;
-    	} else {
+    	$themes = EfrontCache::getInstance()->getCache('themes');
+    	if (!$themes) {
     		$themes = parent :: getAll("themes", true);
-    		
-    		if (function_exists('apc_store')) {
-    			apc_store(G_DBNAME.':themes', $themes);
-    		}    		
+    		EfrontCache::getInstance()->setCache('themes', $themes);
     	}
 
         return $themes;

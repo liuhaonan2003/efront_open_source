@@ -156,9 +156,11 @@
 		{eF_template_printBlock title=$smarty.const._PHPINFO data=$smarty.capture.t_php_info_code image='32x32/php.png'}
 		</div>
 
-		<div class = "tabbertab {if $smarty.get.tab=='apc'}tabbertabdefault{/if}" title = "APC">
-			<iframe src = "apc.php" width = "100%" height = "800px" frameborder="no"></iframe>
+		{if $T_CACHE_PANEL}
+		<div class = "tabbertab {if $smarty.get.tab=='apc'}tabbertabdefault{/if}" title = "Cache">
+			<iframe {if $T_CACHE_PANEL == 'apcu'}src = "apcu.php"{elseif $T_CACHE_PANEL == "apc"}src = "apc.php"{/if} width = "100%" height = "800px" frameborder="no"></iframe>
 		</div>
+		{/if}
 		
 	    <div class = "tabbertab {if $smarty.get.tab=='lock_down'}tabbertabdefault{/if}">
 	        <h3>{$smarty.const._LOCKDOWN}</h3>
@@ -234,7 +236,7 @@
 		        <td class = "submitCell"><input class = "flatButton" type = "button" value = "{$smarty.const._CLEAR}" onclick = "clearCache(this, 'tests')"/></td></tr>
 		    <tr><td class = "labelCell">{$smarty.const._CLEARQUERYCACHE}:&nbsp;</td>
 		        <td class = "submitCell"><input class = "flatButton" type = "button" value = "{$smarty.const._CLEAR}" onclick = "clearCache(this, 'query')"/></td></tr>
-		    {if $T_APC}
+		    {if $T_CACHE_PANEL}
 		    <tr><td class = "labelCell">{$smarty.const._CLEAROPCODECACHE}:&nbsp;</td>
 		        <td class = "submitCell"><input class = "flatButton" type = "button" value = "{$smarty.const._CLEAR}" onclick = "clearCache(this, 'apc')"/></td></tr>
 		    {/if}

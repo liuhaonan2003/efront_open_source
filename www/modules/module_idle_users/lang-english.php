@@ -1,6 +1,6 @@
 <?php 
 define("_MODULE_IDLE_USERS_IDLEUSERS", "Idle users");
-define("_MODULE_IDLE_USERS_LASTACTION", "Last action");
+define("_MODULE_IDLE_USERS_LASTACTION", "Last login");
 define("_MODULE_IDLE_USERS_SHOWINACTIVEUSERSSINCE", "Show users idle since");
 define("_MODULE_IDLE_USERS_ARCHIVEALLUSERS", "Archive all users");
 define("_MODULE_IDLE_USERS_THISWILLARCHIVEALLUSERSAREYOUSURE", "This will archive all users returned matching the selected criteria! Are you sure?");

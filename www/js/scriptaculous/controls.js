@@ -1,8 +1,8 @@
-// script.aculo.us controls.js v1.8.3, Thu Oct 08 11:23:33 +0200 2009
+// script.aculo.us controls.js v1.9.0, Thu Dec 23 16:54:48 -0500 2010
 
-// Copyright (c) 2005-2009 Thomas Fuchs (http://script.aculo.us, http://mir.aculo.us)
-//           (c) 2005-2009 Ivan Krstic (http://blogs.law.harvard.edu/ivan)
-//           (c) 2005-2009 Jon Tirsen (http://www.tirsen.com)
+// Copyright (c) 2005-2010 Thomas Fuchs (http://script.aculo.us, http://mir.aculo.us)
+//           (c) 2005-2010 Ivan Krstic (http://blogs.law.harvard.edu/ivan)
+//           (c) 2005-2010 Jon Tirsen (http://www.tirsen.com)
 // Contributors:
 //  Richard Livsey
 //  Rahul Bhargava
@@ -42,14 +42,14 @@ if(typeof Effect == 'undefined')
 var Autocompleter = { };
 Autocompleter.Base = Class.create({
   baseInitialize: function(element, update, options) {
-    element = $(element);
-    this.element = element;
-    this.update = $(update);
-    this.hasFocus = false;
-    this.changed = false;
-    this.active = false;
-    this.index = 0;
-    this.entryCount = 0;
+    element          = $(element);
+    this.element     = element;
+    this.update      = $(update);
+    this.hasFocus    = false;
+    this.changed     = false;
+    this.active      = false;
+    this.index       = 0;
+    this.entryCount  = 0;
     this.oldElementValue = this.element.value;
 
     if(this.setOptions)
@@ -57,17 +57,16 @@ Autocompleter.Base = Class.create({
     else
       this.options = options || { };
 
-    this.options.paramName = this.options.paramName || this.element.name;
-    this.options.tokens = this.options.tokens || [];
-    this.options.frequency = this.options.frequency || 0.4;
-    this.options.minChars = this.options.minChars || 1;
-    this.options.onShow = this.options.onShow ||
+    this.options.paramName    = this.options.paramName || this.element.name;
+    this.options.tokens       = this.options.tokens || [];
+    this.options.frequency    = this.options.frequency || 0.4;
+    this.options.minChars     = this.options.minChars || 1;
+    this.options.onShow       = this.options.onShow ||
       function(element, update){
         if(!update.style.position || update.style.position=='absolute') {
           update.style.position = 'absolute';
           Position.clone(element, update, {
             setHeight: false,
-            setLeft: false,
             offsetTop: element.offsetHeight
           });
         }
@@ -88,7 +87,7 @@ Autocompleter.Base = Class.create({
 
     Element.hide(this.update);
 
-    //Event.observe(this.element, 'blur', this.onBlur.bindAsEventListener(this));		//commented out because it made the list disappear when clicking on the scroll bar
+    Event.observe(this.element, 'blur', this.onBlur.bindAsEventListener(this));
     Event.observe(this.element, 'keydown', this.onKeyPress.bindAsEventListener(this));
   },
 
@@ -346,10 +345,10 @@ Autocompleter.Base.prototype.getTokenBounds.getFirstDifferencePos = function(new
 Ajax.Autocompleter = Class.create(Autocompleter.Base, {
   initialize: function(element, update, url, options) {
     this.baseInitialize(element, update, options);
-    this.options.asynchronous = true;
-    this.options.onComplete = this.onComplete.bind(this);
+    this.options.asynchronous  = true;
+    this.options.onComplete    = this.onComplete.bind(this);
     this.options.defaultParams = this.options.parameters || null;
-    this.url = url;
+    this.url                   = url;
   },
 
   getUpdatedChoices: function() {
@@ -425,10 +424,10 @@ Autocompleter.Local = Class.create(Autocompleter.Base, {
       ignoreCase: true,
       fullSearch: false,
       selector: function(instance) {
-        var ret = []; // Beginning matches
-        var partial = []; // Inside matches
-        var entry = instance.getToken();
-        var count = 0;
+        var ret       = []; // Beginning matches
+        var partial   = []; // Inside matches
+        var entry     = instance.getToken();
+        var count     = 0;
 
         for (var i = 0; i < instance.options.array.length &&
           ret.length < instance.options.choices ; i++) {
@@ -872,25 +871,25 @@ Ajax.InPlaceEditor.prototype.initialize.dealWithDeprecatedOptions = function(opt
 Object.extend(Ajax.InPlaceEditor, {
   DefaultOptions: {
     ajaxOptions: { },
-    autoRows: 3, // Use when multi-line w/ rows == 1
-    cancelControl: 'link', // 'link'|'button'|false
+    autoRows: 3,                                // Use when multi-line w/ rows == 1
+    cancelControl: 'link',                      // 'link'|'button'|false
     cancelText: 'cancel',
     clickToEditText: 'Click to edit',
-    externalControl: null, // id|elt
+    externalControl: null,                      // id|elt
     externalControlOnly: false,
-    fieldPostCreation: 'activate', // 'activate'|'focus'|false
+    fieldPostCreation: 'activate',              // 'activate'|'focus'|false
     formClassName: 'inplaceeditor-form',
-    formId: null, // id|elt
+    formId: null,                               // id|elt
     highlightColor: '#ffff99',
     highlightEndColor: '#ffffff',
     hoverClassName: '',
     htmlResponse: true,
     loadingClassName: 'inplaceeditor-loading',
     loadingText: 'Loading...',
-    okControl: 'button', // 'link'|'button'|false
+    okControl: 'button',                        // 'link'|'button'|false
     okText: 'ok',
     paramName: 'value',
-    rows: 1, // If 1 and multi-line, uses autoRows
+    rows: 1,                                    // If 1 and multi-line, uses autoRows
     savingClassName: 'inplaceeditor-saving',
     savingText: 'Saving...',
     size: 0,
@@ -946,10 +945,10 @@ Ajax.InPlaceCollectionEditor.DefaultOptions = {
 
 Form.Element.DelayedObserver = Class.create({
   initialize: function(element, delay, callback) {
-    this.delay = delay || 0.5;
-    this.element = $(element);
-    this.callback = callback;
-    this.timer = null;
+    this.delay     = delay || 0.5;
+    this.element   = $(element);
+    this.callback  = callback;
+    this.timer     = null;
     this.lastValue = $F(this.element);
     Event.observe(this.element,'keyup',this.delayedListener.bindAsEventListener(this));
   },

@@ -388,6 +388,7 @@ if ($form -> isSubmitted() && $form -> validate()) {
 		} else {
 			$messageString = _SUCCESFULLYMODIFIEDFEEDBACK;
 		}
+		EfrontCache::getInstance()->deleteCache("content_tree:{$_SESSION['s_lessons_ID']}");
         eF_redirect("".ltrim(basename($_SERVER['PHP_SELF']), "/")."?ctg=".$_GET['ctg']."&from_unit=".$_GET['from_unit']."&message=".urlencode($messageString)."&message_type=success");
     } else {
         $contentFields = array('data'              => '',
@@ -437,6 +438,7 @@ if ($form -> isSubmitted() && $form -> validate()) {
 		} else {
 			$messageString = _SUCCESFULLYMODIFIEDFEEDBACK;
 		}
+		EfrontCache::getInstance()->deleteCache("content_tree:{$_SESSION['s_lessons_ID']}");
         eF_redirect("".ltrim(basename($_SERVER['PHP_SELF']), "/")."?ctg=".$_GET['ctg']."&edit_test=".$newTest -> test['id']."&from_unit=".$_GET['from_unit']."&tab=questions&&message=".urlencode($messageString)."&message_type=success");
     }
 }

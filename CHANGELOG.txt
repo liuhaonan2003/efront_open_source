@@ -20,6 +20,10 @@
 - Fixed catalog showing nothing under certain circumstances
 - Added completed,score information on api2's user_lessons and user_courses actions
 - Performance updates 
+- Fixed enforce question answer in tests, when multiple free text questions are present
+- Fixed discount coupons being used multiple times for manual/free payments
+- Fixed SCORM 2004 units not being able to move
+- Added uniform cache backend with adapters for APC, APCu, wincache and database
 
 === Version 3.6.13.3 - build 18006 ===
 - Added autosaving functionality for tests

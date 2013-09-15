@@ -125,7 +125,8 @@ if ($_GET['scorm_review']) {
                 if ($urlUpload != "" ) {
                     FileSystemTree :: checkFile($urlUpload);
                     $urlArray    = explode("/", $urlUpload);
-                    $urlFile     = urldecode($urlArray[sizeof($urlArray) - 1]);
+                    $urlFile     = preg_replace("/\?.*/", "", urldecode($urlArray[sizeof($urlArray) - 1]));
+                    
                     if (!copy($urlUpload, $currentLesson -> getDirectory().$urlFile)) {
                     	$error = error_get_last();
                         throw new Exception(_PROBLEMUPLOADINGFILE.': '.$error['message']);

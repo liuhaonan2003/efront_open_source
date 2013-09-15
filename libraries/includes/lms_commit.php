@@ -30,6 +30,14 @@ try {
 		exit;
 	}
 
+	if (strtolower($fields['completion_status']) == 'passed' ||
+			strtolower($fields['completion_status']) == 'completed' ||
+			strtolower($fields['lesson_status']) == 'passed' ||
+			strtolower($fields['lesson_status']) == 'completed') {
+		$seenUnit = true;
+	} else {
+		$seenUnit = false;
+	}	
 	if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
 		if (G_VERSIONTYPE != 'standard') { #cpp#ifndef STANDARD
 
@@ -358,14 +366,7 @@ try {
 
 		$result = eF_getTableData("scorm_data", "total_time,id", "content_ID=".$fields['content_ID']." AND users_LOGIN='".$fields['users_LOGIN']."'");
 	}
-	if (strtolower($fields['completion_status']) == 'passed' ||
-		strtolower($fields['completion_status']) == 'completed' ||
-		strtolower($fields['lesson_status']) == 'passed' ||
-		strtolower($fields['lesson_status']) == 'completed') {
-			$seenUnit = true;
-	} else {
-		$seenUnit = false;
-	}
+	
 
 
 	$scoUser   = EfrontUserFactory :: factory($_SESSION['s_login'], false, 'student');

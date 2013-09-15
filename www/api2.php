@@ -1002,7 +1002,7 @@ In case of error it returns also a message entity with description of the error 
                             $update['from_timestamp'] = 0;
                             if (eF_updateTableData("users_to_lessons",$update, "users_LOGIN='".$_GET['login']."' and lessons_ID=".$_GET['lesson'])){
                                 $cacheKey = "user_lesson_status:lesson:".$_GET['lesson']."user:".$_GET['login'];
-                                Cache::resetCache($cacheKey);
+                                EfrontCache::getInstance()->deleteCache($cacheKey);
                                 echo "<xml>";
                                 echo "<status>ok</status>";
                                 echo "</xml>";
@@ -1048,7 +1048,7 @@ In case of error it returns also a message entity with description of the error 
                             $update['from_timestamp'] = time();
                             if (eF_updateTableData("users_to_lessons",$update, "users_LOGIN='".$_GET['login']."' and lessons_ID=".$_GET['lesson'])){
                                 $cacheKey = "user_lesson_status:lesson:".$_GET['lesson']."user:".$_GET['login'];
-                                Cache::resetCache($cacheKey);
+                                EfrontCache::getInstance()->deleteCache($cacheKey);
                                 echo "<xml>";
                                 echo "<status>ok</status>";
                                 echo "</xml>";
@@ -1789,7 +1789,7 @@ In case of error it returns also a message entity with description of the error 
                             for ($i=0; $i < sizeof($courses);$i++){
                                 if (eF_updateTableData("users_to_lessons",$update, "users_LOGIN='".$_GET['login']."' and lessons_ID=".$courses[$i]['lessons_id'])){
 	                                $cacheKey = "user_lesson_status:lesson:".$courses[$i]['lessons_id']."user:".$_GET['login'];
-	                                Cache::resetCache($cacheKey);
+	                                EfrontCache::getInstance()->deleteCache($cacheKey);
                                 }
                             }
                             echo "<xml>";
@@ -1831,7 +1831,7 @@ In case of error it returns also a message entity with description of the error 
                             for ($i=0; $i < sizeof($courses);$i++){
                                 if (eF_updateTableData("users_to_lessons",$update, "users_LOGIN='".$_GET['login']."' and lessons_ID=".$courses[$i]['lessons_id'])){
 	                                $cacheKey = "user_lesson_status:lesson:".$courses[$i]['lessons_id']."user:".$_GET['login'];
-	                                Cache::resetCache($cacheKey);
+	                                EfrontCache::getInstance()->deleteCache($cacheKey);
                                 }
                             }
                             echo "<xml>";

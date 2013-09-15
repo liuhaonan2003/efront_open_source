@@ -69,7 +69,7 @@ try {
             $values['page'] = preg_replace($patterns, $replacements, $values['page']);
 
 			$values['notes'] = strip_tags($values['notes']);
-            $data 			= '<a href="professor.php?lessons_ID='.$_SESSION['s_lessons_ID'].'&'.$values['page'].'">'._LINKTOTOPIC.'</a><br><br>'._NOTES.':&nbsp;'.$values['notes'];
+            $data 			= '<a href="'.G_SERVERNAME.'professor.php?lessons_ID='.$_SESSION['s_lessons_ID'].'&'.$values['page'].'">'._LINKTOTOPIC.'</a><br><br>'._NOTES.':&nbsp;'.$values['notes'];
 
             $pm = new eF_PersonalMessage($_SESSION['s_login'], $recipients, $title, $data);
 

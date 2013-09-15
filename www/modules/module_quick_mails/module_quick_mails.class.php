@@ -49,6 +49,15 @@ class module_quick_mails extends EfrontModule {
 				case "lesson_professors":
 					$lesson = new EfrontLesson($_SESSION['s_lessons_ID']);
      				$lessonUsers  = $lesson -> getUsers("professor");
+					if (isset($_SESSION['s_courses_ID'])) {
+						$course = new EfrontCourse($_SESSION['s_courses_ID']);
+					    $course_users = $course->getCourseUsers();
+					    foreach ($lessonUsers as $key => $value) {
+					    	if (!isset($course_users[$key])) {
+					        	unset($lessonUsers[$key]);
+					        }
+					     }
+					}     				
      				foreach ($lessonUsers as $value){
 						$mail_recipients[] = $value['login'];
 					}

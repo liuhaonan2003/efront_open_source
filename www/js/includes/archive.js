@@ -1,12 +1,12 @@
 function deleteArchive(el, id) {
-	parameters = {'delete':new Array(id).toJSON(), method: 'get'};
+	parameters = {'delete':Object.toJSON(new Array(id)), method: 'get'};
 	ajaxRequest(el, url, parameters, onDeleteArchive);	
 }
 function onDeleteArchive(el, response) {
 	new Effect.Fade(el.up().up());
 }
 function restoreArchive(el, id) {
-	parameters = {'restore':new Array(id).toJSON(), method: 'get'};
+	parameters = {'restore':Object.toJSON(new Array(id)), method: 'get'};
 	ajaxRequest(el, url, parameters, onRestoreArchive);	
 }
 function onRestoreArchive(el, response) {
@@ -19,7 +19,7 @@ function deleteSelected(el, tableId) {
 			entities.push(s.value);
 		}
 	});
-	parameters = {'delete':entities.toJSON(), method: 'get'};
+	parameters = {'delete':Object.toJSON(entities), method: 'get'};
 	ajaxRequest(el, url, parameters, onDeleteRestoreSelected);
 	window.archiveTableId = tableId;
 }
@@ -30,7 +30,7 @@ function restoreSelected(el, tableId) {
 			entities.push(s.value);
 		}
 	});
-	parameters = {'restore':entities.toJSON(), method: 'get'};
+	parameters = {'restore':Object.toJSON(entities), method: 'get'};
 	ajaxRequest(el, url, parameters, onDeleteRestoreSelected);	
 	window.archiveTableId = tableId;
 }

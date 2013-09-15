@@ -26,7 +26,11 @@ function onUpdateCoupon(el, response) {
 		}
 		if (response.evalJSON(true).price == 0) {
 			$('free_registration_hidden').show();
-			$('submit_checkout_paypal').hide();
+			if ($('submit_checkout_paypal')) {
+				$('submit_checkout_paypal').hide();
+			} else if ($('submit_enroll')) {
+				$('submit_enroll').hide();
+			}
 		}
 		eF_js_showDivPopup();
 	} catch (e) {alert(e);}

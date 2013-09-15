@@ -232,9 +232,7 @@ class module_administrator_tools extends EfrontModule {
 						$errors[] = $e -> getMessage();
 					}
 				}
-				if (function_exists('apc_delete')) {
-					apc_delete(G_DBNAME.':_usernames');
-				}
+				EfrontCache::getInstance()->deleteCache('usernames');
 
 				if (empty($errors)) {
 					$message = _OPERATIONCOMPLETEDSUCCESSFULLY;
@@ -292,9 +290,7 @@ class module_administrator_tools extends EfrontModule {
 					//pr("Time for $table: ".(microtime(true)-$t));flush();ob_flush();
 				}
 
-				if (function_exists('apc_delete')) {
-					apc_delete(G_DBNAME.':_usernames');
-				}
+				EfrontCache::getInstance()->deleteCache('usernames');
 				echo json_encode(array('status' => 1));
 				exit;
 			}

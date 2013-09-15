@@ -21,7 +21,7 @@ function completeSelected(el, tableId, date) {
 			entities.push(s.value);
 		}
 	});
-	parameters = {'complete':entities.toJSON(), date:date, method: 'get'};
+	parameters = {'complete':Object.toJSON(entities), date:date, method: 'get'};
 	ajaxRequest(el, url, parameters, oncompleteSelected);	
 }
 function uncompleteSelected(el, tableId) {
@@ -31,7 +31,7 @@ function uncompleteSelected(el, tableId) {
 			entities.push(s.value);
 		}
 	});
-	parameters = {'uncomplete':entities.toJSON(), method: 'get'};
+	parameters = {'uncomplete':Object.toJSON(entities), method: 'get'};
 	ajaxRequest(el, url, parameters, oncompleteSelected);	
 }
 function oncompleteSelected(el, response) {

@@ -6,7 +6,7 @@
 function smarty_function_eF_template_printSurvey($params ,  &$smarty){
     //$returnVal = '';
    
-    if( strcmp($params['user_type'],"student") == 0){
+    if( strcmp($_SESSION['s_lesson_user_type'],"student") == 0){
         $header = '<form name="submitSurvey" method="POST" action="student.php?ctg=survey&op=survey_store&screen_survey=3">
             <table width="100%">';
     }
@@ -14,7 +14,7 @@ function smarty_function_eF_template_printSurvey($params ,  &$smarty){
         $header = '<form name="submitSurvey" method="POST" action="external_survey.php?username='.$params['username'].'&coupon='.$params['coupon'].'&surveys_ID='.$params['surveys_ID'].'&op=survey_store&screen=3">
             <table width="98%">';
     }
-    if( strcmp($params['user_type'],"professor") == 0){
+    if( strcmp($_SESSION['s_lesson_user_type'],"professor") == 0){
         $header = '<table width="100%" align="left">';
     }
     
@@ -158,10 +158,10 @@ function smarty_function_eF_template_printSurvey($params ,  &$smarty){
         }
         $questions .= '<tr><td>&nbsp;</td></tr>';
     }
-    if( strcmp($params['user_type'],"professor") == 0 ){
+    if( strcmp($_SESSION['s_lesson_user_type'],"professor") == 0 ){
         $questions .= '<tr><td align="center">&nbsp;</td></tr></table>';
     }
-    if( strcmp($params['user_type'],"student") == 0 || strcmp($params['user_type'],"external") == 0 ){
+    if( strcmp($_SESSION['s_lesson_user_type'],"student") == 0 || strcmp($params['user_type'],"external") == 0 ){
         $questions .= '<tr><td align="left"><input class="flatButton" type="submit" value="'._SURVEYSUBMIT.'"/></td></tr>
         </table></form>';
     }

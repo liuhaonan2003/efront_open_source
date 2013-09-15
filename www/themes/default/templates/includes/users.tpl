@@ -20,12 +20,12 @@
                             {/if}
 <!--ajax:usersTable-->
 
-                                <table style = "width:100%" class = "sortedTable" size = {$T_USERS_SIZE} sortBy = "0" id = "usersTable" useAjax = "1" rowsPerPage = "20" url = "administrator.php?ctg=users&">
+                                <table style = "width:100%" class = "sortedTable" size = {$T_TABLE_SIZE} sortBy = "0" id = "usersTable" useAjax = "1" rowsPerPage = "20" url = "administrator.php?ctg=users&">
                                     <tr class = "topTitle">
                                         <td class = "topTitle" name = "login">{$smarty.const._USER}</td>
                                         <td class = "topTitle" name = "user_type">{$smarty.const._USERTYPE}</td>
                                         <td class = "topTitle" name = "timestamp">{$smarty.const._REGISTRATIONDATE}</td>
-                                        <td class = "topTitle centerAlign" name = "groups_num">{$smarty.const._GROUPS}</td>
+                                        {*<td class = "topTitle centerAlign" name = "groups_num">{$smarty.const._GROUPS}</td>*}
                                         <td class = "topTitle" name = "last_login">{$smarty.const._LASTLOGIN}</td>
                                         <td class = "topTitle centerAlign" name = "active">{$smarty.const._ACTIVE2}</td>
                                     {if !isset($T_CURRENT_USER->coreAccess.statistics) || $T_CURRENT_USER->coreAccess.statistics != 'hidden'}
@@ -35,12 +35,12 @@
                                         <td class = "topTitle centerAlign">{$smarty.const._OPERATIONS}</td>
                                     {/if}
                                     </tr>
-                            {foreach name = 'users_list' key = 'key' item = 'user' from = $T_USERS}
+                            {foreach name = 'users_list' key = 'key' item = 'user' from = $T_DATA_SOURCE}
                                     <tr id="row_{$user.login}" class = "{cycle values = "oddRowColor, evenRowColor"} {if !$user.active}deactivatedTableElement{/if}">
                                             <td><a href = "{$smarty.server.PHP_SELF}?ctg=personal&user={$user.login}" class = "editLink" {if ($user.pending == 1)}style="color:red;"{/if}><span id="column_{$user.login}" {if !$user.active}style="color:red;"{/if}>#filter:login-{$user.login}#</span></a></td>
                                             <td>{if $user.user_types_ID}{$T_ROLES[$user.user_types_ID]}{else}{$T_ROLES[$user.user_type]}{/if}</td>
                                             <td>#filter:timestamp-{$user.timestamp}#</td>
-                                            <td class = "centerAlign">{$user.groups_num}</td>
+                                            {*<td class = "centerAlign">{$user.groups_num}</td>*}
                                             <td>{if $user.last_login}#filter:timestamp_time_nosec-{$user.last_login}#{else}{$smarty.const._NEVER}{/if}</td>
                                             <td class = "centerAlign">
 											{if !($user.user_type == 'administrator'  && $user.user_types_ID == 0  && $T_CURRENT_USER->user.user_type == 'administrator' && $T_CURRENT_USER->user.user_types_ID != 0)}

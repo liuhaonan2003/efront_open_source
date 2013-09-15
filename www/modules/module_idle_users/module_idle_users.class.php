@@ -100,10 +100,23 @@ class module_idle_users extends EfrontModule {
 		$smarty -> assign("T_IDLE_USER_FORM", $form->toArray());
 
 		try {
-			if ($currentEmployee) {				
-				$result = eF_getTableData("(select login,name,surname,active,max(l.timestamp) as last_action from users u left outer join logs l on u.login=l.users_LOGIN where u.archive=0 group by login) r join module_hcd_employee_works_at_branch ewb on ewb.users_login=r.login", "*", "ewb.branch_ID in (".implode(',', $currentEmployee->supervisesBranches).") and (r.last_action is null or r.last_action <= ".$_SESSION['timestamp_from'].")");
+			if ($currentEmployee) {
+				if ($_SESSION['s_current_branch'] && in_array($_SESSION['s_current_branch'],$currentEmployee->supervisesBranches)) {
+					$currentBranch = new EfrontBranch($_SESSION['s_current_branch']);
+					$subbranches = $currentBranch->getSubbranches();
+					foreach ($subbranches as $subbranch) {
+						$branches[$subbranch['branch_ID']] = $subbranch['branch_ID'];
+					}
+					$branches[$_SESSION['s_current_branch']] = $_SESSION['s_current_branch'];
+					$result = eF_getTableData("users u JOIN module_hcd_employee_works_at_branch ewb on ewb.users_login=u.login", "u.login,u.name,u.surname,u.active,u.last_login as last_action", "ewb.branch_ID in (".implode(',', $branches) .") and u.last_login is null or u.last_login <= ".$_SESSION['timestamp_from']);
+					
+					//$result = eF_getTableData("(select login,name,surname,active,max(l.timestamp) as last_action from users u left outer join logs l on u.login=l.users_LOGIN where u.archive=0 group by login) r join module_hcd_employee_works_at_branch ewb on ewb.users_login=r.login", "*", "ewb.branch_ID in (".implode(',', $branches) .") and (r.last_action is null or r.last_action <= ".$_SESSION['timestamp_from'].")");
+				} else {
+					$result = eF_getTableData("users u JOIN module_hcd_employee_works_at_branch ewb on ewb.users_login=u.login", "u.login,u.name,u.surname,u.active,u.last_login as last_action", "ewb.branch_ID in (".implode(',', $currentEmployee->supervisesBranches) .") and u.last_login is null or u.last_login <= ".$_SESSION['timestamp_from']);
+					//$result = eF_getTableData("(select login,name,surname,active,max(l.timestamp) as last_action from users u left outer join logs l on u.login=l.users_LOGIN where u.archive=0 group by login) r join module_hcd_employee_works_at_branch ewb on ewb.users_login=r.login", "*", "ewb.branch_ID in (".implode(',', $currentEmployee->supervisesBranches).") and (r.last_action is null or r.last_action <= ".$_SESSION['timestamp_from'].")");
+				}			
 			} else {
-				$result = eF_getTableData("(select login,name,surname,active,max(l.timestamp) as last_action from users u left outer join logs l on u.login=l.users_LOGIN where u.archive=0 group by login) r", "*", "r.last_action is null or r.last_action <= ".$_SESSION['timestamp_from']);
+				$result = eF_getTableData("users", "login,name,surname,active,last_login as last_action", "last_login is null or last_login <= ".$_SESSION['timestamp_from']);
 			}
 			$users = array();
 			foreach ($result as $value) {

@@ -383,15 +383,17 @@ if (isset($_GET['fct'])) {
             $form -> addElement('submit', 'submit_order', _FREEREGISTRATION, 'class = "flatButton" id="free_registration_hidden" style="display:none"');
         } else {	
             if ($totalPrice > 0) {
-                $form -> addElement('submit', 'submit_order', _ENROLL, 'class = "flatButton"');
+                $form -> addElement('submit', 'submit_enroll', _ENROLL, 'class = "flatButton"  id="submit_enroll"');
+                $form -> addElement('submit', 'submit_order', _FREEREGISTRATION, 'class = "flatButton" id="free_registration_hidden" style="display:none"');
             } else {
                 $form -> addElement('submit', 'submit_order', _FREEREGISTRATION, 'class = "flatButton"');
             }
         }
     } else { #cpp#else
         if ($totalPrice > 0) {
-            $form -> addElement('submit', 'submit_order', _ENROLL, 'class = "flatButton"');
-        } else {
+    	$form -> addElement('submit', 'submit_enroll', _ENROLL, 'class = "flatButton"  id="submit_enroll"');
+    	$form -> addElement('submit', 'submit_order', _FREEREGISTRATION, 'class = "flatButton" id="free_registration_hidden" style="display:none"');
+    } else {
             $form -> addElement('submit', 'submit_order', _FREEREGISTRATION, 'class = "flatButton"');
         }
     } #cpp#endif
@@ -526,6 +528,15 @@ if (isset($_GET['fct'])) {
 	                        $currentUser -> addCourses($nonFreeCourses, array_fill(0, sizeof($nonFreeCourses), 'student'), true);
                     	}
                     	$message = _SUCCESSFULLYENROLLED;
+                    	
+                    	$fields = array("amount"      => $totalPrice,
+                    			"timestamp"   => time(),
+                    			"method"	  => "free",
+                    			"status"	  => "completed",
+                    			"users_LOGIN" => $currentUser -> user['login'],
+                    			"lessons"     => $nonFreeLessons,
+                    			"courses"	  => $nonFreeCourses);
+                    	$payment = payments :: create($fields);
                 	} else {
                     	//Assign new lessons as inactive
                     	if (sizeof($nonFreeLessons) > 0) {
@@ -535,7 +546,20 @@ if (isset($_GET['fct'])) {
 	                        $currentUser -> addCourses($nonFreeCourses, array_fill(0, sizeof($nonFreeCourses), 'student'), false);
                     	}
                     	$message = _ADMINISTRATORCONFIRMENROLLED;
+                    	
+                    	$fields = array("amount"      => $totalPrice,
+                    			"timestamp"   => time(),
+                    			"method"	  => "manual",
+                    			"status"	  => "completed",
+                    			"users_LOGIN" => $currentUser -> user['login'],
+                    			"lessons"     => $nonFreeLessons,
+                    			"courses"	  => $nonFreeCourses);
+                    	$payment = payments :: create($fields);
                 	}
+                	
+                	if ($coupon) {
+                		$coupon -> useCoupon($currentUser, $payment, array('lessons' => $nonFreeLessons, 'courses' => $nonFreeCourses));
+                	}                	 
                 }
             }
             cart :: storeCart($cart);

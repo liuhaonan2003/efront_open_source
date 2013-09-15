@@ -1052,7 +1052,7 @@ class EfrontScorm
         }
         //exit;
 
-        Cache::resetCache("content_tree:{$lesson->lesson['id']}");
+        EfrontCache::getInstance()->deleteCache("content_tree:{$lesson->lesson['id']}");
     }
 
 

@@ -519,7 +519,7 @@ class module_workbook extends EfrontModule{
 		if(isset($_GET['download_as']) && $_GET['download_as'] == 'doc'){
 
 			include(dirname(__FILE__)."/classes/html_to_doc.inc.php");
-
+			
 			$workbookAnswers = $this->getWorkbookAnswers($currentUser->user['login'], array_keys($workbookItems));
 			$workbookHTML = '';
 
@@ -572,9 +572,10 @@ class module_workbook extends EfrontModule{
 
 			$workbookHTML = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $workbookHTML);
 
-			$htmltodoc = new HTML_TO_DOC();
 			$fileName = _WORKBOOK_NAME.'_'.$this->getWorkbookLessonName($currentLessonID);
 			$fileName = preg_replace('/[\s]+/', '_', $fileName);
+
+			$htmltodoc = new HTML_TO_DOC();
 			$htmltodoc->createDoc($workbookHTML, $fileName, true);
 
 			exit(0);
@@ -593,10 +594,15 @@ class module_workbook extends EfrontModule{
 			$pdf->setHeaderFont(Array('Freeserif', 'I', 11));
 			$pdf->setFooterFont(Array('Freeserif', '', 8));
 			$pdf->setHeaderData('', '', '', $workbookLessonName);
-			$pdf->AliasNbPages();
+			$pdf->AliasNbPages();			
+			$pdf->SetFont('Freeserif', '', 10);
+			$pdf->SetTextColor(0, 0, 0);
+			
+			
 			$pdf->AddPage();
 			$pdf->SetFont('Freeserif', '', 10);
 			$pdf->SetTextColor(0, 0, 0);
+
 
 			$workbookAnswers = $this->getWorkbookAnswers($currentUser->user['login'], array_keys($workbookItems));
 			$workbookHTML = '';

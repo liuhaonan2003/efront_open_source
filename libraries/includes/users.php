@@ -84,14 +84,16 @@ if (isset($_GET['delete_user']) && eF_checkParameter($_GET['delete_user'], 'logi
                 $sort = 'login';
             }
 
-            $languages    = EfrontSystem :: getLanguages(true);
-            $smarty -> assign("T_LANGUAGES", $languages);
+            $smarty -> assign("T_LANGUAGES", EfrontSystem :: getLanguages(true));
+            $smarty -> assign("T_ROLES", EfrontUser :: getRoles(true));
+            
+/*            
             $users        = eF_getTableData("users", "*", "archive = 0");
             //$user_lessons = eF_getTableDataFlat("users_to_lessons as ul, lessons as l", "ul.users_LOGIN, count(ul.lessons_ID) as lessons_num", "ul.lessons_ID=l.id AND l.archive=0 AND ul.archive=0", "", "ul.users_LOGIN");
             //$user_courses = eF_getTableDataFlat("users_to_courses as uc, courses as c", "uc.users_LOGIN, count(uc.courses_ID) as courses_num", "uc.courses_ID=c.id AND c.archive=0 AND uc.archive=0", "", "uc.users_LOGIN");
             $user_groups  = eF_getTableDataFlat("users_to_groups", "users_LOGIN, count(groups_ID) as groups_num", "", "", "users_LOGIN");
-            $user_lessons = array_combine($user_lessons['users_LOGIN'], $user_lessons['lessons_num']);
-            $user_courses = array_combine($user_courses['users_LOGIN'], $user_courses['courses_num']);
+            //$user_lessons = array_combine($user_lessons['users_LOGIN'], $user_lessons['lessons_num']);
+            //$user_courses = array_combine($user_courses['users_LOGIN'], $user_courses['courses_num']);
             $user_groups  = array_combine($user_groups['users_LOGIN'], $user_groups['groups_num']);
 
             array_walk($users, create_function('&$v, $k, $s', '$s[$v["login"]] ? $v["lessons_num"] = $s[$v["login"]] : $v["lessons_num"] = 0;'), $user_lessons);      //Assign lessons number to users array (this way we eliminate the need for an expensive explicit loop)
@@ -118,9 +120,19 @@ if (isset($_GET['delete_user']) && eF_checkParameter($_GET['delete_user'], 'logi
             }
 
             $smarty -> assign("T_USERS", $users);
-            $smarty -> assign("T_ROLES", EfrontUser :: getRoles(true));
             $smarty -> display('administrator.tpl');
             exit;
+*/
+            $constraints  = array('archive' => false) + createConstraintsFromSortedTable();
+            $dataSource = EfrontUser::getUsers($constraints);
+            $totalEntries = EfrontUser::countUsers($constraints);
+            
+            $tableName     = $_GET['ajax'];
+            $alreadySorted = 1;
+            $smarty -> assign("T_TABLE_SIZE", $totalEntries);
+            
+            include ("sorted_table.php");
+            
         }
     } else {    #cpp#else
         $_GET['op'] = "employees";

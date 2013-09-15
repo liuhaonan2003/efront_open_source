@@ -4,7 +4,7 @@
  */
 define("G_VERSIONTYPE_CODEBASE", "community");
 define("G_VERSIONTYPE", "community");
-define("G_BUILD", "18009");
+define("G_BUILD", "18010");
 
 session_cache_limiter('none');          //Initialize session
 session_start();

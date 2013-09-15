@@ -1015,34 +1015,25 @@ class EfrontStats
             $temp[$course -> course['id']] = $course;
         }
         $courses = $temp;
-
+        
         if ($users != false) {
             !is_array($users) ? $users = array($users) : null;                //Convert single login to array
         } else {
             $users = eF_getTableDataFlat("users", "login", "user_type != 'administrator'");
             $users = $users['login'];
         }
-
+        
         foreach ($courses as $course) {
+        	$courseLessons = $course -> getCourseLessons();
             foreach ($users as $user) {
-                $courseStatus[$course -> course['id']][$user] = self :: getUserCourseStatus($course, $user, $options);
+                $courseStatus[$course -> course['id']][$user] = self :: getUserCourseStatus($course, $user, $options, $courseLessons);
             }
         }
 
         return $courseStatus;
     }
 
-    public function getUserCourseStatus($course, $user, $options) {
-        $cacheKey = 'user_course_status:';
-        $course instanceOf EfrontCourse ? $cacheKey .= 'course:'.$course -> course['id'] : $cacheKey .= 'course:'.$course;
-        $user   instanceOf EfrontUser   ? $cacheKey .= 'user:'.$user -> user['login']    : $cacheKey .= 'user:'.$user;
-/*
-        if ($status = Cache::getCache($cacheKey)) {
-            return unserialize($status);
-        } else  {
-            $storeCache = true;
-        }
-*/
+    public function getUserCourseStatus($course, $user, $options, $courseLessons = false) {
         if (!($user instanceOf EfrontUser)) {
             $user = EfrontUserFactory :: factory($user);
             $user = $user -> user;
@@ -1054,7 +1045,9 @@ class EfrontStats
         foreach ($roles as $key => $value) {
         	$value == 'student' ? $studentLessonRoles[] = $key : null;
         }
-        $courseLessons = $course -> getCourseLessons();
+        if ($courseLessons == false) {
+        	$courseLessons = $course -> getCourseLessons();
+        }        
         $lessonsStatus = self :: getUsersLessonStatus($courseLessons, $user['login'], $options);
 
         $result = eF_getTableData("users_to_courses", "*", "courses_ID = ".$course -> course['id']." and users_LOGIN='".$user['login']."'");
@@ -1103,7 +1096,7 @@ class EfrontStats
                 	$courseStatus['completion_date']	= $value['to_timestamp'];
                     $courseStatus['comments']           = $value['comments'];
                     $courseStatus['issued_certificate'] = $value['issued_certificate'];
-                    $courseStatus['total_lessons']      = sizeof($course -> countCourseLessons());
+                    $courseStatus['total_lessons']      = sizeof($courseLessons);
                     //Count completed lessons
                     $completedLessons = 0;
                     if (isset($userLessonStatus)) {
@@ -1120,25 +1113,10 @@ class EfrontStats
             }
         }
 
-
-        if ($storeCache) {
-        	//Cache::setCache($cacheKey, serialize($courseStatus));
-        }
-
         return $courseStatus;
     }
 
     public function getUserLessonStatus($lesson, $user, $options) {
-/*
-    	$cacheKey = 'user_lesson_status:';
-        $lesson instanceOf EfrontLesson ? $cacheKey .= 'lesson:'.$lesson -> lesson['id'] : $cacheKey .= 'lesson:'.$lesson;
-        $user   instanceOf EfrontUser   ? $cacheKey .= 'user:'.$user -> user['login']    : $cacheKey .= 'user:'.$user;
-        if ($status = Cache::getCache($cacheKey)) {
-            return unserialize($status);
-        } else  {
-            $storeCache = true;
-        }
-*/
     	$times = new EfrontTimes();
     	$usersTimesInLessonContent = array();
     	if ($lesson instanceOf EfrontLesson) {
@@ -1339,11 +1317,6 @@ class EfrontStats
                 }
             }
 
-/*
-        if ($storeCache) {
-        	//Cache::setCache($cacheKey, serialize($lessonStatus));
-        }
-*/
         return $lessonStatus;
     }
 

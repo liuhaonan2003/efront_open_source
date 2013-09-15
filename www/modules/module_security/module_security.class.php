@@ -313,7 +313,7 @@ class module_security extends EfrontModule {
     	}
     	 
     	if (($contents = file_get_contents($filename)) === false) {
-    		throw new Exception(_MODULE_SECURITY_COULDNOTRETRIEVECHECKSUM." (".G_VERSION_NUM." build ".G_BUILD.")");
+    		//throw new Exception(_MODULE_SECURITY_COULDNOTRETRIEVECHECKSUM." (".G_VERSION_NUM." build ".G_BUILD.")");	//commented out, because otherwise non-existing files forced connection every time 
     	}
     	foreach (explode("\n", $contents) as $value) {
     		list($file, $checksum) = explode(' :: ', $value);
@@ -361,7 +361,7 @@ class module_security extends EfrontModule {
     	$feed = 'http://security.efrontlearning.net/feeds/posts/default';
     	 
     	$str = '';
-    	if (!$refresh && $str = Cache::getCache('security_cache:'.$key)) {
+    	if (!$refresh && $str = EfrontCache::getInstance()->getCache('security_cache:'.$key)) {
     		$rssString= $str;
     	} else  {
     		$response = $this -> parseFeed($feed);
@@ -372,7 +372,7 @@ class module_security extends EfrontModule {
     		
     		$rssString = $str;
 
-    		Cache::setCache('security_cache:'.$key, $str, 3600);	//cache for one hour
+    		EfrontCache::getInstance()->setCache('security_cache:'.$key, $str, 3600);	//cache for one hour
     	}
     	 
     	return $rssString;

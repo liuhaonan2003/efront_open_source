@@ -14,6 +14,7 @@ if (file_exists("langs/"._CURRENTLANGUAGESYMBOL.".js")) {
 if ($GLOBALS['configuration']['virtual_keyboard'] == true) {
 	$vkeyboard = ",Jsvk";
 }
+
 $str = '
 var tinymceConfigs = new Array();
 tinymceConfigs["simpleEditor"] = {

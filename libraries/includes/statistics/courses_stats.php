@@ -63,15 +63,26 @@ try {
 	    		$users	 	   = $infoCourse -> getCourseUsersAggregatingResults($constraints);    		
 	    		$totalEntries  = $infoCourse -> countCourseUsersAggregatingResults($constraints);   		
 
+	    		$courseLessons = $infoCourse->getCourseLessons(array('active'=>1,'archive'=>0,'return_objects'=>false));
+	    		foreach ($courseLessons as $lesson) {
+	    			$lesson_ids[] = $lesson['id'];
+	    		}
+	    		$status = array();
+	    		$result = eF_getTableData("users_to_lessons", "users_LOGIN,lessons_ID,completed", "lessons_ID in (".implode(",", $lesson_ids).")");
+	    		foreach ($result as $value) {
+	    			$status[$infoCourse->course['id']][$value['users_LOGIN']][$value['lessons_ID']] = $value;
+	    		}
 	    		
+/*	    		
 				if (!empty($users)) {
 	    			$status = EfrontStats :: getUsersCourseStatus($infoCourse, array_keys($users));
 				}
-	    		
+*/	    		
 	    		foreach($users as $key => $value){
-	    			$lesson_status = $status[$course_id][$key]['lesson_status'];
+	    			//$lesson_status = $status[$course_id][$key]['lesson_completed'];
+	    			$lesson_status = $status[$course_id][$key];
 	    			$num_comp = 0;
-	    			foreach ($lesson_status as $id => $lesson) {
+	    			foreach ($lesson_status as $lesson) {
 	    				$num_comp += $lesson['completed']; 
 	    			}	    			
 	    			$users[$key]['lesson_percentage'] = formatScore(round(100 * ($num_comp/sizeof($lesson_status)), 2));    			
@@ -248,11 +259,23 @@ if (isset($_GET['excel'])) {
     $constraints['return_objects'] = false;    
     
     $users	 = $infoCourse -> getCourseUsersAggregatingResults($constraints);
+    
+    $courseLessons = $infoCourse->getCourseLessons(array('active'=>1,'archive'=>0,'return_objects'=>false));
+    foreach ($courseLessons as $lesson) {
+    	$lesson_ids[] = $lesson['id'];
+    }
+    $status = array();
+    $result = eF_getTableData("users_to_lessons", "users_LOGIN,lessons_ID,completed", "lessons_ID in (".implode(",", $lesson_ids).")");
+    foreach ($result as $value) {
+    	$status[$infoCourse->course['id']][$value['users_LOGIN']][$value['lessons_ID']] = $value;
+    }
+    /*
     if (!empty($users)) {
     	$status = EfrontStats :: getUsersCourseStatus($infoCourse, array_keys($users));
     }
+    */
     foreach($users as $key => $value){
-    	$lesson_status = $status[$course_id][$key]['lesson_status'];
+    	$lesson_status = $status[$course_id][$key];
     	$num_comp = 0;
     	foreach ($lesson_status as $id => $lesson) {
     		$num_comp += $lesson['completed']; 
@@ -364,16 +387,23 @@ if (isset($_GET['excel'])) {
     $constraints = array('table_filters' => $stats_filters);
     $constraints['return_objects'] = false;
     $users	 = $infoCourse -> getCourseUsersAggregatingResults($constraints);
-    if (!empty($users)) {
-    	$status = EfrontStats :: getUsersCourseStatus($infoCourse, array_keys($users));
+    
+    $courseLessons = $infoCourse->getCourseLessons(array('active'=>1,'archive'=>0,'return_objects'=>false));
+    foreach ($courseLessons as $lesson) {
+    	$lesson_ids[] = $lesson['id'];
+    }
+    $status = array();
+    $result = eF_getTableData("users_to_lessons", "users_LOGIN,lessons_ID,completed", "lessons_ID in (".implode(",", $lesson_ids).")");
+    foreach ($result as $value) {
+    	$status[$infoCourse->course['id']][$value['users_LOGIN']][$value['lessons_ID']] = $value;
     }
     foreach($users as $key => $value){
-    	$lesson_status = $status[$course_id][$key]['lesson_status'];
+    	$lesson_status = $status[$course_id][$key];
     	$num_comp = 0;
     	foreach ($lesson_status as $id => $lesson) {
     		$num_comp += $lesson['completed']; 
     	}
-    	$users[$key]['lesson_percentage'] = round(100 * ($num_comp/sizeof($lesson_status)), 2);
+    	$users[$key]['lesson_percentage'] = formatScore(round(100 * ($num_comp/sizeof($lesson_status)), 2));
     } 
 
 	if (G_VERSIONTYPE == 'enterprise') { #cpp#ifdef ENTERPRISE

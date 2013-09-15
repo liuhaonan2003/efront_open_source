@@ -314,6 +314,8 @@ if (isset($_GET['add']) || (isset($_GET['edit']) && in_array($_GET['edit'], $leg
 		            $currentUnit = $currentContent -> insertNode($fields);
 		        }
 
+		        EfrontCache::getInstance()->deleteCache("content_tree:{$_SESSION['s_lessons_ID']}");
+		        		        
 		        $message      = _OPERATIONCOMPLETEDSUCCESSFULLY;
 		        $message_type = 'success';
 

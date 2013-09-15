@@ -17,7 +17,7 @@ function deleteSelectedMessages(el) {
             messagesToDelete.push(s.value)
         }
     });
-    parameters = {delete_messages:messagesToDelete.toJSON(), method: 'get'};
+    parameters = {delete_messages:Object.toJSON(messagesToDelete), method: 'get'};
     ajaxRequest(el, location.toString(), parameters, onDeleteSelectedMessages);   
 }
 
@@ -68,7 +68,7 @@ function moveMessages(el) {
 	        	messagesToMove.push(s.value)
 	        }
 	    });
-	    parameters = {move_messages:messagesToMove.toJSON(), folder:folder, method: 'get'};
+	    parameters = {move_messages:Object.toJSON(messagesToDelete), folder:folder, method: 'get'};
 	    ajaxRequest(el, location.toString(), parameters, onMoveMessages);   
 }
 function onMoveMessages(el, response) {

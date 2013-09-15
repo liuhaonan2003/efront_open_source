@@ -463,8 +463,8 @@ class calendar extends EfrontEntity
 		}
 
 		$parameters = "calendar:{$user->user['login']}";
-		
-		if (($events = Cache::getCache($parameters)) !== false) {
+				
+		if (($events = EfrontCache::getInstance()->getCache($parameters)) !== false) {
 			$events = unserialize($events);
 		} else {
 
@@ -473,7 +473,7 @@ class calendar extends EfrontEntity
 			} else {
 				$events = self :: getCalendarEventsForNonAdministrator($user);
 			}
-			Cache::setCache($parameters, serialize($events), 86400);
+			EfrontCache::getInstance()->setCache($parameters, serialize($events), 86400);
 		}
 
 		return $events;

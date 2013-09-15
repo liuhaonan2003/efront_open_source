@@ -390,6 +390,7 @@ class Spreadsheet_Excel_Writer_Format extends PEAR
             $border2        = $this->_left_color;     // Border color
             $border2       |= $this->_right_color   << 7;
 
+
             $header      = pack("vv",       $record, $length);
             $data        = pack("vvvvvvvv", $ifnt, $ifmt, $style, $align,
                                             $icv, $fill,
@@ -429,7 +430,33 @@ class Spreadsheet_Excel_Writer_Format extends PEAR
 
             $header      = pack("vv",       $record, $length);
 
-            $rotation      = 0x00;
+            //$rotation      = 0x00;
+ 			switch($this->_rotation){
+ 				case 0:
+ 					$rotation = 0;
+ 					break;
+ 				case 1: 
+ 					$rotation = 255;
+ 					break;
+				case 2:
+					$rotation = 90;
+					break; 
+				case 3:
+					$rotation = 180;
+					break; 
+				case 4:
+					$rotation = 45; 
+					break;
+				case 5:
+					$rotation = 60;
+					break;
+				case 6:
+					$rotation = 80;
+					break;					
+				default: 
+					$rotation = 0;
+					break;
+			}			
             $biff8_options = 0x00;
             $data  = pack("vvvC", $ifnt, $ifmt, $style, $align);
             $data .= pack("CCC", $rotation, $biff8_options, $used_attrib);
@@ -1001,6 +1028,15 @@ class Spreadsheet_Excel_Writer_Format extends PEAR
             case 270:
                 $this->_rotation = 2;
                 break;
+			case 45:
+				$this->_rotation = 4;
+				break;
+			case 60:
+				$this->_rotation = 5;
+				break;
+			case 80:
+				$this->_rotation = 6;
+				break;			
             case -1:
                 $this->_rotation = 1;
                 break;

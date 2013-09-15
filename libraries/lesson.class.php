@@ -886,12 +886,26 @@ class EfrontLesson
 	 * @access public
 	 */
 	public function getUsers($basicType = false, $refresh = false) {
-		if ($this -> users === false || $refresh) {                //Make a database query only if the variable is not initialized, or it is explicitly asked
+		if ($this -> users === false || $refresh || $basicType) {                //Make a database query only if the variable is not initialized, or it is explicitly asked
 			$this -> users = array();
-			$result = eF_getTableData("users u, users_to_lessons ul", "u.*, ul.user_type as role, ul.from_timestamp, ul.completed, ul.to_timestamp as timestamp_completed", "u.user_type != 'administrator' and ul.archive = 0 and u.archive = 0 and ul.users_LOGIN = login and lessons_ID=".$this -> lesson['id']);
+			
+			if ($basicType && eF_checkParameter($basicType, 'alnum_general')) {
+				$users = array();
+				if ($basicType == 'professor') {
+					$roles = EfrontLessonUser :: getProfessorRoles();
+				} else if ($basicType == 'student') {
+					$roles = EfrontLessonUser :: getStudentRoles();
+				} else {
+					$roles = $basicType;
+				}
+				
+				$result = eF_getTableData("users u, users_to_lessons ul", "u.*, ul.user_type as role, ul.from_timestamp, ul.completed, ul.to_timestamp as timestamp_completed", "u.user_type != 'administrator' and ul.archive = 0 and u.archive = 0 and ul.users_LOGIN = login and lessons_ID=".$this -> lesson['id']." and ul.user_type in ('".implode("','", $roles)."')");
+			} else {
+				$result = eF_getTableData("users u, users_to_lessons ul", "u.*, ul.user_type as role, ul.from_timestamp, ul.completed, ul.to_timestamp as timestamp_completed", "u.user_type != 'administrator' and ul.archive = 0 and u.archive = 0 and ul.users_LOGIN = login and lessons_ID=".$this -> lesson['id']);
+			}
 
 			foreach ($result as $value) {
-				$this -> users[$value['login']] = array('login'           => $value['login'],
+				$users[$value['login']] = array('login'           => $value['login'],
                                                         'email'           => $value['email'],
                                                         'name'            => $value['name'],
                                                         'surname'         => $value['surname'],
@@ -906,19 +920,14 @@ class EfrontLesson
 														'timestamp_completed' => $value['timestamp_completed'],
                                                         'partof'          => 1);
 			}
+			if (!$basicType) {
+				$this->users = $users;
+			}
 		}
 
 		if ($basicType) {
-			$users = array();
-			$roles = EfrontLessonUser :: getLessonsRoles();
-			foreach ($this -> users as $login => $value) {
-				if ($roles[$value['role']] == $basicType) {
-					$users[$login] = $value;
-				}
-			}
-
 			return $users;
-		} else {
+		} else {			
 			return $this -> users;
 		}
 
@@ -1457,8 +1466,6 @@ class EfrontLesson
 								'from_timestamp' => $value['confirmed'] ? time() : 0);
 				eF_updateTableData("users_to_lessons", $fields, "users_LOGIN='".$value['login']."' and lessons_ID=".$this -> lesson['id']);
 			}
-			//$cacheKey = "user_lesson_status:lesson:".$this -> lesson['id']."user:".$value;
-			//Cache::resetCache($cacheKey);
 		}
 
 	}
@@ -1497,7 +1504,7 @@ class EfrontLesson
 		foreach ($users as $user) {
 			eF_deleteTableData("users_to_lessons", "users_LOGIN='$user' and lessons_ID=".$this -> lesson['id']);
 			$cacheKey = "user_lesson_status:lesson:".$this -> lesson['id']."user:".$user;
-			Cache::resetCache($cacheKey);
+			EfrontCache::getInstance()->deleteCache($cacheKey);
 		}
 
 		$this -> users = false;					//Reset users cache
@@ -1544,7 +1551,7 @@ class EfrontLesson
 		foreach ($users as $user) {
 			eF_updateTableData("users_to_lessons", array("archive" => time()), "users_LOGIN='$user' and lessons_ID=".$this -> lesson['id']);
 			$cacheKey = "user_lesson_status:lesson:".$this -> lesson['id']."user:".$user;
-			Cache::resetCache($cacheKey);
+			EfrontCache::getInstance()->deleteCache($cacheKey);
 		}
 
 		$this -> users = false;					//Reset users cache
@@ -1639,7 +1646,7 @@ class EfrontLesson
 
 		eF_updateTableData("users_to_lessons", array("from_timestamp" => time()), "users_LOGIN='".$login."' and lessons_ID=".$this -> lesson['id']." and from_timestamp=0");
 		$cacheKey = "user_lesson_status:lesson:".$this -> lesson['id']."user:".$login;
-		Cache::resetCache($cacheKey);
+		EfrontCache::getInstance()->deleteCache($cacheKey);
 	}
 
 	public function unConfirm($login) {
@@ -1647,7 +1654,7 @@ class EfrontLesson
 
 		eF_updateTableData("users_to_lessons", array("from_timestamp" => 0), "users_LOGIN='".$login."' and lessons_ID=".$this -> lesson['id']);
 		$cacheKey = "user_lesson_status:lesson:".$this -> lesson['id']."user:".$login;
-		Cache::resetCache($cacheKey);
+		EfrontCache::getInstance()->deleteCache($cacheKey);
 	}
 
 	private function convertArgumentToUserLogin($login) {
@@ -1685,7 +1692,7 @@ class EfrontLesson
 		foreach ($users as $key => $value) {
 			eF_updateTableData("users_to_lessons", array('archive' => 0, 'user_type' => $roles[$key]), "users_LOGIN='".$value."' and lessons_ID=".$this -> lesson['id']);
 			//$cacheKey = "user_lesson_status:lesson:".$this -> lesson['id']."user:".$value;
-			//Cache::resetCache($cacheKey);
+			//EfrontCache::getInstance()->deleteCache($cacheKey);
 		}
 	}
 
@@ -2045,10 +2052,9 @@ class EfrontLesson
 		$user ? $projects = $this -> getProjects(false, $user, false) : $projects = $this -> getProjects();
 
 		$direction = $this -> getDirection();
-
-		$info['students']      = $this -> getUsers('student');
+		//$info['students']      = $this -> getUsers('student');		//commented out periklis for performance/memory reasons
 		$info['professors']    = $this -> getUsers('professor');
-
+		
 		if ($_SESSION['s_type'] != 'administrator' && $_SESSION['s_current_branch']) {	//this applies to supervisors only
 			require_once 'module_hcd_tools.php';
 			$currentBranch = new EfrontBranch($_SESSION['s_current_branch']);
@@ -2383,7 +2389,7 @@ class EfrontLesson
 					/*
 					 foreach ($this -> getUsers as $user => $foo) {
 					 $cacheKey = "user_lesson_status:lesson:".$this -> lesson['id']."user:".$user;
-					 Cache::resetCache($cacheKey);
+					 EfrontCache::getInstance()->deleteCache($cacheKey);
 					 }
 					 */
 					//if (!isset($lessonTests)) { //comented in order to take also feedbacks 

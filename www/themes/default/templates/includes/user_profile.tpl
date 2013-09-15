@@ -19,7 +19,7 @@
 		                        {assign var = "change_fields" value = "1"}
                         {/if}
 <!--ajax:fieldsTable-->
-								<table style = "width:100%" class = "sortedTable" size = "{$T_USERS_SIZE}" id = "fieldsTable" useAjax = "1" rowsPerPage = "{$smarty.const.G_DEFAULT_TABLE_SIZE}" url = "{$smarty.server.PHP_SELF}?ctg=user_profile&">
+								<table style = "width:100%" class = "sortedTable" size = "{$T_TABLE_SIZE}" id = "fieldsTable" useAjax = "1" rowsPerPage = "{$smarty.const.G_DEFAULT_TABLE_SIZE}" url = "{$smarty.server.PHP_SELF}?ctg=user_profile&">
                                     <tr class = "topTitle defaultRowHeight">
                                         <td class = "topTitle" name = "name">{$smarty.const._FIELDNAME}</td>
                                         <td class = "topTitle" name = "description">{$smarty.const._DESCRIPTION}</td>

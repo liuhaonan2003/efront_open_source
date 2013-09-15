@@ -1049,11 +1049,11 @@ if (isset($_GET['ctg']) && ($_GET['ctg'] == "signup") && $configuration['signup'
 				        			$hidden_job = ' ';
 				        			$job_description_field = $options['job']['description'];
 				        		}
-					            if (MSIE_BROWSER) {
-					                $form -> addElement('select', $field['name'].'_jobs' , $job_description_field, array("" => _PLEASESELECT . " " .$options['name']), 'class="inputSelect" id= "'. $field['name'].'_jobs" onFocus = "this.selIndex = this.selectedIndex;" onChange="restoreSelection(this);" id= "jobs_main"  ' . $hidden_job);
-					            } else {
+					            //if (MSIE_BROWSER) {
+					            //    $form -> addElement('select', $field['name'].'_jobs' , $job_description_field, array("" => _PLEASESELECT . " " .$options['name']), 'class="inputSelect" id= "'. $field['name'].'_jobs" onFocus = "this.selIndex = this.selectedIndex;" onChange="restoreSelection(this);" id= "jobs_main"  ' . $hidden_job);
+					            //} else {
 					                $form -> addElement('select', $field['name'].'_jobs' , $job_description_field, array("" => _PLEASESELECT . " " .$options['name']), 'class="inputSelect" id= "'. $field['name'].'_jobs"  ' . $hidden_job);
-					            }
+					            //}
 				        	}
 			        	}
 
