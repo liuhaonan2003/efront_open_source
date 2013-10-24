@@ -24,6 +24,8 @@ $generalSecurityForm -> addElement("text", "autologout_time", _LOGOUTUSERAFTERMI
 $generalSecurityForm -> addElement("text", "updater_period", _UPDATERPERIODSECONDS, 'size = "8"');
 //$generalSecurityForm -> addElement("text", "inactivity_logout", _LOGOUTUSERIFINACTIVEFORMINUTES, 'size = "5"');
 $generalSecurityForm -> addElement("static", "", _RECOMMENDEDVALUEMORETHAN2000LESSTHANAUTOLOGOUTTIME);
+$generalSecurityForm -> addElement("text", "max_online_users_threshold", _ONLINEUSERSTHRESHOLD,'size = "5"');
+$generalSecurityForm -> addElement("static", "", _ONLINEUSERSTHRESHOLDNOTE);
 $generalSecurityForm -> addElement("advcheckbox", "eliminate_post_xss", _ELIMINATEPOSTXSS, null, 'class = "inputCheckBox"', array(0, 1));
 $generalSecurityForm -> addElement("advcheckbox", "password_reminder",  _PASSWORDREMINDER, null, 'class = "inputCheckBox"', array(0, 1));
 if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
@@ -38,6 +40,7 @@ $generalSecurityForm -> setDefaults($GLOBALS['configuration']);
 $generalSecurityForm -> addRule('autologout_time', _THEFIELD.' '._LOGOUTUSERAFTER.' '._ISMANDATORY, 'required', null, 'client');
 $generalSecurityForm -> addRule('password_length', _INVALIDFIELDDATA, 'checkParameter', 'uint');
 $generalSecurityForm -> addRule('password_length', _THEFIELD.' '._MINIMUMPASSWORDLENGTH.' '._ISMANDATORY, 'required', null, 'client');
+$generalSecurityForm -> addRule('max_online_users_threshold', _INVALIDFIELDDATA, 'checkParameter', 'uint');
 
 if (isset($currentUser -> coreAccess['configuration']) && $currentUser -> coreAccess['configuration'] != 'change') {
 	$generalSecurityForm -> freeze();

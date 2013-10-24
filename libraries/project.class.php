@@ -227,6 +227,19 @@ class EfrontProject {
         }
     }
 
+	public function textgrade($login, $grade) {
+        if (!in_array($login, array_keys($this -> getUsers()))) {
+            throw new EfrontContentException(_USERDOESNOTHAVETHISPROJECT, EfrontContentException :: INVALID_LOGIN);
+        }
+		
+		$result = eF_updateTableData("users_to_projects", array('text_grade' => $grade), "users_LOGIN='$login' and projects_ID=".$this -> project['id']);
+        if ($result) {
+            return true;
+        } else {
+            throw new EfrontContentException(_THEPROJECTGRADECOULDNOTBEUPDATED, EfrontContentException :: DATABASE_ERROR);
+        }		
+	}
+	
     /**
      * Get project files
      *
@@ -321,6 +334,8 @@ class EfrontProject {
             	try {
 	                $file = new EfrontFile($value['filename']);
 	                $file -> delete();
+					$file = new EfrontFile($value['professor_upload_filename']);
+					$file -> delete();						
             	} catch (Exception $e) {/*bypass non-existing files*/}
             }
         }
@@ -350,7 +365,7 @@ class EfrontProject {
     		throw new EfrontContentException(_USERDOESNOTHAVETHISPROJECT, EfrontContentException :: INVALID_LOGIN);
     	}
 
-    	$fields = array('grade' => NULL, 'comments' => NULL, 'upload_timestamp' => NULL, 'filename' => NULL);
+    	$fields = array('grade' => NULL, 'comments' => NULL, 'upload_timestamp' => NULL, 'filename' => NULL, 'text_grade' => NULL, 'professor_upload_filename' => NULL);
     	eF_updateTableData("users_to_projects", $fields, "users_LOGIN='$login' and projects_ID=".$this -> project['id']);
     	try {
     		$file = new EfrontFile($users[$login]['filename']);

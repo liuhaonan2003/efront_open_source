@@ -53,9 +53,19 @@ abstract class EfrontTree
      */
 	public function getFirstNode($iterator = false) {
 
-       if (!$iterator) {
-           $iterator = new EfrontNodeFilterIterator(new RecursiveIteratorIterator(new RecursiveArrayIterator($this -> tree), RecursiveIteratorIterator :: SELF_FIRST));    //Create a new iterator, so that the internal iterator pointer is not reset
-       }
+//		if (!$iterator) {
+//			$iterator = new EfrontNodeFilterIterator(new RecursiveIteratorIterator(new RecursiveArrayIterator($this -> tree), RecursiveIteratorIterator :: SELF_FIRST));    //Create a new iterator, so that the internal iterator pointer is not reset
+//		}
+
+       if (!$iterator) { 
+			if (EfrontUser::isOptionVisible('tests')) { 
+            	$iterator = new EfrontNodeFilterIterator(new RecursiveIteratorIterator(new RecursiveArrayIterator($this -> tree), RecursiveIteratorIterator :: SELF_FIRST));    //Create a new iterator, so that the internal iterator pointer is not reset 
+			} else { 
+            	$iterator = new EfrontNoTestsFilterIterator (new EfrontNodeFilterIterator(new RecursiveIteratorIterator(new RecursiveArrayIterator($this -> tree), RecursiveIteratorIterator :: SELF_FIRST)));    //Create a new iterator, so that the internal iterator pointer is not reset 
+			} 
+       }	   
+	   
+	   
        $iterator -> rewind();                            //Initialize iterator
 
        return $iterator -> current();
@@ -108,6 +118,7 @@ abstract class EfrontTree
         if (!$iterator) {
             $iterator = new EfrontNodeFilterIterator(new RecursiveIteratorIterator(new RecursiveArrayIterator($this -> tree), RecursiveIteratorIterator :: SELF_FIRST));    //Create iterators for the tree
         }
+			
         $iterator -> rewind();                                                                 //Initialize iterator
         while ($iterator -> valid() && $iterator -> key() != $nodeId) {                        //Advance iterator until we reach the designated node
             $iterator -> next();

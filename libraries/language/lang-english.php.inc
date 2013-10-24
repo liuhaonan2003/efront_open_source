@@ -4300,4 +4300,12 @@ define("_NEWLESSONASSIGNMENT", "New lesson assignment");
 define("_COULDNOTFINDLESSON", "Could not find lesson");
 define("_AFORUMDOESNOTEXISTFORTHISLESSONCREATE", "A forum does not exist for this lesson, but you can create one");
 define("_TESTGLOSSARY","Glossary on Tests");
+define("_PROFESSORSFEEDBACK","Professor's feedback");
+define("_PROFESSORSFEEDBACKANDRESPONSE","Professor's feedback and response");
+define("_EXPORTTOXLSALL","Export all pages to xls");
+define("_DOYOUWANTRECREATEFILE","Do you want recreate the file on server? Click Cancel to download the existing file");
+define("_ONLINEUSERSMAIL","You reached the online users threshold");
+define("_ONLINEUSERSMAILBODY", "Dear %w,<br/>You have reached %x concurrent online users for %y at %z");
+define("_ONLINEUSERSTHRESHOLD","Concurrent online users threshold");
+define("_ONLINEUSERSTHRESHOLDNOTE","An e-mail will be sent to administrator when threshold will be reached");
 ?>

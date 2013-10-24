@@ -5,6 +5,10 @@ if (str_replace(DIRECTORY_SEPARATOR, "/", __FILE__) == $_SERVER['SCRIPT_FILENAME
 	exit;
 }
 
+$loadScripts[] = 'scriptaculous/controls';
+$loadScripts[] = 'includes/hcd';
+
+
 if (!EfrontUser::isOptionVisible('search_user')) {
 	eF_redirect(basename($_SERVER['PHP_SELF'])."?ctg=control_panel&message=".urlencode(_UNAUTHORIZEDACCESS)."&message_type=failure");
 }
@@ -15,7 +19,7 @@ if (G_VERSIONTYPE == 'enterprise') { #cpp#ifdef ENTERPRISE
 	if ($currentUser -> getType() != "administrator" && $currentEmployee -> getType() != _SUPERVISOR) {
 		$message      = _SORRYYOUDONOTHAVEPERMISSIONTOPERFORMTHISACTION;
 		$message_type = 'failure';
-		eF_redirect("".$_SESSION['s_type'].".php?ctg=module_hcd&op=reports&message=".urlencode($message)."&message_type=".$message_type);
+		eF_redirect("".$_SESSION['s_type'].".php?ctg=search_users&message=".urlencode($message)."&message_type=".$message_type);
 		exit;
 	}
 } #cpp#endif
@@ -23,7 +27,7 @@ if (G_VERSIONTYPE == 'educational') { #cpp#ifdef EDUCATIONAL
 	if ($currentUser -> getType() != "administrator") {
 		$message      = _SORRYYOUDONOTHAVEPERMISSIONTOPERFORMTHISACTION;
 		$message_type = 'failure';
-		eF_redirect("".$_SESSION['s_type'].".php?ctg=module_hcd&op=reports&message=".urlencode($message)."&message_type=".$message_type);
+		eF_redirect("".$_SESSION['s_type'].".php?ctg=search_users&message=".urlencode($message)."&message_type=".$message_type);
 		exit;
 	}
 	$loadScripts[] = 'includes/hcd';
@@ -548,13 +552,13 @@ if (isset($_GET['search'])) {
 /* Create the link to the search for course user page */
 if ($currentUser -> getType() == "administrator") {
 	if (EfrontUser::isOptionVisible('search_user')) {
-		if (G_VERSIONTYPE == "enterprise") { #cpp#ifdef ENTERPRISE
-			$options = array(array('image' => '16x16/scorm.png',   'title' => _SEARCHFOREMPLOYEE,  'link' => $_SESSION['s_type'].'.php?ctg=module_hcd&op=reports' , 'selected' => true),
-					array('image' => '16x16/glossary.png', 'title' => _SEARCHCOURSEUSERS,  'link' => 'administrator.php?ctg=search_courses',                'selected' => false));
-		} else { #cpp#else
+		//if (G_VERSIONTYPE == "enterprise") { #cpp#ifdef ENTERPRISE
+		//	$options = array(array('image' => '16x16/scorm.png',   'title' => _SEARCHFOREMPLOYEE,  'link' => $_SESSION['s_type'].'.php?ctg=module_hcd&op=reports' , 'selected' => true),
+		//			array('image' => '16x16/glossary.png', 'title' => _SEARCHCOURSEUSERS,  'link' => 'administrator.php?ctg=search_courses',                'selected' => false));
+		//} else { #cpp#else
 			$options = array(array('image' => '16x16/scorm.png',   'title' => _SEARCHFORUSER,  'link' => $_SESSION['s_type'].'.php?ctg=search_users' , 'selected' => true),
 					array('image' => '16x16/glossary.png', 'title' => _SEARCHCOURSEUSERS,  'link' => 'administrator.php?ctg=search_courses',                'selected' => false));
-		} #cpp#endif
+		//} #cpp#endif
 
 		$smarty -> assign("T_TABLE_OPTIONS", $options);
 	}
@@ -562,7 +566,7 @@ if ($currentUser -> getType() == "administrator") {
 
 /* Create the selection criteria form */
 //$form = new HTML_QuickForm("reports_form", "post", $_SESSION['s_type'].".php?ctg=module_hcd&op=reports&search=1&branch_ID=".$_GET['branch_ID']."&job_description_ID=".$_GET['job_description_ID']."&skill_ID=".$_GET['skill_ID'], "", null, true);
-$form = new HTML_QuickForm("reports_form", "post", $_SESSION['s_type'].".php?ctg=module_hcd&op=reports&search=1", "", "onsubmit = 'return(false)'", true);
+$form = new HTML_QuickForm("reports_form", "post", $_SESSION['s_type'].".php?ctg=search_users&search=1", "", "onsubmit = 'return(false)'", true);
 $form -> addElement('radio', 'criteria', null, null, 'all_criteria', 'checked = "checked" id="all_criteria" onclick="javascript:refreshResults()"');
 $form -> addElement('radio', 'criteria', null, null, 'any_criteria', 'id="any_criteria" onclick="javascript:refreshResults()"');
 
@@ -785,7 +789,7 @@ $smarty -> assign('T_REPORT_FORM', $renderer -> toArray());
 
 
 // Popup to set to custom group form
-$group_form = new HTML_QuickForm("insert_into_groups_form", "post", $_SESSION['s_type'].".php?ctg=module_hcd&op=reports&search=1&branch_ID=".$_GET['branch_ID']."&job_description_ID=".$_GET['job_description_ID'], "", null, true);
+$group_form = new HTML_QuickForm("insert_into_groups_form", "post", $_SESSION['s_type'].".php?ctg=search_users&search=1&branch_ID=".$_GET['branch_ID']."&job_description_ID=".$_GET['job_description_ID'], "", null, true);
 $groups = array("0" => _INSERTINTONEWGROUP);
 $groupsResult = EfrontGroup::getGroups();
 foreach ($groupsResult as $group) {

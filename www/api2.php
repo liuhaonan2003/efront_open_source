@@ -70,6 +70,7 @@ In case of error it returns also a message entity with description of the error 
                         $insert['expired'] = 0;
                         $insert['create_timestamp'] = time();
                         try {
+                        	eF_deleteTableData("tokens", "create_timestamp < ".time() - 10*24*60*60); //delete all old tokens
                         	eF_insertTableData("tokens", $insert);
                         	echo "<xml>";
 							echo "<token>".$token."</token>";
@@ -2126,14 +2127,14 @@ In case of error it returns also a message entity with description of the error 
                 				
                 			echo "<category>";
                 			echo "<id>".$direction['id']."</id>";
-                			echo "<name>".$direction['name']."</name>";
+                			echo "<name>"."<![CDATA[".$direction['name']."]]>"."</name>";
                 			echo "<parent_id>".$direction['parent_direction_ID']."</parent_id>";
                 			echo "<content>";
                 			foreach($items as $item){
                 				echo "<item>";
                 				echo "<id>".$item['id']."</id>";
-                				echo "<name>".$item['name']."</name>";
-                				echo "<description>".$item['description']."</description>";
+                				echo "<name>"."<![CDATA[".$item['name']."]]>"."</name>";
+                				echo "<description>"."<![CDATA[".$item['description']."]]>"."</description>";
                 				echo "<price>";
                 				echo "<value>".$info['price']."</value>";
                 				echo "<currency>".$GLOBALS['configuration']['currency']."</currency>";
@@ -2188,13 +2189,13 @@ In case of error it returns also a message entity with description of the error 
                 				echo "<xml>";
                 				echo "<category>";
                 				echo "<id>".$direction['id']."</id>";
-                				echo "<name>".$direction['name']."</name>";
+                				echo "<name>"."<![CDATA[".$direction['name']."]]>"."</name>";
                 				echo "<parent_id>".$direction['parent_direction_ID']."</parent_id>";
                 				echo "<content>";
                 				foreach($items as $item){
                 					echo "<item>";
                 					echo "<id>".$item['id']."</id>";
-                					echo "<name>".$item['name']."</name>";
+                					echo "<name>"."<![CDATA[".$item['name']."]]>"."</name>";
                 					echo "<description>".$item['description']."</description>";
                 					echo "<price>";
                 					echo "<value>".$info['price']."</value>";

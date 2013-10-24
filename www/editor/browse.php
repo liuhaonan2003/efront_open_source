@@ -37,6 +37,9 @@ try {
     } elseif ($_GET['mode'] == 'external') {
         $rootDir       = new EfrontDirectory(G_EXTERNALPATH);
         $filesBaseUrl  = G_EXTERNALURL;
+    } elseif ($_GET['mode'] == 'upload') {
+    	$rootDir       = new EfrontDirectory(G_UPLOADPATH.$_SESSION['s_login']);
+    	$filesBaseUrl  = G_UPLOADPATH.$_SESSION['s_login'];
     } else {
         throw new Exception(_ILLEGALMODE);
     }
@@ -47,7 +50,8 @@ try {
         if (strpos($directory['path'], $rootDir['path']) === false) {
             $directory = $rootDir;
         } else {
-            if (EfrontDirectory :: normalize($directory['directory']) == EfrontDirectory :: normalize($rootDir['path'])) {
+            if (EfrontDirectory :: normalize($directory['path']) == EfrontDirectory :: normalize($rootDir['path'])) {
+
                 $smarty -> assign("T_PARENT_DIR", '');
             } else {
                 $smarty -> assign("T_PARENT_DIR", $directory['directory']);
@@ -89,7 +93,7 @@ try {
 	$folders 	= eF_multiSort($folders, 'name');
 	$files 		= eF_multiSort($files, 'name');
 	$files 		= array_merge((array)$folders, (array)$files);
-
+//pr($files);
     $smarty -> assign("T_FILES", $files);
 } catch (Exception $e) {
     $smarty -> assign("T_EXCEPTION_TRACE", $e -> getTraceAsString());

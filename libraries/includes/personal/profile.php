@@ -1,6 +1,7 @@
 <?php
 try {
 	//$systemAvatars = array('' => '', 'none' => _USENONE);
+	$systemAvatars = array('' => ''); // Added because of #4444 
 	$avatarsFileSystemTree = new FileSystemTree(G_SYSTEMAVATARSPATH);
 	foreach (new EfrontFileTypeFilterIterator(new EfrontFileOnlyFilterIterator(new EfrontNodeFilterIterator(new RecursiveIteratorIterator($avatarsFileSystemTree -> tree, RecursiveIteratorIterator :: SELF_FIRST))), array('png')) as $key => $value) {
 		$systemAvatars[basename($key)] = basename($key);
@@ -293,6 +294,7 @@ if ($form -> isSubmitted() && $form -> validate()) {
 		}
 
 		if (!in_array('file_upload', $constrainAccess) && $constrainAccess != 'all') {
+
 			$avatarDirectory = G_UPLOADPATH.$editedUser -> user['login'].'/avatars';
 			is_dir($avatarDirectory) OR mkdir($avatarDirectory, 0755);
 			try {
@@ -300,7 +302,9 @@ if ($form -> isSubmitted() && $form -> validate()) {
 				$uploadedFile = $filesystem -> uploadFile('file_upload', $avatarDirectory);
 				eF_normalizeImage($avatarDirectory . "/" . $uploadedFile['name'], $uploadedFile['extension'], 150, 100);// Normalize avatar picture to 150xDimY or DimX x 100
 				$editedUser -> user['avatar'] = $uploadedFile['id'];
+//pr($editedUser -> user['avatar']);exit;				
 			} catch (Exception $e) {
+//pr($e);	exit;		
 				if ($e -> getCode() != UPLOAD_ERR_NO_FILE) {
 					throw $e;
 				}

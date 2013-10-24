@@ -112,6 +112,8 @@
 		<img class = "ajaxHandle" src = "images/16x16/users.png"			  alt = "{$smarty.const._GROUPOPERATIONS}" 	     title = "{$smarty.const._GROUPOPERATIONS}" 	 onclick = "eF_js_showDivPopup(event, '{$smarty.const._GROUPOPERATIONS}', 0, 'add_group_table')"/>
 		<img class = "ajaxHandle" src = "images/16x16/courses.png"			  alt = "{$smarty.const._COURSEOPERATIONS}" 	 title = "{$smarty.const._COURSEOPERATIONS}" 	 onclick = "eF_js_showDivPopup(event, '{$smarty.const._COURSEOPERATIONS}', 0, 'add_course_table')"/>
 		<img class = "ajaxHandle" src = "images/16x16/lessons.png"			  alt = "{$smarty.const._LESSONOPERATIONS}" 	 title = "{$smarty.const._LESSONOPERATIONS}" 	 onclick = "eF_js_showDivPopup(event, '{$smarty.const._LESSONOPERATIONS}', 0, 'add_lesson_table')"/>
+		
+		&nbsp;&nbsp;&nbsp;&nbsp;<img class = "ajaxHandle" src = "images/file_types/xls.png" 		  alt = "{$smarty.const._EXPORTTOXLSALL}" 		 title = "{$smarty.const._EXPORTTOXLSALL}" 			{if $T_EXPORTALLFILEEXISTS} onclick = "if (confirm('{$smarty.const._DOYOUWANTRECREATEFILE}')) exportXlsAll(this, true); else exportXlsAll(this, false);" {else} onclick = "exportXlsAll(this, true);" {/if}/>
 		{*<img class = "ajaxHandle" src = "images/16x16/certificate.png"		  alt = "{$smarty.const._CERTIFICATEOPERATIONS}" title = "{$smarty.const._CERTIFICATEOPERATIONS}"onclick = "eF_js_showDivPopup(event, '{$smarty.const._CERTIFICATEOPERATIONS}', 0, 'add_certificate_table')"/>*}
 		{*<img class = "ajaxHandle" src = "images/16x16/mail.png"				  alt = "{$smarty.const._SENDEMAIL}" 			 title = "{$smarty.const._SENDEMAIL}" 		 	 onclick = "eF_js_showDivPopup(event, '{$smarty.const._SENDEMAIL}', 2);$('popup_frame').src='{$smarty.server.PHP_SELF}?ctg=messages&add=1&popup=1';"/>*}
 	</div>

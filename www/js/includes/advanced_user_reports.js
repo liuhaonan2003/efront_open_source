@@ -118,6 +118,20 @@ function exportXls(el) {
     
     $('popup_frame').src = location.toString()+'&ajax=1&xls=1';
 }
+function exportXlsAll(el, recreate) {
+	if (recreate) {
+		eF_js_redrawPage('usersTable', false, 'xlsall');    
+	    currentOther = new Array();   
+	    
+	    $('popup_frame').src = location.toString()+'&ajax=1&xlsall=1';
+	} else {
+		eF_js_redrawPage('usersTable', false, 'xlsall_existing');    
+	    currentOther = new Array();   
+	    
+	    $('popup_frame').src = location.toString()+'&ajax=1&xlsall_existing=1';
+	}
+}
+
 function applyOperation(el, operation) {
 	parameters = {'operation':operation, ajax:1, method: 'get'};
 	if (operation == 'group' || operation == 'course' || operation == 'lesson') {

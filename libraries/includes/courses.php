@@ -140,7 +140,7 @@ else if (isset($_GET['ajax']) && isset($_GET['edit_course']) && $_change_) {
 		        $totalEntries = $editCourse -> countCourseInstances($constraints);
 		    }
 		    $courseInstances	 = EfrontCourse :: convertCourseObjectsToArrays($courseInstances);
-
+		    
 			$dataSource   = $courseInstances;
 			$tableName     = $_GET['ajax'];
 			$alreadySorted = 1;

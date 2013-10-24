@@ -124,7 +124,9 @@
 				{if $smarty.const.G_VERSIONTYPE == 'enterprise'} {* #cpp#ifdef ENTERPRISE *}
 				<span>
 					<img src = "images/16x16/search.png" title = "{$smarty.const._SEARCHGROUPUSERS}" alt = "{$smarty.const._SEARCHGROUPUSERS}">
-					<a href = "administrator.php?ctg=module_hcd&op=reports" title = "{$smarty.const._SEARCHGROUPUSERS}" >{$smarty.const._SEARCHGROUPUSERS}</a>
+					{*<a href = "administrator.php?ctg=module_hcd&op=reports" title = "{$smarty.const._SEARCHGROUPUSERS}" >{$smarty.const._SEARCHGROUPUSERS}</a>*}
+					<a href = "administrator.php?ctg=search_users" title = "{$smarty.const._SEARCHGROUPUSERS}" >{$smarty.const._SEARCHGROUPUSERS}</a>
+
 				</span>
 				{/if} {* #cpp#endif *}
 			</div>

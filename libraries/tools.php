@@ -3007,3 +3007,15 @@ class AjaxResultObject
 		}
 	}
 }
+/**
+ * Compares two floating point numbers according to some "logical" precision (5 floating points)
+ * 
+ * @param float $v1 the first number
+ * @param float $v2 the second number
+ * @return boolean true(1) if numbers are equal, false (0) otherwise
+ * */
+function ef_compare_float($v1, $v2) {
+	$v1 = (float)$v1;
+	$v2 = (float)$v2;
+    return round($v1, 5) == round($v2, 5);
+}

@@ -396,7 +396,7 @@ try {
 			if ($values['recipient']) {				
 				$result = eF_getTableData("users", "id,name,surname,login", "active=1 and archive=0");//@todo: change this, performance hog
 				foreach ($result as $value) {
-					$usernames[$value['login']] = formatLogin($value);
+					$usernames[$value['login']] = formatLogin($value['login'], $value);
 				}
 				$flippedLogins = array_flip($usernames);
 				if ($_admin_) {

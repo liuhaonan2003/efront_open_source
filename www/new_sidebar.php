@@ -412,7 +412,8 @@ if (isset($GLOBALS['currentTheme'] -> options['sidebar_interface']) && $GLOBALS[
 	        $menuHCD = ef_getHcdMenu();
 
 	        if ($currentUser -> getType() == 'administrator') {
-	            $menuHCD[] = array("id" => "search_employee_a", "image" => "search", "link" => "administrator.php?ctg=module_hcd&op=reports", "title" => _SEARCHEMPLOYEE);
+	            //$menuHCD[] = array("id" => "search_employee_a", "image" => "search", "link" => "administrator.php?ctg=module_hcd&op=reports", "title" => _SEARCHEMPLOYEE);
+	        	$menuHCD[] = array("id" => "search_employee_a", "image" => "search", "link" => "administrator.php?ctg=search_users", "title" => _SEARCHEMPLOYEE);
 	            $menuHCD[] = array("id" => "imp_exp_a", "image" => "import_export", "link" => "administrator.php?ctg=import_export", "title" => _IMPORT . "/"._EXPORT);
 
 		    	if (!isset($currentUser -> coreAccess['statistics']) || $currentUser -> coreAccess['statistics'] != 'hidden') {

@@ -131,7 +131,7 @@ try {
 			$module->onBeforeShowCoursesTree($userLessons, $userCourses, $userProgress);
 		}
 	
-		if (sizeof ($userLessons) > 0 || sizeof($userCourses) > 0) {
+		if (sizeof ($userLessons) > 0 || sizeof($userCourses) > 0) {	
 			$smarty -> assign("T_DIRECTIONS_TREE", $directionsTree -> toHTML(false, $userLessons, $userCourses, $userProgress, $options));
 		}
 

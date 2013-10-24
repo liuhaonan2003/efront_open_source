@@ -490,8 +490,8 @@ class EfrontDirectionsTree extends EfrontTree
 	 * @access public
 	 */
 	public function toHTML($iterator = false, $lessons = false, $courses = false, $userInfo = array(), $options = array()) {
-		$options = $this -> parseTreeOptions($options);
-		$parsedLessons = $this -> parseTreeLessons($lessons);
+		$options = $this -> parseTreeOptions($options);	
+		$parsedLessons = $this -> parseTreeLessons($lessons);			
 		$parsedCourses = $this -> parseTreeCourses($courses);
 
 		if (!empty($parsedCourses) || !empty($parsedLessons)) {

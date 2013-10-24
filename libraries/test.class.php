@@ -1500,14 +1500,15 @@ class EfrontTest
     		}
     	}
 
-        $this -> getQuestions();                                                                //Initialize questions information, it case it isn't
+        $originalTestQuestions = $this -> getQuestions();    
+                                                               //Initialize questions information, it case it isn't
         if (!$form) {
             $form = new HTML_QuickForm("questionForm", "post", "", "", null, true);     //Create a sample form
         }
 
         $form -> setMaxFileSize(FileSystemTree :: getUploadMaxSize()*1024);
         $allTestQuestions = $this -> getQuestions(true);
-     
+   
 		//$allTestQuestionsFilter = $allTestQuestions;
 		// lines added for redo only wrong questions
         $allTestQuestionsFilter = array();
@@ -1516,7 +1517,7 @@ class EfrontTest
         	$recentlyCompleted = unserialize($resultCompleted[0]['test']);
         	if ($recentlyCompleted -> redoOnlyWrong == true && !$done) {
         		foreach ($recentlyCompleted -> questions as $key => $value) {
-        			if($value -> score != 100) {
+        			if($value -> score != 100 && isset($originalTestQuestions[$key])) { // && added for the case professor deleted question from test after student clicked to redo only wrong 
         				$value -> userAnswer = false;
         				$allTestQuestionsFilter[$key] = $value;
         			}
@@ -1535,6 +1536,7 @@ class EfrontTest
         } else {
             $testQuestions = $allTestQuestions;
         }
+      
         $questionId && in_array($questionId, array_keys($testQuestions)) ? $testQuestions = $testQuestions[$questionId] : null;    //If $questionId is specified, keep only this question
 
         $this -> options['display_list'] ? $testString = '<style type = "text/css">span.orderedList{float:left;}</style>' : $testString = '<style type = "text/css">span.orderedList{display:none;}</style>';
@@ -1548,6 +1550,7 @@ class EfrontTest
             }
         }
 		$currentLesson  = $this -> getLesson(true);
+	
         foreach ($testQuestions as $id => $question) {
             if ($done) {
                 switch ($question -> score) {
@@ -1610,7 +1613,7 @@ class EfrontTest
 				$testString .= $questionString;
 			}
 			$testString .= '<br/></div>';
-			
+		
             if ($done && !$isFeedback) {
                     $testString .= '
                         <table style = "width:100%" >
@@ -3014,10 +3017,12 @@ class EfrontCompletedTest extends EfrontTest
     	 
     	$fields_blob = $fields['test'];
     	unset($fields['test']);
-
     	$result = eF_getTableData("completed_tests", "id", $where);	//must be before update, or else $where may not return the same entry
-		eF_updateTableData("completed_tests", $fields, $where);    	
-    	eF_updateTableData("completed_tests_blob", array('test' => $fields_blob), "completed_tests_ID = ".$result[0]['id']);
+    	
+		if (!empty($result)) {
+    		eF_updateTableData("completed_tests", $fields, $where);       	 	
+    		eF_updateTableData("completed_tests_blob", array('test' => $fields_blob), "completed_tests_ID = ".$result[0]['id']);
+		}
     	
     	return true;
     }
@@ -3264,7 +3269,7 @@ class MultipleOneQuestion extends Question implements iQuestion
             	$results['correct'] ? $innerQuestionString .= '&nbsp;&nbsp;&nbsp;&larr;&nbsp;'._CORRECTANSWER : $innerQuestionString .= '&nbsp;&nbsp;&nbsp;&larr;&nbsp;'._WRONGANSWER;
             }
            
-            $innerQuestionString .= '</span>'.($this -> answers_explanation[$index] && $this -> userAnswer == $index ? '<span class = "questionExplanation">'.$this -> answers_explanation[$index].'</span>' : '').'<br>';
+            $innerQuestionString .= '</span>'.($this -> answers_explanation[$index] && $this -> userAnswer == $index ? '&nbsp;<span class = "questionExplanation">'.$this -> answers_explanation[$index].'</span>' : '').'<br>';
         }
         $questionString = '
                     <table width = "100%">
@@ -3482,6 +3487,7 @@ class MultipleManyQuestion extends Question implements iQuestion
 			$correctAnswerClass = 'class = "correctAnswer"';
 			$wrongAnswerClass 	= 'class = "wrongAnswer"';
 		}
+
 		for ($k = 0; $k < sizeof($this -> options); $k++) {                        //Display properly each option. The group can't be used, since we will display each option differently, depending on whether it is correct or not
             $index = $this -> order[$k];                                           //$index is used to recreate the answers order, for a done test, or to apply the answers shuffle, for an unsolved test
 
@@ -3494,7 +3500,7 @@ class MultipleManyQuestion extends Question implements iQuestion
             	$results['correct'][$index] ? $innerQuestionString .= '&nbsp;&nbsp;&nbsp;&larr;&nbsp;'._CORRECTANSWER : $innerQuestionString .= '&nbsp;&nbsp;&nbsp;&larr;&nbsp;'._WRONGANSWER;
                 //$innerQuestionString .= '<span class = "correctAnswer">&nbsp;&nbsp;&nbsp;&larr;&nbsp;'._RIGHTANSWER.": ".($this -> answer[$k] ? _CHECKED : _NOTCHECKED)."</span>";
             }
-            $innerQuestionString .= '</span>'.($this -> answers_explanation[$index] && $this -> userAnswer == $index ? '<span class = "questionExplanation">'.$this -> answers_explanation[$index].'</span><br/>' : '').'<br>';
+            $innerQuestionString .= '</span>'.($this -> answers_explanation[$index] && $this -> userAnswer[$index] ? '&nbsp;<span class = "questionExplanation">'.$this -> answers_explanation[$index].'</span><br/>' : '').'<br>';
         }
         $questionString = '
                     <table width = "100%">
@@ -3894,6 +3900,7 @@ class TrueFalseQuestion extends Question implements iQuestion
         }
 		
         $innerQuestionString .= '</span> <br/>';
+		$innerQuestionString .= '</span> <br/>';
 
         $questionString = '
                     <table width = "100%">
@@ -4452,7 +4459,7 @@ class MatchQuestion extends Question implements iQuestion
         	} elseif ($questionStats !== false) {
         		$innerQuestionString .= "   (0%)";
         	}
-            $innerQuestionString .= '</td><td>'.($this -> answers_explanation[$index] ? '<span class = "questionExplanation">'.$this -> answers_explanation[$index].'</span>': '').'</td><td width="*">&nbsp;</td></tr>';
+            $innerQuestionString .= '</td><td>'.($this -> answers_explanation[$index] ? '&nbsp;<span class = "questionExplanation">'.$this -> answers_explanation[$index].'</span>': '').'</td><td width="*">&nbsp;</td></tr>';
 
         }
 
@@ -4528,7 +4535,7 @@ class MatchQuestion extends Question implements iQuestion
 	                $innerQuestionString .= (!$showGivenAnswers ? ' (<span class = "emptyCategory">'._ANSWERNOTVISIBLE.'</span>) ' : '').'&nbsp;&nbsp;&nbsp;&larr;&nbsp;'._WRONGANSWER.'. '._RIGHTANSWER.": ".$this -> answer[$index];
 	            }
             }
-            $innerQuestionString .= '</span>'.($this -> answers_explanation[$index] && $results['correct'][$index] ? '<span class = "questionExplanation">'.$this -> answers_explanation[$index].'</span>': '').'<br/>';
+            $innerQuestionString .= '</span>'.($this -> answers_explanation[$index] && $results['correct'][$index] ? '&nbsp;<span class = "questionExplanation">'.$this -> answers_explanation[$index].'</span>': '').'<br/>';
         }
         $questionString = '
                     <table width = "100%">
@@ -5130,7 +5137,7 @@ class DragDropQuestion extends Question implements iQuestion
         	} elseif ($questionStats !== false) {
         		$innerQuestionString .= "   (0%)";
         	}
-            $innerQuestionString .= '</td><td>'.($this -> answers_explanation[$index] ? '<span class = "questionExplanation">'.$this -> answers_explanation[$index].'</span>': '').'</td></tr>';
+            $innerQuestionString .= '</td><td>'.($this -> answers_explanation[$index] ? '&nbsp;<span class = "questionExplanation">'.$this -> answers_explanation[$index].'</span>': '').'</td></tr>';
 
 
             //$innerQuestionString .= '</span>'.($this -> answers_explanation[$index] ? '<span class = "questionExplanation">'.$this -> answers_explanation[$index].'</span>' : '').'<br>';
@@ -5190,8 +5197,8 @@ class DragDropQuestion extends Question implements iQuestion
         $form               -> accept($renderer);                                  //Render the form
         $formArray           = $renderer -> toArray();                             //Get the rendered form fields
         $innerQuestionString = '';
-
-        for ($k = 0; $k < sizeof($this -> options); $k++) {                        //Display properly each option. The group can't be used, since we will display each option differently, depending on whether it is correct or not
+     
+		for ($k = 0; $k < sizeof($this -> options); $k++) {                        //Display properly each option. The group can't be used, since we will display each option differently, depending on whether it is correct or not
             //$showCorrectAnswers ? $style = '' : $style = "color:black";                                          //The question color must not change in case the user's answers should not display
             if ($showCorrectAnswers) {
 				$correctAnswerClass = 'class = "correctAnswer"';
@@ -5211,7 +5218,7 @@ class DragDropQuestion extends Question implements iQuestion
 	                $innerQuestionString .= (!$showGivenAnswers ? ' (<span class = "emptyCategory">'._ANSWERNOTVISIBLE.'</span>) ' : '').'&nbsp;&nbsp;&nbsp;&larr;&nbsp;'._WRONGANSWER.'. '._RIGHTANSWER.": ".$correctMap[strip_tags($label)];
 	            }
             }            
-            $innerQuestionString .= '</span>'.($this -> answers_explanation[$index] && $results['correct'][$index] ? '<span class = "questionExplanation">'.$this -> answers_explanation[$index].'</span>' : '').'<br>';
+            $innerQuestionString .= '</span>'.($this -> answers_explanation[$index] && $results['correct'][$index] ? '&nbsp;<span class = "questionExplanation">'.$this -> answers_explanation[$index].'</span>' : '').'<br>';
         }
         $questionString = '
                     <table width = "100%">

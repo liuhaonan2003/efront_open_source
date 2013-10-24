@@ -38,17 +38,20 @@ abstract class EfrontCache
     }
 
     public static function factory($method) {
+    	if (!$GLOBALS['configuration']['cache_enabled']) {
+    		$method = null;	//force dummy cache, which equals to disabled
+    	}
     	switch ($method) {
     		case 'apc':      $cache = new EfrontCacheAPC();      break;
     		case 'wincache': $cache = new EfrontCacheWincache(); break;
-    		case 'db':
-    		default:         $cache = new EfrontCacheDB();       break;
+    		case 'db':		 $cache = new EfrontCacheDB();       break;
+    		default:         $cache = new EfrontCacheDummy();    break;
     	}
     	 
     	return $cache;
     }
     
-    public abstract function setCache($key, $entity, $timeout);
+    public abstract function setCache($key, $entity, $timeout = null);
     public abstract function getCache($key);
     public abstract function deleteCache($key);
     
@@ -57,6 +60,19 @@ abstract class EfrontCache
     	$key = hash('sha256', G_DBNAME.$parameters);
     	return $key;
     }
+}
+
+class EfrontCacheDummy extends EfrontCache
+{
+	public function setCache($key, $entity, $timeout = null) {
+		return false;
+	}
+	public function getCache($key) {
+		return false;
+	}
+	public function deleteCache($key) {
+		return false;
+	}	
 }
 
 class EfrontCacheDB extends EfrontCache
@@ -72,7 +88,7 @@ class EfrontCacheDB extends EfrontCache
 		}
 	}
 	
-	public function setCache($key, $data, $timeout) {
+	public function setCache($key, $data, $timeout = null) {
 		$key    = self :: _encode($parameters);
 		
 		$values = array("cache_key" => $key, "value" => serialize($data), "timestamp" => time());
@@ -100,7 +116,7 @@ class EfrontCacheDB extends EfrontCache
 
 class EfrontCacheAPC extends EfrontCache
 {
-    public function setCache($key, $entity, $timeout) {
+    public function setCache($key, $entity, $timeout = null) {
     	$key = self::_encode($key);
     	return apc_store($key, $entity, $timeout);
     }
@@ -119,7 +135,7 @@ class EfrontCacheAPC extends EfrontCache
 
 class EfrontCacheWincache extends EfrontCache
 {
-	public function setCache($key, $entity, $timeout) {
+	public function setCache($key, $entity, $timeout = null) {
 		$key = self::_encode($key);
 		return wincache_ucache_set($key, $entity, $timeout);
 	}

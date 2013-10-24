@@ -164,6 +164,11 @@ class calendar extends EfrontEntity
 			$this -> calendar["foreign_ID"] = $values['foreign_ID'];
 
 			$this -> persist();
+			
+			// clear cache
+			$user = EfrontUserFactory::factory($_SESSION['s_login']);
+			$cacheKey = "calendar:{$user->user['login']}";
+			Cache::resetCache($cacheKey);	
 		} else {
 			$fields = array("data"        => $values['data'],
 					"timestamp"   => $timestamp,
@@ -173,8 +178,12 @@ class calendar extends EfrontEntity
 
 			$calendar = self :: create($fields);
 			$this -> calendar = $calendar;
+			
+			// clear cache
+			$user = $_SESSION['s_login'];
+			$cacheKey = "calendar:{$user}";
+			Cache::resetCache($cacheKey);
 		}
-
 	}
 
 	public function checkCalendarValues($values) {
@@ -467,7 +476,6 @@ class calendar extends EfrontEntity
 		if (($events = EfrontCache::getInstance()->getCache($parameters)) !== false) {
 			$events = unserialize($events);
 		} else {
-
 			if ($user -> user['user_type'] == 'administrator') {
 				$events = self :: getCalendarEventsForAdministrator($user);
 			} else {
@@ -475,7 +483,6 @@ class calendar extends EfrontEntity
 			}
 			EfrontCache::getInstance()->setCache($parameters, serialize($events), 86400);
 		}
-
 		return $events;
 	}
 

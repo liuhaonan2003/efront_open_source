@@ -158,7 +158,7 @@
 
 		{if $T_CACHE_PANEL}
 		<div class = "tabbertab {if $smarty.get.tab=='apc'}tabbertabdefault{/if}" title = "Cache">
-			<iframe {if $T_CACHE_PANEL == 'apcu'}src = "apcu.php"{elseif $T_CACHE_PANEL == "apc"}src = "apc.php"{/if} width = "100%" height = "800px" frameborder="no"></iframe>
+			<iframe {if $T_CACHE_PANEL == 'apcu'}src = "apcu.php"{elseif $T_CACHE_PANEL == "apc"}src = "apc.php"{elseif $T_CACHE_PANEL == "wincache"}src = "wincache.php"{/if} width = "100%" height = "800px" frameborder="no"></iframe>
 		</div>
 		{/if}
 		

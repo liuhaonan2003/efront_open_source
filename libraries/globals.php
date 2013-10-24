@@ -344,10 +344,10 @@ function setDefines() {
 		if (!is_file(dirname(G_ROOTPATH).$request_uri) && basename($_SERVER['PHP_SELF']) != basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) && strpos($request_uri, 'content/lessons') === false) {
 			$request_uri .= basename($_SERVER['PHP_SELF']);	
 		}
-		
+
 		if (!is_file(dirname(G_ROOTPATH).$request_uri) && dirname($request_uri) != dirname($_SERVER['PHP_SELF']) && strpos($request_uri, 'content/lessons') === false && strpos($request_uri, 'editor/tiny_mce') === false) {
-			define("G_BRANCH_URL", basename(dirname($request_uri)).'/');
-		} elseif (strpos($request_uri, 'content/lessons') !== false) {
+			define("G_BRANCH_URL", basename(dirname($request_uri)).'/');			
+		} elseif (strpos($request_uri, 'content/lessons') !== false && strpos($request_uri, 'editor') === false) {
 			preg_match("#^".G_OFFSET."(.*)content/lessons/#", $_SERVER['REQUEST_URI'], $matches);
 			define("G_BRANCH_URL", $matches[1]);
 		} elseif (isset($_SESSION['s_current_branch']) && strpos($request_uri, 'editor/tiny_mce') !== false) {
@@ -357,8 +357,7 @@ function setDefines() {
 			define("G_BRANCH_URL", '');
 			//unset($_SESSION['s_theme']);
 			unset($_SESSION['s_current_branch']);
-		}
-		
+		}		
 		if (basename($_SERVER['PHP_SELF']) == 'index.php' && basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) != basename($_SERVER['PHP_SELF']) && mb_substr(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), -1) != '/') {
 			header("location:".parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH).'/index.php');
 		}

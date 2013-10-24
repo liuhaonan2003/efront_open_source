@@ -211,6 +211,8 @@ if (!isset($currentUser -> coreAccess['maintenance']) || $currentUser -> coreAcc
     	$smarty -> assign("T_CACHE_PANEL", "apcu");
     } else if (function_exists('apc_clear_cache')) {
     	$smarty -> assign("T_CACHE_PANEL", "apc");
+    } else if (function_exists('wincache_ucache_set')) {
+	 $smarty -> assign("T_CACHE_PANEL", "wincache");
     }
 
     $logSize = eF_getTableData("logs", "count(id) as count");

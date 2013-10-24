@@ -14,6 +14,8 @@ if ($_SESSION['s_lessons_ID']) {
     $iframeUrl = G_SERVERNAME.'editor/browse.php?for_type=image&mode=lesson';
 } elseif (strpos($_SERVER['HTTP_REFERER'], "themes") !== false) {
     $iframeUrl = G_SERVERNAME.'editor/browse.php?for_type=image&mode=external';
+} else {
+	$iframeUrl = G_SERVERNAME.'editor/browse.php?for_type=image&mode=upload';
 }
 
 

@@ -454,6 +454,7 @@ $smarty -> assign('T_TEST_FORM', $renderer -> toArray());
 // Code to find users to who a skillgap tests has been assigned
 if ($skillgap_tests) {
     // AJAX CODE TO RELOAD SKILL-GAP TEST USERS
+	$smarty -> assign("T_JOBS_FILTER", eF_createJobFilterSelect());
     if (isset($_GET['ajax']) && $_GET['ajax'] == 'testUsersTable') {
         isset($_GET['limit']) && eF_checkParameter($_GET['limit'], 'uint') ? $limit = $_GET['limit'] : $limit = G_DEFAULT_TABLE_SIZE;
 
@@ -707,55 +708,55 @@ if (isset($_GET['postAjaxRequest'])) {
 }
 if (isset($_GET['ajax']) && $_GET['ajax'] == 'randomize') {
     try {
-        $params = array('multitude'  	  => is_numeric($_GET['multitude'])		  ? $_GET['multitude']  	   : '',
-            					'duration' 	  	  => is_numeric($_GET['duration'])  	  ? $_GET['duration']   	   : '',
-            	 				'mean_difficulty' => is_numeric($_GET['mean_difficulty']) ? $_GET['mean_difficulty']   : '',
-            					'balance' 		  => is_numeric($_GET['balance'])   	  ? $_GET['balance']    	   : 50);
+        $params = array('multitude'  	  => is_numeric($_POST['multitude'])		  ? $_POST['multitude']  	   : '',
+            					'duration' 	  	  => is_numeric($_POST['duration'])  	  ? $_POST['duration']   	   : '',
+            	 				'mean_difficulty' => is_numeric($_POST['mean_difficulty']) ? $_POST['mean_difficulty']   : '',
+            					'balance' 		  => is_numeric($_POST['balance'])   	  ? $_POST['balance']    	   : 50);
         $params['duration'] = $params['duration']*60;
 
         //Remove units and difficulties that are set to 'Off'
-        if (isset($_GET['unit_to_difficulty'])) {
-            foreach ($_GET['unit_to_difficulty'] as $key => $value) {
-                if (!isset($_GET['unit'][$key]) || $_GET['unit'][$key] == 'off') {
-                    unset($_GET['unit_to_difficulty'][$key]);
+        if (isset($_POST['unit_to_difficulty'])) {
+            foreach ($_POST['unit_to_difficulty'] as $key => $value) {
+                if (!isset($_POST['unit'][$key]) || $_POST['unit'][$key] == 'off') {
+                    unset($_POST['unit_to_difficulty'][$key]);
                 } else {
                     foreach ($value as $k => $v) {
-                        if (!isset($_GET['difficulty'][$k]) || $_GET['difficulty'][$k] == 'off') {
-                            unset($_GET['unit_to_difficulty'][$key][$k]);
+                        if (!isset($_POST['difficulty'][$k]) || $_POST['difficulty'][$k] == 'off') {
+                            unset($_POST['unit_to_difficulty'][$key][$k]);
                         }
                     }
                 }
             }
-            $reqs = array('difficulty' => $_GET['unit_to_difficulty']);
+            $reqs = array('difficulty' => $_POST['unit_to_difficulty']);
             //Remove units and types that are set to 'Off'
-        } else if (isset($_GET['unit_to_type'])) {
-            foreach ($_GET['unit_to_type'] as $key => $value) {
-                if (!isset($_GET['unit'][$key]) || $_GET['unit'][$key] == 'off') {
-                    unset($_GET['unit_to_type'][$key]);
+        } else if (isset($_POST['unit_to_type'])) {
+            foreach ($_POST['unit_to_type'] as $key => $value) {
+                if (!isset($_POST['unit'][$key]) || $_POST['unit'][$key] == 'off') {
+                    unset($_POST['unit_to_type'][$key]);
                 } else {
                     foreach ($value as $k => $v) {
-                        if (!isset($_GET['type'][$k]) || $_GET['type'][$k] == 'off') {
-                            unset($_GET['unit_to_type'][$key][$k]);
+                        if (!isset($_POST['type'][$k]) || $_POST['type'][$k] == 'off') {
+                            unset($_POST['unit_to_type'][$key][$k]);
                         }
                     }
                 }
             }
-            $reqs = array('type' => $_GET['unit_to_type']);
+            $reqs = array('type' => $_POST['unit_to_type']);
             //Adjust percentages so that the total sum is always 100
-        } else if (isset($_GET['unit_to_percentage'])) {
+        } else if (isset($_POST['unit_to_percentage'])) {
             $sum = 0;
             //If total sum is more than 100, truncate last values so that total remains 100
-            foreach ($_GET['unit_to_percentage'] as $key => $value) {
+            foreach ($_POST['unit_to_percentage'] as $key => $value) {
                 if ($sum + $value > 100) {
-                    $value = $_GET['unit_to_percentage'][$key] = 100 - $sum;
+                    $value = $_POST['unit_to_percentage'][$key] = 100 - $sum;
                 }
                 $sum += $value;
             }
             //If total sum is less than 100, augment last value so that it sums up to 100
             if ($sum < 100) {
-                $_GET['unit_to_percentage'][$key] += 100 - $sum;
+                $_POST['unit_to_percentage'][$key] += 100 - $sum;
             }
-            $reqs = array('percentage' => $_GET['unit_to_percentage']);
+            $reqs = array('percentage' => $_POST['unit_to_percentage']);
         }
 
         $questions = $currentTest -> randomize($params, $reqs);

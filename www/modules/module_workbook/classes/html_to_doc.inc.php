@@ -186,20 +186,26 @@ EOH;
 
 			if($download)
 			{
+					
 				if(!empty($this->localimgs)) {
-					$tmpDir = EfrontDirectory::createDirectory($this->lessonDirectory.$file);
+					if(file_exists($this->lessonDirectory.$file)) {
+						$tmpDir = new EfrontDirectory($this->lessonDirectory.$file);
+					} else {
+						$tmpDir = EfrontDirectory::createDirectory($this->lessonDirectory.$file);	
+					}
+					
 					$array_cp = $tmpDir->getArrayCopy();
 					
 					foreach ($this->localimgs as $img) {
-						$file = new EfrontFile($this->lessonDirectory.$img);
-						$file->copy($array_cp['path']."/".$img);
+						$file = new EfrontFile($img['path'].$img['src']);
+						$file->copy($array_cp['path']."/".$img['src']);
 					}
-					
+										
 					$this->write_file($array_cp['path']."/".$this->docFile,$doc);
 					$zipfile = $tmpDir->compress();
 					$tmpDir->delete();
 					$zipfile->sendFile();	
-								
+				exit;				
 				} else {
 					@header("Cache-Control: ");// leave blank to avoid IE errors
 					@header("Pragma: ");// leave blank to avoid IE errors
@@ -244,16 +250,38 @@ EOH;
 			$DOM = new DOMDocument;
 			$DOM->loadHTML($html);
 			$imgs = $DOM->getElementsByTagName('img');
+			
 			foreach($imgs as $img){
 			    $src = $img->getAttribute('src');
 				if(strpos($src, "http://") === false ){
-					$this->localimgs[] = substr($src, strlen("/content/lessons/".$_SESSION['s_lessons_ID']."/")-1);//substr($src,8);
-					$src = substr($src, strlen("/content/lessons/".$_SESSION['s_lessons_ID']."/")-1);//substr($src,8);
+					//local image
+
+					if (strpos($src,'content/lessons') !== false) {
+						$pos = strrpos($src,'/');	
+						$tmp_img = substr($src, $pos+1);						
+						$path = substr($src, 0, strlen($src) - strlen($tmp_img));
+						$this->localimgs[] = array(
+							'src' => $tmp_img,
+							'path' => G_ROOTPATH . "www/". $path
+						);
+						$src = $tmp_img;
+					}
+					
+					if (strpos($src,'images/16x16') !== false) {
+						$pos = strrpos($src,'/');	
+						$tmp_img = substr($src, $pos+1);						
+						$path = substr($src, 0, strlen($src) - strlen($tmp_img));
+
+						$this->localimgs[] = array(
+							'src' => $tmp_img,
+							'path' =>  G_DEFAULTTHEMEPATH . "www/".  $path
+						);
+						$src = $tmp_img;						
+					}
 				}
 			    $img->setAttribute('src', $src);
 			}
 			$html = $DOM->saveHTML();
-			
 			
 			$lesson = new EfrontLesson($_SESSION['s_lessons_ID']);
 			$this->lessonDirectory = $lesson->getDirectory();			

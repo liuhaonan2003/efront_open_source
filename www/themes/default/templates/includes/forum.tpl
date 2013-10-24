@@ -227,7 +227,7 @@
 		    	            {/if}
 		        	        {if $smarty.session.s_type == 'administrator' || ($smarty.session.s_type == 'professor' && $T_POSTS[messages_list].user_type == 'student') || $smarty.session.s_login == $T_POSTS[messages_list].users_LOGIN}
 	                        	<a href = "{$smarty.server.PHP_SELF}?ctg=forum&edit={$T_POSTS[messages_list].id}&type=message&topic_id={$smarty.get.topic}&popup=1" target = "POPUP_FRAME" onclick = "eF_js_showDivPopup(event, '{$smarty.const._EDIT}', 2)" class = "editLink"><img class = "handle" src = "images/16x16/edit.png" title = "{$smarty.const._EDIT}" /></a>
-	                        	<img class = "ajaxHandle" src = "images/16x16/error_delete.png" title = "{$smarty.const._DELETE}" onclick = "if (confirm('{$smarty.const._AREYOUSUREYOUWNATTODELETEMESSAGE} {$T_POSTS[messages_list].title}')) deleteForumMessage(this, '{$T_POSTS[messages_list].id}', 'message')"/>
+	                        	<img class = "ajaxHandle" src = "images/16x16/error_delete.png" title = "{$smarty.const._DELETE}" onclick = "if (confirm('{$smarty.const._AREYOUSUREYOUWNATTODELETEMESSAGE} {$T_POSTS[messages_list].title|addslashes}')) deleteForumMessage(this, '{$T_POSTS[messages_list].id}', 'message')"/>
 		            	    {/if}
 	                    	</div>
 		                {/if}

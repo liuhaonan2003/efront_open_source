@@ -646,7 +646,7 @@ var quickformSkillQuestCount  	= '{$T_QUICKTEST_FORM.skill_questions_count_row.h
 			{capture name = "t_test_users_code"}
 {if !$T_SORTED_TABLE || $T_SORTED_TABLE == 'testUsersTable'}
 <!--ajax:testUsersTable-->
-	        <table style = "width:100%" class = "sortedTable" size = "{$T_USERS_SIZE}" sortBy = "0" id = "testUsersTable" useAjax = "1" rowsPerPage = "{$smarty.const.G_DEFAULT_TABLE_SIZE}"  url = "{$smarty.server.PHP_SELF}?ctg=tests&edit_test={$smarty.get.edit_test}&">
+	        <table style = "width:100%" class = "sortedTable" size = "{$T_USERS_SIZE}" sortBy = "0" id = "testUsersTable" useAjax = "1" branchFilter="true" jobFilter="{$T_JOBS_FILTER}" rowsPerPage = "{$smarty.const.G_DEFAULT_TABLE_SIZE}"  url = "{$smarty.server.PHP_SELF}?ctg=tests&edit_test={$smarty.get.edit_test}&">
 	            <tr class = "topTitle">
 	                <td class = "topTitle" name = "login">{$smarty.const._USER}</td>
 	                <td class = "topTitle centerAlign" name = "partof">{$smarty.const._CHECK}</td>

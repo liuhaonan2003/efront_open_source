@@ -203,7 +203,7 @@ try {
             $layoutTheme -> layout['custom_blocks'] = $customBlocks;
             $layoutTheme -> persist();
 
-            EfrontCache::getInstance()->delete(G_DBNAME.':themes');
+            EfrontCache::getInstance()->deleteCache(G_DBNAME.':themes');
             eF_redirect(basename($_SERVER['PHP_SELF'])."?ctg=themes&theme=".$layoutTheme -> {$layoutTheme -> entity}['id'].(isset($_GET['theme_layout']) ? '&theme_layout='.$_GET['theme_layout'] : ''));
         }
 

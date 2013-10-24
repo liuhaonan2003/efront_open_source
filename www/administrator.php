@@ -282,9 +282,10 @@ try {
 	    require_once "search_courses.php";
 	}
 	elseif ($ctg == 'search_users') {
-		if (G_VERSIONTYPE == 'educational') {	#cpp#ifdef EDUCATIONAL
-			require_once("user_search.php");
-		}	#cpp#endif
+		require_once("user_search.php");
+//		if (G_VERSIONTYPE == 'educational') {	#cpp#ifdef EDUCATIONAL
+//			require_once("user_search.php");
+//		}	#cpp#endif
 	}
 	elseif ($ctg == 'digests') {
 	    /** Email digests feature */

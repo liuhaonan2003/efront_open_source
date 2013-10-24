@@ -118,9 +118,25 @@ if ($_GET['op'] == 'course_info') {
 		$role != 'student' OR $studentRoles[] = $key;
 	}
 
-	$users = $currentCourse -> getCourseUsers($defaultConstraints);
-	if (isset($_GET['edit_user']) && isset($users[$_GET['edit_user']])) {
-		$user = EfrontUserFactory::factory($users[$_GET['edit_user']]);
+	//$users = $currentCourse -> getCourseUsers($defaultConstraints);
+	if ($_GET['edit_user']) {
+		$user_to_check = $_GET['edit_user'];
+	} else if ($_GET['issue_certificate']) {
+		$user_to_check = $_GET['issue_certificate'];
+	} else if ($_GET['revoke_certificate']) {
+		$user_to_check = $_GET['revoke_certificate'];
+	} else if ($_GET['reset_keep']) {
+		$user_to_check = $_GET['reset_keep'];
+	} else if ($_GET['login']) {
+		$user_to_check = $_GET['login'];
+	}
+	if (isset($user_to_check) && !eF_checkParameter($user_to_check, 'login')) {
+		throw new EfrontUserException(_INVALIDLOGIN.': '.$user['login'], EfrontUserException :: INVALID_LOGIN);
+	}
+	$result = eF_getTableData("users_to_courses", "users_LOGIN", "archive=0 and courses_ID=".$currentCourse -> course['id']." and users_LOGIN='".$user_to_check."'");
+	
+	if (isset($_GET['edit_user']) && !empty($result)) {
+		$user = EfrontUserFactory::factory($_GET['edit_user']);
 		//pr($user -> getUserLessons());exit;
 		$form = new HTML_QuickForm("edit_user_complete_course_form", "post", basename($_SERVER['PHP_SELF']).'?'.$baseUrl.'&op=course_certificates&edit_user='.$_GET['edit_user'].'&popup=1', "", null, true);
 		$form -> registerRule('checkParameter', 'callback', 'eF_checkParameter');                   //Register this rule for checking user input with our function, eF_checkParameter
@@ -177,7 +193,7 @@ if ($_GET['op'] == 'course_info') {
 		$renderer = prepareFormRenderer($form);
 		$smarty -> assign('T_COMPLETE_COURSE_FORM', $renderer -> toArray());
 
-	} else if (isset($_GET['issue_certificate']) && isset($users[$_GET['issue_certificate']])) {
+	} else if (isset($_GET['issue_certificate']) &&  !empty($result)) {
 		try {
 			$certificate = $currentCourse -> prepareCertificate($_GET['issue_certificate']);
 			$currentCourse -> issueCertificate($_GET['issue_certificate'], $certificate);
@@ -187,7 +203,7 @@ if ($_GET['op'] == 'course_info') {
 			$message      = _PROBLEMISSUINGCERTIFICATE.': '.$e -> getMessage().' ('.$e -> getCode().') &nbsp;<a href = "javascript:void(0)" onclick = "eF_js_showDivPopup(event, \''._ERRORDETAILS.'\', 2, \'error_details\')">'._MOREINFO.'</a>';
 			$message_type = 'failure';
 		}
-	} else if (isset($_GET['revoke_certificate']) && isset($users[$_GET['revoke_certificate']])) {
+	} else if (isset($_GET['revoke_certificate']) && !empty($result)) {
 		try {
 			$currentCourse -> revokeCertificate($_GET['revoke_certificate']);
 			eF_redirect(''.basename($_SERVER['PHP_SELF']).'?'.$baseUrl.'&op=course_certificates&reset_popup=1&message='.urlencode(_CERTIFICATEREVOKED).'&message_type=success');
@@ -196,7 +212,7 @@ if ($_GET['op'] == 'course_info') {
 			$message      = _PROBLEMREVOKINGCERTIFICATE.': '.$e -> getMessage().' &nbsp;<a href = "javascript:void(0)" onclick = "eF_js_showDivPopup(event, \''._ERRORDETAILS.'\', 2, \'error_details\')">'._MOREINFO.'</a>';
 			$message_type = 'failure';
 		}
-	} else if (isset($_GET['reset_keep']) && isset($users[$_GET['reset_keep']])) {
+	} else if (isset($_GET['reset_keep']) && !empty($result)) {
 		try {
 			$user = EfrontUserFactory :: factory($_GET['reset_keep']);
 			$user -> resetProgressInCourse($currentCourse, true, true);
@@ -206,7 +222,7 @@ if ($_GET['op'] == 'course_info') {
 			$message      = _PROBLEMRESETINGPROGRESS.': '.$e -> getMessage().' &nbsp;<a href = "javascript:void(0)" onclick = "eF_js_showDivPopup(event, \''._ERRORDETAILS.'\', 2, \'error_details\')">'._MOREINFO.'</a>';
 			$message_type = 'failure';
 		}
-	} else if (isset($_GET['change_key']) && isset($users[$_GET['login']])) {
+	} else if (isset($_GET['change_key']) && !empty($result)) {
 		try {
 			$result = eF_getTableData("users_to_courses", "users_LOGIN,issued_certificate", "courses_ID = ".$currentCourse -> course['id']. " and users_LOGIN = '".$_GET['login']."'");
 			$issued_certificate = unserialize($result[0]['issued_certificate']);
@@ -711,10 +727,11 @@ if ($_GET['op'] == 'course_info') {
 		} else {
 			$templates = eF_getTableData("certificate_templates", "id, certificate_name, certificate_type", "", "certificate_name");					
 		}
-		
+		//$existingCertificates[0] = '';  @todo
 		foreach($templates as $key => $value) {
 			$existingCertificates[$value['id'].'-'.$value['certificate_type']] = $value['certificate_name'];
 		}
+	
 		$form = new HTML_QuickForm("edit_course_certificate_form", "post",
 		basename($_SERVER['PHP_SELF']).'?'.$baseUrl.'&op=format_certificate&switch=1', "", null, true);
 		$form -> registerRule('checkParameter', 'callback', 'eF_checkParameter'); // Register this rule for checking user input with eF_checkParameter

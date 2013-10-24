@@ -198,7 +198,9 @@ if (!$smarty -> is_cached('index.tpl', $cacheId) || !$GLOBALS['configuration']['
 
 	$smarty -> assign("T_CUSTOM_BLOCKS", $customBlocks);
 	$smarty -> assign("T_BLOCKS", $blocks);
-	$smarty -> assign("T_POSITIONS", $GLOBALS['currentTheme'] -> layout['positions']);
+	$positions = $GLOBALS['currentTheme']->layout['positions'];
+	$smarty -> assign("T_POSITIONS", $positions);	
+	
 	if ($GLOBALS['configuration']['lessons_directory'] == 1 && in_array('lessons', array_merge($positions['leftList'], $positions['rightList'], $positions['centerList']))) {
 		if (isset($_SESSION['s_current_branch'])) {
 			$branch = new EfrontBranch($_SESSION['s_current_branch']);
@@ -208,6 +210,7 @@ if (!$smarty -> is_cached('index.tpl', $cacheId) || !$GLOBALS['configuration']['
 			$lessons = array();
 		}
 		$directionsTree = new EfrontDirectionsTree();
+		
 		$options		= array('lessons_link' => basename($_SERVER['PHP_SELF']).'?ctg=lesson_info&lessons_ID=',
 				'courses_link' => basename($_SERVER['PHP_SELF']).'?ctg=lesson_info&courses_ID=',
 				'search'	   => true,
@@ -1564,6 +1567,7 @@ if (!$smarty -> is_cached('index.tpl', $cacheId) || !$GLOBALS['configuration']['
 	}
 
 	$positions = $GLOBALS['currentTheme']->layout['positions'];
+	
 	//Main scripts, such as prototype
 	$mainScripts = getMainScripts();
 	$smarty -> assign("T_HEADER_MAIN_SCRIPTS", implode(",", $mainScripts));

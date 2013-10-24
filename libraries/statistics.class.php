@@ -1347,6 +1347,7 @@ class EfrontStats
         $notSeenUnits  = array_diff_key($visitableContentIds, $seenUnits);            //The units that the user has yet to see
         $conditionsMet = array();
         $conditionsRelation = array();
+           
         foreach ($conditions as $conditionId => $condition) {
             switch ($condition['type']) {
                 case 'all_units':
@@ -1374,7 +1375,7 @@ class EfrontStats
                     $meanScore = array_sum($seenUnits) / array_sum(array_count_values($seenUnits));        //array_count_values does not take into account false entries. So, in this expression, the denominator equals the number of tests the user has done
                     $meanScore >= $condition['options'][0] ? $passed = 1 : $passed = 0;
                     break;
-                case 'specific_test':
+                case 'specific_test':          	
                     in_array($condition['options'][0], array_keys($seenUnits)) || !in_array($condition['options'][0], $visitableTestIds) ? $passed = 1 : $passed = 0;
                     break;
                 case 'time_in_lesson':
@@ -1397,6 +1398,7 @@ class EfrontStats
         } else {
             $passed = 0;
         }
+        
         return array($conditionsMet, $passed);
     }
 
@@ -2378,12 +2380,12 @@ class EfrontStats
 	
 	public static function lightGetUserStatusInLesson($login, $currentLesson, $seenContent, $visitableIterator) {
 		$visitableTestIds = $visitableUnits = array();
-		foreach ($visitableIterator as $key => $value) {
+		foreach ($visitableIterator as $key => $value) {			
 			$visitableUnits[$key] = $key;
-			if ($value['ctg_type'] == 'tests' && $value['ctg_type'] == 'scorm_test') {
+			if ($value['ctg_type'] == 'tests' || $value['ctg_type'] == 'scorm_test') {
 				$visitableTestIds[$key] = $key;
 			}
-		}
+		}	
 		$overallProgress = 0;
 		if (sizeof($visitableUnits) > 0) {
 			$overallProgress = round(100 * (sizeof(array_intersect(array_keys($visitableUnits), array_keys($seenContent)))) / sizeof($visitableUnits), 2);
@@ -2400,6 +2402,7 @@ class EfrontStats
 		} else {
 			$usersTimesInLessonContent = null;
 		}
+
 		list($conditionsMet, $lessonPassed) = EfrontStats::checkConditions($seenContent, $conditions, $visitableUnits, $visitableTestIds, $usersTimesInLessonContent);
 		 
 		$status = eF_getTableData("users_to_lessons", "*", "users_LOGIN='{$login}' and lessons_ID={$currentLesson->lesson['id']}");

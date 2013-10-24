@@ -38,6 +38,7 @@ class EfrontConfiguration
     	'debug_mode'			 => '',
     	'updater_period'		 => 100000,
     	'last_reset_certificate' => '',
+    	'cache_enabled'			 => '1',		
 
         //System settings - security
     	'file_black_list'        => 'php,php3,jsp,asp,cgi,pl,exe,com,bat,sh,ph3,php4,ph4,php5,ph5,phtm,phtml',
@@ -247,6 +248,8 @@ class EfrontConfiguration
     	'version_hosted'		 => '0',
     	'max_online_users'		 => '',
     	'max_online_users_timestamp' => '',
+    	'max_online_users_threshold' => '',
+    	'max_online_users_threshold_timestamp' => '',
 
         //Notifications
         'notifications_pageloads' => '10',
@@ -337,6 +340,7 @@ class EfrontConfiguration
     * @static
     */
     public static function setValue($name, $value) {
+    	$value = trim($value);
         try {
             eF_insertTableData("configuration", array('name' => $name, 'value' => $value));
         } catch (Exception $e) {

@@ -67,9 +67,9 @@ function randomize(el, mode) {
     }  else if (mode == 'percentage') {
     	parameters = Object.extend(parameters, $('percentage_form').serialize(true));
     }
-    Object.extend(parameters, {ajax:'randomize', method:'get'});
+    Object.extend(parameters, {method:'post'});
     
-    ajaxRequest(el, url, parameters, onRandomize);
+    ajaxRequest(el, url+'&ajax=randomize', parameters, onRandomize);
 }
 function onRandomize(el, response) {
 	updateSettings(response);

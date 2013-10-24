@@ -803,6 +803,7 @@ if (isset($_GET['excel']) && $_GET['excel'] == 'user') {
 } else if (isset($_GET['pdf']) && $_GET['pdf'] == 'user') {
 
 	$pdf = new EfrontPdf(_REPORT.": ".formatLogin($infoUser -> user['login']));
+	
 	try {
 		$avatarFile = new EfrontFile($infoUser -> user['avatar']);
 	} catch(Exception $e) {

@@ -47,8 +47,9 @@ function resultsAjaxPost(login, el, table_id) {
     var baseUrl =  'professor.php?ctg=projects&project_results='+editProject+'&postAjaxRequest=1';
     //var comments = $('comments_'+login).value;
     var grade    = $('grade_'+login).value;
+    var text_grade    = $('text_grade_'+login).value;
    // var url      = baseUrl + '&login='+login+'&grade='+grade+'&comments='+comments;
-	var url      = baseUrl + '&login='+login+'&grade='+grade;
+	var url      = baseUrl + '&login=' + login + '&grade=' + grade + '&text_grade=' + text_grade;	
 
 	parameters = {method: 'get'};
 	ajaxRequest(el, url, parameters);	

@@ -709,6 +709,7 @@ class EfrontCourse
 	 * @access public
 	 */
 	public function insertCourseSkill() {
+		$this->skills=false;
 		// If insertion of a self-contained course add the corresponding skill
 		// Insert the corresponding course skill to the skill and course_offers_skill tables
 		$courseSkillId = eF_insertTableData("module_hcd_skills", array("description" => _KNOWLEDGEOFCOURSE . " ". $this -> course['name'], "categories_ID" => -1));
@@ -753,7 +754,14 @@ class EfrontCourse
 				}
 			}
 			// The default lesson skill was not found
-			return $this -> insertCourseSkill();
+			$this -> insertCourseSkill();
+
+			$skills = $this -> getSkills();
+			foreach ($skills as $skid=>$skill) {
+				if ($skill['courses_ID'] == $this -> course['id'] && $skill['categories_ID'] == -1) {
+					return $skill;
+				}
+			}
 		} #cpp#endif
 		return false;
 	}
@@ -2322,7 +2330,7 @@ class EfrontCourse
 		$instance = EfrontCourse :: createCourse($result[0]);
 
 		$instance -> options['course_code'] = '';	//Instances don't have a course code of their own
-		$instance -> rules = array();
+		$instance -> rules = unserialize($result[0]['rules']);
 		$instance -> persist();
 
 		return $instance;
@@ -2780,7 +2788,8 @@ class EfrontCourse
                                 	<table>';
 
 			foreach ($eligible as $lessonId => $lesson) {
-				$roleBasicType = $roles[$lesson -> lesson['user_type']];        //The basic type of the user's role in the lesson
+				//Changed because of #4492 where lesson was completed but course was not and $lesson was unset in material in process
+				$roleBasicType = $roles[$lesson -> lesson['user_type']] ? $roles[$lesson -> lesson['user_type']] : $roles[$this -> course['user_type']];        
 				$courseString .= '<tr class = "directionEntry">';
 				if (isset($lesson -> lesson['active_in_lesson']) && !$lesson -> lesson['active_in_lesson']) {
 					$courseString .= '<td style = "padding-bottom:2px"></td><td><a href = "javascript:void(0)" class = "inactiveLink" title = "'._CONFIRMATIONPEDINGFROMADMIN.'">'.$lesson -> lesson['name'].'</a></td>';
@@ -4018,12 +4027,21 @@ class EfrontCourse
 		//First, search for any instances that where already defined for this lesson and course in the past
 		$result = eF_getTableData("lessons", "*", "instance_source=".$lesson -> lesson['id']." and originating_course=".$this -> course['id']);
 
+		$coursedata = eF_getTableData("lessons_to_courses", "*", "lessons_ID=".$lesson -> lesson['id']." and courses_ID=".$this -> course['id']);
 		if (sizeof($result) > 0) {
-			$lessonInstance = new EfrontLesson($result[0]);
-			$this -> addLessons($lessonInstance);
+			$lessonInstance = new EfrontLesson($result[0]);		
+			$lessonsSchedule[$lessonInstance -> lesson['id']] = array(	'start_date' 	=> $coursedata[0]['start_date'],
+																		'end_date' 		=> $coursedata[0]['end_date'],
+																		'start_period' 	=> $coursedata[0]['start_period'],
+																		'end_period' 	=> $coursedata[0]['end_period']);
+			$this -> addLessons($lessonInstance, $lessonsSchedule);
 		} else {
 			$lessonInstance = EfrontLesson :: createInstance($lesson, $this);
-			$this -> addLessons($lessonInstance);
+			$lessonsSchedule[$lessonInstance -> lesson['id']] = array(	'start_date' 	=> $coursedata[0]['start_date'],
+																		'end_date' 		=> $coursedata[0]['end_date'],
+																		'start_period' 	=> $coursedata[0]['start_period'],
+																		'end_period' 	=> $coursedata[0]['end_period']);
+			$this -> addLessons($lessonInstance, $lessonsSchedule);
 		}
 		$this -> replaceLessonInCourseOrder($lesson, $lessonInstance);
 		$this -> replaceLessonInCourseRules($lesson, $lessonInstance);	//Must be put *before* removeLessons()
@@ -4045,7 +4063,13 @@ class EfrontCourse
 			throw new Exception(_YOUCANNOTCHANGEMODECOURSENOTEMPTY, EfrontCourseException::COURSE_NOT_EMPTY);
 		}
 
-		$this -> addLessons($lesson -> lesson['instance_source']);
+		$coursedata = eF_getTableData("lessons_to_courses", "*", "lessons_ID=".$lesson->lesson['id']." and courses_ID=".$this -> course['id']);
+		$lessonsSchedule[$lesson -> lesson['instance_source']] = array(	'start_date' 	=> $coursedata[0]['start_date'],
+																		'end_date' 		=> $coursedata[0]['end_date'],
+																		'start_period' 	=> $coursedata[0]['start_period'],
+																		'end_period' 	=> $coursedata[0]['end_period']);
+		
+		$this -> addLessons($lesson -> lesson['instance_source'], $lessonsSchedule);
 
 		$this -> replaceLessonInCourseOrder($lesson, $lesson -> lesson['instance_source']);
 		$this -> replaceLessonInCourseRules($lesson, $lesson -> lesson['instance_source']);	//Must be put *before* removeLessons()

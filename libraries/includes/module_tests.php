@@ -360,15 +360,16 @@ try {
             $smarty -> assign("T_UNITS", $contentUnits);
             //Fix questions if their corresponding content is missing
             $contentUnits = array_keys($contentUnits);
-            foreach ($questions as $key => $value) {
-                $names = array();
-                if (!in_array($value['content_ID'], $contentUnits)) {
-                    $question = QuestionFactory :: factory($value);
-                    $question -> question['content_ID'] = 0;
-                    $question -> persist();
-                }
+            if (!$_GET['showall']) {
+	            foreach ($questions as $key => $value) {
+	                $names = array();
+	                if (!in_array($value['content_ID'], $contentUnits)) {
+	                    $question = QuestionFactory :: factory($value);
+	                    $question -> question['content_ID'] = 0;
+	                    $question -> persist();
+	                }
+	            }
             }
-
             $selectedUnit ? $units = $currentContent -> getNodeChildren($selectedUnit) : $units = $currentContent -> tree;
             if (sizeof($units) > 0) {
 	            foreach ($iterator = new EfrontAttributeFilterIterator(new RecursiveIteratorIterator(new RecursiveArrayIterator($units)), array('id', 'name')) as $key => $value) {

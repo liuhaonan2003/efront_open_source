@@ -96,11 +96,15 @@ class module_workbook extends EfrontModule{
 			$studentProgress = $this->getStudentProgress($currentUser->user['login'], $currentLessonID);
 
 			if($isWorkbookCompleted['is_completed'] == 1){
-
+				
 				$unitToComplete = $workbookSettings['unit_to_complete'];
 
-				if($unitToComplete != -1)
+				$result = eF_updateTableData('module_workbook_progress', array('completion_date' => time()), "lessons_ID='".$currentLessonID."' AND users_LOGIN='".$currentUser->user['login']."'");
+
+				if($unitToComplete != -1) {
+						
 					$currentUser->setSeenUnit($unitToComplete, $currentLessonID, true);
+				}
 			}
 
 			echo $studentProgress.'-'.$isWorkbookCompleted['id'];
@@ -589,6 +593,38 @@ class module_workbook extends EfrontModule{
 			$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
 			$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
 			$pdf->setFontSubsetting(false);
+			
+			$pdf->AddPage();
+			
+			$completion_date = '';
+			$resutlt = eF_getTableData('module_workbook_progress', 'completion_date', "users_LOGIN='".$currentUser->user['login']."' and lessons_ID='".$currentLessonID."'");
+			if($resutlt) {
+				$completion_date = $resutlt[0]['completion_date'];
+			}
+						
+			
+			$workbookHTML = '';
+			$workbookHTML .= '<table>';
+			$workbookHTML .= '<tr>';
+			$workbookHTML .= '<td colspan="2">';
+			$workbookHTML .= formatLogin($currentUser->user['login']);
+			$workbookHTML .= '</td>';
+			$workbookHTML .= '</tr>';
+			$workbookHTML .= '<tr>';
+			$workbookHTML .= '<td>';
+			$workbookHTML .= $workbookLessonName;
+			$workbookHTML .= '</td>';
+			$workbookHTML .= '<td>';
+			$workbookHTML .= formatTimestamp($completion_date);
+			$workbookHTML .= '</td>';			
+			$workbookHTML .= '</tr>';
+			$workbookHTML .= '</table>';
+			
+			$pdf->writeHTML($workbookHTML, true, false, true, false, '');			
+			
+			
+			
+			
 			$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
 			$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
 			$pdf->setHeaderFont(Array('Freeserif', 'I', 11));
@@ -597,22 +633,22 @@ class module_workbook extends EfrontModule{
 			$pdf->AliasNbPages();			
 			$pdf->SetFont('Freeserif', '', 10);
 			$pdf->SetTextColor(0, 0, 0);
-			
-			
-			$pdf->AddPage();
+						
 			$pdf->SetFont('Freeserif', '', 10);
 			$pdf->SetTextColor(0, 0, 0);
 
 
 			$workbookAnswers = $this->getWorkbookAnswers($currentUser->user['login'], array_keys($workbookItems));
-			$workbookHTML = '';
+
+			$pdf->AddPage();
+			$workbookHTML .= '';
 
 			$itemLogo = new EfrontFile(G_DEFAULTIMAGESPATH."32x32/unit.png");
 			$itemLogoUrl = $itemLogo['path'];
 
 			foreach($workbookItems as $key => $value){
 
-				$workbookHTML .= '<div style="width:98%;float:left;border:1px dotted #808080;">';
+				$workbookHTML .= '<div id="pdf-block" style="width:98%;float:left;border:1px dotted #808080;page-break-after:always;">';
 				$workbookHTML .= '<div style="background-color: #EAEAEA;font-weight: bold;">';
 				$workbookHTML .= '<img src="'.$itemLogoUrl.'"/>&nbsp;'._WORKBOOK_ITEMS_COUNT.$value['position'];
 
@@ -650,8 +686,10 @@ class module_workbook extends EfrontModule{
 							$workbookHTML .= '<div>'.$value['question_text'].'</div>';
 						}
 					}
-					else
+					else{
 						$workbookHTML .= '<div>'.$workbookAnswers[$value['id']].'</div>';
+						
+					}
 				}
 
 				$workbookHTML .= '</div><br/>';
@@ -715,7 +753,6 @@ class module_workbook extends EfrontModule{
 			$checkAnswer = $workbookItems[$itemID]['check_answer'];
 
 			if(!in_array($questionID, array_keys($lessonQuestions))){	// reused item
-
 				$reusedQuestion = $this->getReusedQuestionDetails($questionID);
 				$questionType = $reusedQuestion['type'];
 			}
@@ -725,10 +762,10 @@ class module_workbook extends EfrontModule{
 			$question = QuestionFactory::factory($questionID);
 			$question->setDone($_POST['question'][$questionID]);
 			$results = $question->correct();
-
-			if($questionType != 'raw_text' && $results['score'] != 1)
+						
+			if($questionType != 'raw_text' && !ef_compare_float($results['score'], 1)){
 				print '-1';
-			else{
+			}else{
 				$form = new HTML_QuickForm("questionForm", "post", "", "", null, true);
 
 				$fields = array(
@@ -776,6 +813,8 @@ class module_workbook extends EfrontModule{
 			$questionID = $workbookItems[$itemID]['item_question'];
 
 			$question = QuestionFactory::factory($questionID);
+			$question->userAnswer = urldecode($_POST['ans']);
+			
 			$form = new HTML_QuickForm("questionForm", "post", "", "", null, true);
 			$form->setDefaults($_POST);
 
@@ -910,6 +949,7 @@ class module_workbook extends EfrontModule{
 					`users_LOGIN` varchar(255) NOT NULL,
 					`progress` float(5,2) NOT NULL,
 					`non_optional` int(11) NOT NULL,
+					`completion_date` INT( 10 ) NULL 
 					PRIMARY KEY (`id`)
 					) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 		
@@ -1465,7 +1505,11 @@ class module_workbook extends EfrontModule{
 
     public function getModuleIcon() {
         return $this -> moduleBaseLink.'images/workbook_logo.png';
-    }    
+    }
+    
+    
+    
+	 
 }
 
 ?>

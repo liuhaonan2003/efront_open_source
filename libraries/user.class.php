@@ -1170,9 +1170,24 @@ abstract class EfrontUser
 				$parsedUsers[$value['login']] = true;
 			}
 		}
-		if ($GLOBALS['configuration']['max_online_users'] < sizeof($result)) {
-			EfrontConfiguration::setValue('max_online_users', sizeof($result));
+		
+		
+		$online_users = sizeof($result);
+		if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
+			if (G_VERSIONTYPE != 'standard') { #cpp#ifndef STANDARD
+				$threshold = $GLOBALS['configuration']['max_online_users_threshold'];
+			
+				if ($threshold > 0 && $online_users > $threshold && time() > $GLOBALS['configuration']['max_online_users_threshold_timestamp'] + 24*60*60) {
+					$admin = EfrontSystem::getAdministrator();
+					eF_mail($GLOBALS['configuration']['system_email'], $admin->user['email'], _ONLINEUSERSMAIL, str_replace(array('%w', '%x', '%y', '%z'), array($admin->user['name'], $threshold, $GLOBALS['configuration']['site_name'], G_SERVERNAME), _ONLINEUSERSMAILBODY));
+					EfrontConfiguration::setValue('max_online_users_threshold_timestamp', time());
+				}
+			} #cpp#endif
+		} #cpp#endif
+		if ($GLOBALS['configuration']['max_online_users'] < $online_users) {
+			EfrontConfiguration::setValue('max_online_users', $online_users);
 			EfrontConfiguration::setValue('max_online_users_timestamp', time());
+			
 		}
 		if (G_VERSIONTYPE == 'enterprise' && defined("G_BRANCH_URL") && G_BRANCH_URL && $_SESSION['s_current_branch']) {	
 			$branch = new EfrontBranch($_SESSION['s_current_branch']);

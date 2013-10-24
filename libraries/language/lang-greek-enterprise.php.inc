@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 if (is_file($GLOBALS['path']."language/custom-greek.php.inc")){
     include($GLOBALS['path']."language/custom-greek.php.inc");
 }
@@ -4300,4 +4300,12 @@ define("_NEWLESSONASSIGNMENT", "Νέα ανάθεση μαθήματος");
 define("_COULDNOTFINDLESSON", "Το μάθημα δε βρέθηκε");
 define("_AFORUMDOESNOTEXISTFORTHISLESSONCREATE", "Δεν υπάρχει φόρουμ για αυτό το μάθημα, αλλά μπορείτε να δημιουργήσετε");
 define("_TESTGLOSSARY","Γλωσσάρι στις αξιολογήσεις");
+define("_PROFESSORSFEEDBACK","Διορθώσεις καθηγητή");
+define("_PROFESSORSFEEDBACKANDRESPONSE","Διορθώσεις καθηγητή και σχόλια");
+define("_EXPORTTOXLSALL","Εξαγωγή όλων των σελίδων σε xls");
+define("_DOYOUWANTRECREATEFILE","Θέλετε να δημιουσρήσετε ξανά το αρχείο στον server? Πατήστε Ακύρωση για να κατεβάσετε το υπάρχον");
+define("_ONLINEUSERSMAIL","Έχετε φτάσει το όριο των συνδεδεμένων χρηστών");
+define("_ONLINEUSERSMAILBODY", "Αγαπητέ %w,<br/>έχετε φτάσει το όριο των ταυτόχρονα συνδεδεμένων χρηστών για το for %y στο %z");
+define("_ONLINEUSERSTHRESHOLD","Όριο ταυτόχρονα συνδεδεμένων χρηστών");
+define("_ONLINEUSERSTHRESHOLDNOTE","Ο διαχειριστής θα λάβει ενα e-mail όταν καλυφθεί το όριο");
 ?>

@@ -678,11 +678,13 @@ define("PHPLIVEDOCXAPI","'.$defaultConfig['phplivedocx_server'].'");
 				}
 				
 				$GLOBALS['db'] -> Execute("set foreign_key_checks=0");
-				foreach (explode(";\n", file_get_contents(G_VERSIONTYPE.'.sql')) as $command) {
+
+				foreach (explode(";\n", str_replace("\r\n", "\n", file_get_contents(G_VERSIONTYPE.'.sql'))) as $command) {
 					if (trim($command)) {
 						$GLOBALS['db'] -> execute(trim($command));
 					}
 				}
+				$GLOBALS['db'] -> Execute("truncate cache");
 				$GLOBALS['db'] -> Execute("set foreign_key_checks=1");
 				
 				//Create the file libraries/configuration.php
@@ -705,7 +707,7 @@ define("PHPLIVEDOCXAPI","'.$defaultConfig['phplivedocx_server'].'");
 ?>';
 				file_put_contents($path."phplivedocx_config.php", $phplivedocxConfig);
 
-				eF_updateTableData("users", array('email' => $values['admin_email'], 'password' => EfrontUser::createPassword($values['admin_password']), 'last_login' => ''));
+				eF_updateTableData("users", array('email' => $values['admin_email'], 'password' => EfrontUser::createPassword($values['admin_password']), 'last_login' => '0'));
 				eF_updateTableData("users", array('login' => $values['admin_name']), "id=1");
 				eF_updateTableData("courses", array('created' => time()));
 				eF_updateTableData("courses", array('created' => time(), 'creator_LOGIN' => $values['admin_name']));

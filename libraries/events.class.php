@@ -947,8 +947,8 @@ class EfrontEvent
 
     				// Create a single array to implode it and insert it at once in the notifications queue table
 
-    				//
-    				if ($event_notification['send_immediately']) {
+    				//Added != XXXX_EXPIRY because notification was not sent in expiry date but immediately
+    				if ($event_notification['send_immediately'] && ($this -> event['type'] != EfrontEvent::PROJECT_EXPIRY && $this -> event['type'] != EfrontEvent::LESSON_PROGRAMMED_EXPIRY && $this -> event['type'] != EfrontEvent::COURSE_PROGRAMMED_EXPIRY)) {
     					$timestamp = 0;
     					$_SESSION['send_next_notifications_now'] = 1;
     				} else {

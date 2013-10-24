@@ -2295,7 +2295,7 @@ class FileSystemTree extends EfrontTree
         	<div id = "create_directory_table_'.$tableId.'" style = "display:none;" class = "filemanagerBlock">'.$createFolderString.'</div>
 
         	<div id = "preview_table_'.$tableId.'" style = "height:100%;display:none" class = "filemanagerBlock">
-                <iframe name = "PREVIEW_FRAME" id = "preview_frame" src = "about:blank" style = "border-width:0px;width:100%;height:100%;padding:0px 0px 0px 0px">Sorry, but your browser needs to support iframes to see this</iframe>
+                <iframe name = "PREVIEW_FRAME" id = "preview_frame" src = "about:blank" style = "border-width:0px;width:100%;height:400px;padding:0px 0px 0px 0px">Sorry, but your browser needs to support iframes to see this</iframe>
             </div>';
 /*
         $GLOBALS['smarty'] -> assign("T_BLOCK_DATA", $uploadFormString);

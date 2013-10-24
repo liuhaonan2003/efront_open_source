@@ -836,7 +836,7 @@ class EfrontContentTree extends EfrontTree
         }
 
         $this -> tree = new RecursiveArrayIterator($tree);
-
+        
         //Create arrays for assigning the immediate children and the parents of each unit. These will come especially handy for SCORM 2004 calculations
         $this -> immediateDescendants = array();
         $this -> nodeParents          = array();
@@ -851,7 +851,7 @@ class EfrontContentTree extends EfrontTree
                 $this -> nodeParents[$key] = array($value['parent_content_ID']);
             }
         }
-
+        
         //pr($this -> nodeParents);
         //pr($this -> immediateDescendants);
 

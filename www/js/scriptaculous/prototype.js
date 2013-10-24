@@ -2467,8 +2467,11 @@ Element.Methods = {
     }
 
     if (parent == document.body) {
-      delta[0] -= document.body.offsetLeft;
-      delta[1] -= document.body.offsetTop;
+		var parentOffset = Element.viewportOffset(parent);
+		//@eFront change: It was delta[0] -= document.body.offsetLeft; as below but it created alignemnt issues in file manager and auto complete boxes
+		delta[0] -= parentOffset[0];  
+		//We leave it as it is because delta[1] -= parentOffset[1] created issues when changing pages in file manager  
+		delta[1] -= document.body.offsetTop;
     }
 
     if (options.setLeft)   element.style.left  = (p[0] - delta[0] + options.offsetLeft) + 'px';

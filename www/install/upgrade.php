@@ -155,8 +155,32 @@ if (version_compare($dbVersion, '3.6.13') == 0) {
 	} catch (Exception $e) {
 		$failed_queries[] = $e->getMessage();
 	}
+				
 }
 
+//3.6.14 queries
+if (version_compare($dbVersion, '3.6.14') == -1) {
+
+	try{
+		$db->Execute("ALTER TABLE `users_to_projects` ADD `professor_upload_filename` VARCHAR( 255) NULL DEFAULT NULL");
+		$db->Execute("ALTER TABLE `users_to_projects` ADD `text_grade` VARCHAR( 100 ) NULL DEFAULT NULL");
+	} catch (Exception $e) {
+		$failed_queries[] = $e->getMessage();
+	}
+	
+	try{
+		$db->Execute("create index pm_index ON f_personal_messages (users_LOGIN)");
+	} catch (Exception $e) {
+		$failed_queries[] = $e->getMessage();
+	}
+	
+	try{
+		$db->Execute("create index users_LOGIN ON scorm_data(users_LOGIN)");
+	} catch (Exception $e) {
+		$failed_queries[] = $e->getMessage();
+	}
+	
+}		
 
 
 

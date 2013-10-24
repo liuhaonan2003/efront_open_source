@@ -141,11 +141,20 @@ function askUsers() {
 						}
 					}
 				} #cpp#endif
-				//pr($logins);
-				$students_list = "'".implode("','", $logins)."'";
-				$users         = eF_getTableData("users", "login,name,surname,user_type,user_types_ID", "login IN ($students_list) AND (login like '$preffix%' OR name like '$preffix%' OR surname like '$preffix%' OR user_type like '$preffix%')", "login");
+				$students_list = "'".implode("','", $logins)."'";	
+				if (sizeof($logins) > 100) { // for performance reason
+					$users         = eF_getTableData("users", "login,name,surname,user_type,user_types_ID", "login like '$preffix%' OR name like '$preffix%' OR surname like '$preffix%' OR user_type like '$preffix%'", "login");
+					$logins2 = array();
+					foreach ($users as $value) {
+						$logins2[$value['login']] = $value;
+					}
+					$users = array_values(array_intersect_key($logins2, $logins));
+				} else{
+					$users         = eF_getTableData("users", "login,name,surname,user_type,user_types_ID", "login IN ($students_list) AND (login like '$preffix%' OR name like '$preffix%' OR surname like '$preffix%' OR user_type like '$preffix%')", "login");
+
+				}
 			}
-			
+	
 		// Return active users for messaging:
 		// - admins: all
 		// - supervisors: all

@@ -3278,7 +3278,7 @@ class EfrontLesson
 
 		// The lesson offers skill record remains the same
 		if ($lessonSkillId) {
-			eF_updateTableData("module_hcd_skills", array("description" => _KNOWLEDGEOFLESSON . " ". $this -> lesson['name'] , "categories_ID" => -1), "skill_ID = ". $lessonSkillId);
+			eF_updateTableData("module_hcd_skills", array("description" => _KNOWLEDGEOFLESSON . " ". $this -> lesson['name'] , "categories_ID" => -1), "skill_ID = ". $lessonSkillId['skill_ID']);
 		}
 
 		if ($data['questions']) {
@@ -3499,12 +3499,14 @@ class EfrontLesson
 
 		$content         = eF_getTableData("content", "*", "lessons_ID=".$this -> lesson['id']);
 		if (sizeof($content) > 0) {
+			$contentIds = array();
 			for ($i = 0; $i < sizeof($content); $i++) {
 				$content[$i]['data'] = str_replace(G_SERVERNAME, "##SERVERNAME##", $content[$i]['data']);
 				$content[$i]['data'] = str_replace("content/lessons/".($this -> lesson['share_folder'] ? $this -> lesson['share_folder'] : $this -> lesson['id']), "##LESSONSLINK##", $content[$i]['data']);
+				$contentIds[] = $content[$i]['id'];
 			}
 
-			$content_list    = implode(",", array_keys($content));
+			$content_list    = implode(",", array_values($contentIds));
 			$data['content'] = $content;
 
 			$questions = eF_getTableData("questions", "*", "lessons_ID=".$this -> lesson['id']);
@@ -3662,7 +3664,7 @@ class EfrontLesson
 			}
 		}
 
-		file_put_contents($this -> directory.'/'."data.dat", serialize($data));                         //Create database dump file
+		file_put_contents($this -> directory.'/'."data.dat", serialize($data));                         //Create database dump file	
 		if ($exportFiles) {
 			$lessonDirectory = new EfrontDirectory($this -> directory);
 			$file            = $lessonDirectory -> compress($this -> lesson['id'].'_exported.zip', false);  //Compress the lesson files
@@ -4937,7 +4939,7 @@ class EfrontLesson
 		}
 
 		if ($login && eF_checkParameter($login, 'login')) {
-			!$nonExpired ? $result = eF_getTableData("projects p, users_to_projects up", "p.*, up.grade, up.comments, up.filename,up.last_comment", "up.users_LOGIN = '$login' and up.projects_ID = p.id and p.lessons_ID=".$this -> lesson['id']) : $result = eF_getTableData("projects p, users_to_projects up", "p.*, up.grade, up.comments, up.filename, up.last_comment", "p.deadline > ".time()." and up.users_LOGIN = '$login' and up.projects_ID = p.id and p.lessons_ID=".$this -> lesson['id']);
+			!$nonExpired ? $result = eF_getTableData("projects p, users_to_projects up", "p.*, up.grade, up.text_grade, up.comments, up.filename,up.last_comment", "up.users_LOGIN = '$login' and up.projects_ID = p.id and p.lessons_ID=".$this -> lesson['id']) : $result = eF_getTableData("projects p, users_to_projects up", "p.*, up.grade, up.text_grade, up.comments, up.filename, up.last_comment", "p.deadline > ".time()." and up.users_LOGIN = '$login' and up.projects_ID = p.id and p.lessons_ID=".$this -> lesson['id']);
 		} else {
 			!$nonExpired ? $result = eF_getTableData("projects", "*", "lessons_ID=".$this -> lesson['id']) : $result = eF_getTableData("projects", "*", "deadline > ".time()." and lessons_ID=".$this -> lesson['id']);
 		}
@@ -5105,6 +5107,7 @@ class EfrontLesson
 	 * @access public
 	 */
 	public function insertLessonSkill() {
+		$this->skills=false;
 		// If insertion of a self-contained lesson add the corresponding skill
 		// Insert the corresponding lesson skill to the skill and lesson_offers_skill tables
 		$lessonSkillId = eF_insertTableData("module_hcd_skills", array("description" => _KNOWLEDGEOFLESSON . " ". $this -> lesson['name'], "categories_ID" => -1));

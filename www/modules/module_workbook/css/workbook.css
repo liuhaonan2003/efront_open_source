@@ -115,3 +115,16 @@
 #question_preview input[type=checkbox], #check_answer_td input[type=checkbox]{
 	border: none;
 }
+
+.raw_text_question table tr:last-child {
+	border-top: 1px dotted #AAAAAA;
+}
+.raw_text_question table tr:last-child td {
+	padding: 10px;
+}
+.item_question_student table tr:last-child {
+	border-top: 1px dotted #AAAAAA;
+}
+.item_question_student table tr:last-child td {
+	padding: 10px;
+}

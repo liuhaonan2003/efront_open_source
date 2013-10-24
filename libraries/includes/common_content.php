@@ -475,7 +475,6 @@ if (isset($_GET['add']) || (isset($_GET['edit']) && in_array($_GET['edit'], $leg
 } else {
 	if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
 	    if (G_VERSIONTYPE != 'standard') { #cpp#ifndef STANDARD
-
 	        /*Check current unit*/
 	        if (isset($_GET['package_ID']) && $currentContent) {
 
@@ -628,6 +627,7 @@ if (isset($_GET['add']) || (isset($_GET['edit']) && in_array($_GET['edit'], $leg
 		} else {
 			$visitableIterator         = new EfrontNoTestsFilterIterator(new EfrontNodeFilterIterator(new RecursiveIteratorIterator(new RecursiveArrayIterator($currentContent -> tree), RecursiveIteratorIterator :: SELF_FIRST)));
 		}
+
 		$treeOptions = array('truncateNames' => 25, 'selectedNode' => $currentUnit['id']);
         //$_professor_ ? $treeOptions['edit'] = 1 : $treeOptions['edit'] = 0;
 
@@ -690,7 +690,6 @@ if (isset($_GET['add']) || (isset($_GET['edit']) && in_array($_GET['edit'], $leg
 				}
 			}		*/
             //This is an iterator with only valid units plus empty units, and is used for the navigation tree
-            
             $smarty  -> assign("T_CONTENT_TREE", $currentContent -> toHTML(new EfrontVisitableAndEmptyFilterIterator($visitableIterator), 'dhtmlContentTree', $treeOptions, $scormState));
             
             //This is an iterator with only valid units, and is used for students to navigate back and forth
@@ -819,7 +818,7 @@ if (isset($_GET['add']) || (isset($_GET['edit']) && in_array($_GET['edit'], $leg
 			    //$user = EfrontUserFactory :: factory($value['users_LOGIN']);
 			    //$comments[$key]['avatar'] = $user -> getAvatar();
 			}
-                    	if ($_SESSION['s_type'] != 'administrator' && $_SESSION['s_current_branch']) {	//this applies to supervisors only
+                if ($_SESSION['s_type'] != 'administrator' && $_SESSION['s_current_branch']) {	//this applies to supervisors only
             		$currentBranch = new EfrontBranch($_SESSION['s_current_branch']);
             		$branchTreeUsers = array_keys($currentBranch->getBranchTreeUsers());
             		foreach ($comments as $key => $value) {

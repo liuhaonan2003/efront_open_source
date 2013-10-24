@@ -263,7 +263,9 @@
 			<table style = "width:100%" class = "sortedTable" size = "{$T_TABLE_SIZE}"  sortBy = "3" order = "desc" id = "instancesTable" useAjax = "1" rowsPerPage = "{$smarty.const.G_DEFAULT_TABLE_SIZE}" url = "{$smarty.server.PHP_SELF}?ctg=courses&edit_course={$smarty.get.edit_course}&">
 				<tr class = "topTitle">
 					<td class = "topTitle" name = "name">{$smarty.const._COURSENAME}</td>
-					<td class = "topTitle" name = "name">{$smarty.const._BRANCH}</td>
+					{if $smarty.const.G_VERSIONTYPE == 'enterprise'} {* #cpp#ifdef ENTERPRISE *}
+						<td class = "topTitle" name = "location">{$smarty.const._BRANCH}</td>
+					{/if}{* #cpp#endif *}
 					<td class = "topTitle centerAlign" name = "num_students">{$smarty.const._PARTICIPATION}</td>
 					<td class = "topTitle centerAlign" name = "active">{$smarty.const._ACTIVE}</td>
 					<td class = "topTitle centerAlign noSort">{$smarty.const._OPERATIONS}</td>
@@ -271,7 +273,9 @@
 			{foreach name = 'branch_list' key = 'key' item = 'instance' from = $T_DATA_SOURCE}
 				<tr class = "defaultRowHeight {cycle values = "oddRowColor, evenRowColor"} {if !$instance.active}deactivatedTableElement{/if}">
 					<td><a href = "{$smarty.server.PHP_SELF}?ctg=courses&edit_course={$instance.id}" class = "editLink">{$instance.name}</a></td>
-					<td>{$instance.branch_name}</td>
+					{if $smarty.const.G_VERSIONTYPE == 'enterprise'} {* #cpp#ifdef ENTERPRISE *}
+						<td>{$instance.location}</td>
+					{/if}{* #cpp#endif *}
 					<td class = "centerAlign">{if $instance.max_users}{$instance.num_students}/{$instance.max_users}{else}{$instance.num_students}{/if}</td>
 					<td class = "centerAlign">
 				{if $instance.active == 1}

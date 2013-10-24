@@ -5,9 +5,9 @@
 {/if}
 
 <table>
-{if isset($T_PARENT_DIR)}
+{if isset($T_PARENT_DIR) && $T_PARENT_DIR != ''}
     <tr><td><img src = "images/16x16/folder_up.png" alt = "{$smarty.const._FOLDERUP}" title = "{$smarty.const._FOLDERUP}"/></td>
-        <td><a href = "{$smarty.server.PHP_SELF}?for_type={$smarty.get.for_type}&mode={$smarty.get.mode}&{if $T_PARENT_DIR}&directory={$T_PARENT_DIR}{/if}" alt = "{$smarty.const._UPONELEVEL}" title = "{$smarty.const._UPONELEVEL}">.. {$smarty.const._UPONELEVEL}</a></td></tr>
+        <td><a href = "{$smarty.server.PHP_SELF}?for_type={$smarty.get.for_type}&mode={$smarty.get.mode}{if $T_PARENT_DIR}&directory={$T_PARENT_DIR}{/if}" alt = "{$smarty.const._UPONELEVEL}" title = "{$smarty.const._UPONELEVEL}">.. {$smarty.const._UPONELEVEL}</a></td></tr>
 {/if}
 {foreach name = 'files_list' key = key item = item from = $T_FILES}
     {if $item.type == 'directory'}

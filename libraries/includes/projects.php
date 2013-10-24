@@ -370,7 +370,7 @@ if (isset($_GET['delete_project']) && in_array($_GET['delete_project'], array_ke
 	
 	}
     $smarty -> assign("T_CURRENT_PROJECT", $currentProject);
-	if (isset($_GET['login']) && eF_checkParameter($_GET['login'], 'login')) {
+	if (isset($_GET['login']) && eF_checkParameter($_GET['login'], 'login') && !isset($_GET['upload'])) {
 		$load_editor = true;
 		//$users          = $currentProject -> getUsers();
 		
@@ -417,6 +417,43 @@ if (isset($_GET['delete_project']) && in_array($_GET['delete_project'], array_ke
 		$form -> accept($renderer);
 		$smarty -> assign('T_PROJECT_COMMENT_FORM', $renderer -> toArray());
 		//pr($users);
+	} else if(isset($_GET['login']) && eF_checkParameter($_GET['login'], 'login') && isset($_GET['upload'])) {
+
+		$form2 = new HTML_QuickForm("upload_form", "post", basename($_SERVER['PHP_SELF'])."?ctg=projects&project_results=".$_GET['project_results']."&login=".$_GET['login']."&upload=1", "", null, true);
+	    $file = $form2 -> addElement('file', 'filename', _FILE);
+	    $maxFileSize =  FileSystemTree :: getUploadMaxSize();
+		$form2 -> addRule('filename', _THEFIELD.' "'._FILE.'" '._ISMANDATORY, 'required', null, 'client');
+		$form2 -> addElement("submit", "submit", _SUBMIT, 'class = "flatButton"');
+		
+		if ($form2 -> isSubmitted() && $form2 -> validate()) {                                                              //If the form is submitted and validated
+			$values = $form2 -> exportValues();
+			
+			$projectDirectory = G_UPLOADPATH.$_GET['login'].'/projects';
+	        if (!is_dir($projectDirectory)) {
+	        	EfrontDirectory :: createDirectory($projectDirectory);
+			}
+	        $projectDirectory = G_UPLOADPATH.$_GET['login'].'/projects/'.$currentProject -> project['id'];
+	        if (!is_dir($projectDirectory)) {
+	        	EfrontDirectory :: createDirectory($projectDirectory);
+			}
+	        $filesystem = new FileSystemTree($projectDirectory);
+	        $uploadedFile = $filesystem -> uploadFile('filename', $projectDirectory);
+	        $fields_update = array(
+	        	"professor_upload_filename" => $uploadedFile['id']
+			);
+			
+			$result = eF_updateTableData("users_to_projects", $fields_update, "projects_ID=".$_GET['project_results']." and users_LOGIN='".$_GET['login']."'");
+			if ($result) {
+				$message      = _OPERATIONCOMPLETEDSUCCESSFULLY;
+	            $message_type = 'success';
+			}
+		}
+				
+		$renderer2 = new HTML_QuickForm_Renderer_ArraySmarty($smarty);
+		$form2 -> accept($renderer2);
+		$smarty -> assign('T_PROJECT_UPLOAD_FORM', $renderer2 -> toArray());
+
+		
 	}
 
     if (isset($_GET['ajax']) && $_GET['ajax'] == 'resultsTable') {
@@ -442,6 +479,15 @@ if (isset($_GET['delete_project']) && in_array($_GET['delete_project'], array_ke
 				} 
 			}
           
+			if ($user['professor_upload_filename']) {
+                try {
+                    $projectFile = new EfrontFile($user['professor_upload_filename']);
+					$users[$key]['professor_upload_file'] = $projectFile['name'];
+                } catch (Exception $e) {
+                    $users[$key]['professor_upload_filename'] = '';
+                }				
+			}		  
+		  
         }
 
         isset($_GET['limit']) && eF_checkParameter($_GET['limit'], 'uint') ? $limit = $_GET['limit'] : $limit = G_DEFAULT_TABLE_SIZE;
@@ -475,6 +521,7 @@ if (isset($_GET['delete_project']) && in_array($_GET['delete_project'], array_ke
 				$currentProject -> reset($_GET['reset_user']);
             } elseif (isset($_GET['login']) && eF_checkParameter($_GET['login'], 'login') && in_array($_GET['login'], array_keys($projectUsers))) {
                 $currentProject -> grade($_GET['login'], $_GET['grade']);
+				$currentProject -> textgrade($_GET['login'], $_GET['text_grade']);
             }
         } catch (Exception $e) {
         	handleAjaxExceptions($e);
@@ -562,7 +609,18 @@ if (isset($_GET['delete_project']) && in_array($_GET['delete_project'], array_ke
 	                $message_type = 'failure';
 	            }
 	        }
-	              
+	        
+			if($projectUser['professor_upload_filename']) {
+				try {
+					$projectFile = new EfrontFile($projectUser['professor_upload_filename']);
+					$smarty -> assign("T_PROFESSOR_FILE", $projectFile);
+	            } catch (EfrontFileException $e) {
+	                $smarty -> assign("T_EXCEPTION_TRACE", $e -> getTraceAsString());
+	                $message      = _SOMEPROBLEMOCCURED.': '.$e -> getMessage().' &nbsp;<a href = "javascript:void(0)" onclick = "eF_js_showDivPopup(event, \''._ERRORDETAILS.'\', 2, \'error_details\')">'._MOREINFO.'</a>';
+	                $message_type = 'failure';
+	            }
+				
+			}			      
 
 	        $form =  new HTML_QuickForm("upload_project_form", "post", basename($_SERVER['PHP_SELF']).'?ctg=projects&view_project='.$_GET['view_project'], "", null, true);
 	        if (!$projectFile) {
@@ -637,7 +695,7 @@ if (isset($_GET['delete_project']) && in_array($_GET['delete_project'], array_ke
     	$currentBranch = new EfrontBranch($_SESSION['s_current_branch']);
     	$branchTreeUsers = array_keys($currentBranch->getBranchTreeUsers());
     }
-    
+
     foreach ($projects as $project) {
         //getUsers() initializes user information for the specified projects
         $projectUsers = $project -> getUsers();        

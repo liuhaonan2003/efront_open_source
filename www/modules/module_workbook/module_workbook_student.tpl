@@ -144,7 +144,13 @@
 		</form>
 	</div>
 {else}
-	<div class="item_question_student" id="item_{$id}">{$html_solved}</div>
+	<div class="item_question_student" id="item_{$id}">
+		{if $item.question_type == 'raw_text'}
+			<div class='raw_text_question' >{$html_solved}</div>
+		{else}
+			{$html_solved}
+		{/if}
+	</div>
 {/if}
 {/if}
 </div>
@@ -484,12 +490,17 @@
 
 	function editAnswer(obj, item_id){
 
+		var tds = obj.getElementsByTagName('td');
+		var textarea_content = tds[1].innerHTML;		
+		textarea_content = textarea_content.replace(/<span.*>.*<\/span>/, '');
+		textarea_content = textarea_content.trim();
+		
 		var url = '{/literal}{$T_WORKBOOK_BASEURL}{literal}';
 		var parameters = "&item_to_update=" + item_id + "&";
 
 		var edit_answer = document.getElementById('edit_answer_' + item_id);
 		edit_answer.style.display = 'none';
-
+		
 		for(i = 0; i < obj.getElementsByTagName("input").length; i++){
 
 			if(obj.getElementsByTagName("input")[i].type == "hidden"){
@@ -498,6 +509,7 @@
 					parameters += obj.getElementsByTagName("input")[i].name + "=" + obj.getElementsByTagName("input")[i].value + "&";
 			}
 		}
+		parameters += "ans=" + encodeURIComponent(textarea_content);
 
 		makeRequestEditAnswer(url, parameters, item_id);
 	}
@@ -540,7 +552,6 @@
 			if(http_request.readyState == 4){
 
 				if(http_request.status == 200){
-					
 					var result = http_request.responseText;
 					var editForm = '<form action="javascript:submitEditForm(document.getElementById(\'edit_answer_form_' + item_id + '\'), ' + item_id + ');" name="edit_answer_form_' + item_id + '" id="edit_answer_form_' + item_id + '">';
 					var editForm2 = '<input class="flatButton" name="submit" value="{/literal}{$smarty.const._WORKBOOK_ITEM_CHECK_ANSWER}{literal}" type="button" onclick="javascript:submitEditForm(document.getElementById(\'edit_answer_form_' + item_id + '\'), ' + item_id + ');"/>';
@@ -617,7 +628,7 @@
 				if(http_request.status == 200){
 					
 					result = http_request.responseText;
-					document.getElementById('item_' + item_id).innerHTML = result;
+					document.getElementById('item_' + item_id).innerHTML = "<div class='raw_text_question'>"+result+"</div>";
 
 					var edit_answer = document.getElementById('edit_answer_' + item_id);
 					edit_answer.style.display = 'inline';

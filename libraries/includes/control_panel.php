@@ -127,7 +127,7 @@ try {
             }
             //New lessons block (Admin block)
             if (!isset($currentUser -> coreAccess['lessons']) || $currentUser -> coreAccess['lessons'] != 'hidden') {
-                $lessons = eF_getTableData("users_to_lessons ul, lessons l, users u", "DISTINCT users_LOGIN,  count(lessons_ID) AS count", "ul.users_LOGIN=u.login and u.archive=0 and ul.archive=0 and l.archive=0 and ul.lessons_ID = l.id and l.course_only = 0 and ul.from_timestamp=0", "", "", "100");     //Get the new lesson registrations
+                $lessons = eF_getTableData("users_to_lessons ul, lessons l, users u", "DISTINCT users_LOGIN,  count(lessons_ID) AS count", "ul.users_LOGIN=u.login and u.archive=0 and ul.archive=0 and l.archive=0 and ul.lessons_ID = l.id and l.course_only = 0 and ul.from_timestamp=0", "", "users_LOGIN", "100");     //Get the new lesson registrations
                 $smarty  -> assign("T_NEW_LESSONS", $lessons);                                                          //Assign the list to smarty, to be displayed at the first page
 
                 $constraints = array('archive' => false, 'active' => true, 'limit' => 100);
@@ -350,7 +350,11 @@ try {
                     }
                     $smarty -> assign("T_CURRENT_UNIT", $firstUnseenUnit);
                 } else {
-                    $iterator = new EfrontVisitableFilterIterator(new EfrontNodeFilterIterator(new RecursiveIteratorIterator(new RecursiveArrayIterator($currentContent -> tree), RecursiveIteratorIterator :: SELF_FIRST)));
+					if (EfrontUser::isOptionVisible('tests')) { 
+		            	$iterator = new EfrontVisitableFilterIterator(new EfrontNodeFilterIterator(new RecursiveIteratorIterator(new RecursiveArrayIterator($currentContent -> tree), RecursiveIteratorIterator :: SELF_FIRST))); 
+					} else { 
+		            	$iterator = new EfrontNoTestsFilterIterator (new EfrontNodeFilterIterator(new RecursiveIteratorIterator(new RecursiveArrayIterator($currentContent -> tree), RecursiveIteratorIterator :: SELF_FIRST)));    //Create a new iterator, so that the internal iterator pointer is not reset 
+					}                     	
                     $iterator -> next();
                     $firstUnseenUnit = $firstUnit = $iterator -> current();
 
@@ -511,13 +515,14 @@ try {
                 if (G_VERSIONTYPE != 'standard') { #cpp#ifndef STANDARD
 
                 	if (EfrontUser::isOptionVisible('search_user')) {
-                		if (G_VERSIONTYPE == 'educational') { #cpp#ifdef EDUCATIONAL
-                			$controlPanelOptions[] = array('text' => _SEARCHEMPLOYEE, 'image' => "32x32/search.png", 'href' => "administrator.php?ctg=search_users");
-                		} else { #cpp#else
-							if (!isset($currentUser -> coreAccess['organization']) || $currentUser -> coreAccess['organization'] != 'hidden') {
-								$controlPanelOptions[] = array('text' => _SEARCHEMPLOYEE, 'image' => "32x32/search.png", 'href' => "administrator.php?ctg=module_hcd&op=reports");
-							}
-                		} #cpp#endif
+                		$controlPanelOptions[] = array('text' => _SEARCHEMPLOYEE, 'image' => "32x32/search.png", 'href' => "administrator.php?ctg=search_users");
+                		
+                		//if (G_VERSIONTYPE == 'educational') { #cpp#ifdef EDUCATIONAL
+                		//} else { #cpp#else
+						//	if (!isset($currentUser -> coreAccess['organization']) || $currentUser -> coreAccess['organization'] != 'hidden') {
+						//		$controlPanelOptions[] = array('text' => _SEARCHEMPLOYEE, 'image' => "32x32/search.png", 'href' => "administrator.php?ctg=module_hcd&op=reports");
+						//	}
+                		//} #cpp#endif
                 	}
 
                 	if (EfrontUser::isOptionVisible('archive')) {
@@ -551,12 +556,13 @@ try {
             if ($currentUser -> coreAccess['content'] != 'hidden') {
                 $currentLesson -> options['lesson_info'] ? $controlPanelOptions[0]  = array('text' => _LESSONINFORMATION, 'image' => "32x32/information.png",       'href' => basename($_SERVER['PHP_SELF'])."?ctg=lesson_information") : null;
                 
-	            if ($GLOBALS['configuration']['disable_tests'] != 1 && $currentLesson -> options['tests'] == 1) {     	
+	            if (EfrontUser::isOptionVisible('tests')) {     	
 	                 $firstNodeIterator = new EfrontNodeFilterIterator(new RecursiveIteratorIterator(new RecursiveArrayIterator($currentContent -> tree), RecursiveIteratorIterator :: SELF_FIRST));  
 	            } else {
 	                 $firstNodeIterator = new EfrontNoTestsFilterIterator(new EfrontNodeFilterIterator(new RecursiveIteratorIterator(new RecursiveArrayIterator($currentContent -> tree), RecursiveIteratorIterator :: SELF_FIRST)));
 	            }
-                if ($currentContent && $currentContent -> getFirstNode($firstNodeIterator)){
+				
+                if ($currentContent && $currentContent -> getFirstNode($firstNodeIterator) && !empty($firstNodeIterator)){
                     $controlPanelOptions[1]  = array('text' => _CONTENTMANAGEMENT, 'image' => "32x32/content.png",      'href' => basename($_SERVER['PHP_SELF'])."?ctg=content&view_unit=".$currentContent -> getFirstNode($firstNodeIterator) -> offsetGet('id'));
                 }  else {
                     $controlPanelOptions[1]  = array('text' => _CONTENTMANAGEMENT, 'image' => "32x32/content.png",      'href' => basename($_SERVER['PHP_SELF'])."?ctg=content");

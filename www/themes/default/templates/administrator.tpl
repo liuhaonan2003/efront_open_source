@@ -481,18 +481,24 @@
 {/if}
 
 
-{if $smarty.const.G_VERSIONTYPE == 'educational'} {* #cpp#ifdef EDUCATIONAL *}
+{*{if $smarty.const.G_VERSIONTYPE == 'educational'}  #cpp#ifdef EDUCATIONAL *}
 	{if $T_CTG == 'search_users'}
 	    {assign var = "title" value = '<a class="titleLink" href ="'|cat:$smarty.server.PHP_SELF|cat:'?ctg=control_panel">'|cat:$smarty.const._HOME|cat:'</a>'}
 	    {assign var = "title" value = $title|cat:'&nbsp;&raquo;&nbsp;<a class = "titleLink" href ="'|cat:$smarty.server.PHP_SELF|cat:'?ctg=search_users">'|cat:$smarty.const._SEARCHFORUSER|cat:'</a>'}
 	    {*moduleSearchCoursesPage: Display the search courses page*}
 	    {capture name = "moduleSearchCoursesPage"}
+	    						{*
 	                            <tr><td class = "moduleCell">
 	                                {include file="includes/hcd/reports.tpl"}
 	                            </td></tr>
+	                            *}
+	                            <tr><td class = "moduleCell">
+	                                {include file="includes/search_users.tpl"}
+	                            </td></tr>
+	                            
 	    {/capture}
 	{/if}
-{/if} {* #cpp#endif *}
+{*{/if}  #cpp#endif *}
 
 {*///MODULES2*}
 {if $T_CTG == 'module'}
