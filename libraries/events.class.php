@@ -102,7 +102,7 @@ class EfrontEvent
     const TEST_START = 76;
     const TEST_COMPLETION = 77;   // users_LOGIN, lessons_ID, lessons_name, entity_ID (=test_ID), entity_name (=test name)
     const TEST_FAILURE = 78;   // users_LOGIN, lessons_ID, lessons_name, entity_ID (=test_ID), entity_name (=test name)
-
+    const TEST_MARKED = 79;   // users_LOGIN, lessons_ID, lessons_name, entity_ID (=test_ID), entity_name (=test name)
 
     // Content [100-124]
     const CONTENT_CREATION = 100;
@@ -266,6 +266,7 @@ class EfrontEvent
    							   //EfrontEvent::TEST_START => array("text" => _TEST_START, "category" => "tests"),
    							   EfrontEvent::TEST_COMPLETION => array("text" => _TEST_COMPLETION, "category" => "tests", "canBeNegated" => _TEST_NOT_COMPLETED),
 							   EfrontEvent::TEST_FAILURE => array("text" => _TEST_FAILURE, "category" => "tests"),
+   							   EfrontEvent::TEST_MARKED => array("text" => _TEST_MARKED, "category" => "tests"),
 
    							   EfrontEvent::CONTENT_CREATION => array("text" => _CONTENT_CREATION, "category" => "content"),
    							   EfrontEvent::CONTENT_MODIFICATION => array("text" => _CONTENT_MODIFICATION, "category" => "content"),
@@ -948,7 +949,7 @@ class EfrontEvent
     				// Create a single array to implode it and insert it at once in the notifications queue table
 
     				//Added != XXXX_EXPIRY because notification was not sent in expiry date but immediately
-    				if ($event_notification['send_immediately'] && ($this -> event['type'] != EfrontEvent::PROJECT_EXPIRY && $this -> event['type'] != EfrontEvent::LESSON_PROGRAMMED_EXPIRY && $this -> event['type'] != EfrontEvent::COURSE_PROGRAMMED_EXPIRY)) {
+    				if ($event_notification['send_immediately'] && ($this -> event['type'] != EfrontEvent::PROJECT_EXPIRY && $this -> event['type'] != EfrontEvent::LESSON_PROGRAMMED_EXPIRY && $this -> event['type'] != EfrontEvent::COURSE_PROGRAMMED_EXPIRY && $this -> event['type'] != EfrontEvent::COURSE_CERTIFICATE_EXPIRY)) {
     					$timestamp = 0;
     					$_SESSION['send_next_notifications_now'] = 1;
     				} else {
@@ -1191,6 +1192,8 @@ class EfrontEvent
 	            $this -> event['message'] .=  _COMPLETEDTEST . " <b>" . $this -> event['entity_name'] ."</b> " . _OFTHELESSON . " <b>" . $this -> event['lessons_name'] ."</b>";
 	        } else if ($this -> event['type'] == EfrontEvent::TEST_FAILURE) {
 	            $this -> event['message'] .=  _FAILEDTEST . " <b>" . $this -> event['entity_name'] ."</b> " . _OFTHELESSON . " <b>" . $this -> event['lessons_name'] ."</b>";
+	        } else if ($this -> event['type'] == EfrontEvent::TEST_MARKED) {
+	            $this -> event['message'] .=  _MARKEDTEST . " <b>" . $this -> event['entity_name'] ."</b> " . _OFTHELESSON . " <b>" . $this -> event['lessons_name'] ."</b>";
 	        } else if ($this -> event['type'] == EfrontEvent::NEW_FORUM) {
 	            $this -> event['message'] .=  _CREATEDTHENEWFORUM . " <b>" . $this -> event['entity_name'] ."</b> " . _FORTHELESSON . " <b>" . $this -> event['lessons_name'] ."</b>";
 	        } else if ($this -> event['type'] == EfrontEvent::NEW_TOPIC) {

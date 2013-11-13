@@ -58,7 +58,7 @@ function showBarGraph(el, obj) {
 		options = {"HtmlText": true,
 				   "title":  obj.title,
 				   "xaxis":  {"showLabels": true, "ticks":xLabelsFiltered, "title":obj.xTitle, "labelsAngle": 45}, 
-				   "yaxis":  {"showLabels": true, "title":obj.yTitle},
+				   "yaxis":  {"showLabels": true, "title":obj.yTitle, "min":0},
 				   "bars":   {"show": true, "horizontal": false},
 				   "mouse":  {"track":true, "position": "ne", "relative": true, "trackFormatter": function(obj2){ return obj.xLabels[parseInt(obj2.x)][1] + ' ('+obj.xTitle+') | '+obj2.y +' ('+obj.yTitle+')';}}
 				   

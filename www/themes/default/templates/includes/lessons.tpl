@@ -117,15 +117,15 @@
 			</div>
 
 <!--ajax:usersTable-->
-			<table style = "width:100%" class = "sortedTable" size = "{$T_USERS_SIZE}" sortBy = "4" id = "usersTable" useAjax = "1" rowsPerPage = "{$smarty.const.G_DEFAULT_TABLE_SIZE}" {if isset($T_JOBS_FILTER)}branchFilter="true" jobFilter="{$T_JOBS_FILTER}"{/if} url = "{$smarty.server.PHP_SELF}?ctg=lessons&edit_lesson={$smarty.get.edit_lesson}&">
+			<table style = "width:100%" class = "sortedTable" size = "{$T_TABLE_SIZE}" sortBy = "4" order = "desc" id = "usersTable" useAjax = "1" rowsPerPage = "{$smarty.const.G_DEFAULT_TABLE_SIZE}" {if isset($T_JOBS_FILTER)}branchFilter="true" jobFilter="{$T_JOBS_FILTER}"{/if} url = "{$smarty.server.PHP_SELF}?ctg=lessons&edit_lesson={$smarty.get.edit_lesson}&">
 				<tr class = "topTitle">
 					<td class = "topTitle" name = "login">{$smarty.const._LOGIN}</td>
 					<td class = "topTitle" name = "role">{$smarty.const._USERROLEINLESSON}</td>
 					<td class = "topTitle centerAlign" name = "completed">{$smarty.const._COMPLETED}</td>
 					<td class = "topTitle noSort centerAlign">{$smarty.const._OPERATIONS}</td>
-					<td class = "topTitle centerAlign" name = "partof">{$smarty.const._CHECK}</td>
+					<td class = "topTitle centerAlign" name = "has_lesson">{$smarty.const._CHECK}</td>
 				</tr>
-				{foreach name = 'users_to_lessons_list' key = 'key' item = 'user' from = $T_ALL_USERS}
+				{foreach name = 'users_to_lessons_list' key = 'key' item = 'user' from = $T_DATA_SOURCE}
 				<tr class = "defaultRowHeight {cycle values = "oddRowColor, evenRowColor"} {if !$user.active}deactivatedTableElement{/if}">
 					<td>#filter:login-{$user.login}#</td>
 					<td>
@@ -139,7 +139,7 @@
 						{$T_ROLES[$user.role]}
 				{/if}
 					</td>
-					<td class = "centerAlign">{if $user.partof}{if $user.completed}<img src = "images/16x16/success.png" alt = "{$smarty.const._COMPLETEDON} #filter:timestamp-{$user.timestamp_completed}#" title = "{$smarty.const._COMPLETEDON} #filter:timestamp-{$user.timestamp_completed}#"/>{else}<img src = "images/16x16/forbidden.png" alt = "{$smarty.const._NOTCOMPLETED}" title = "{$smarty.const._NOTCOMPLETED}"/>{/if}{/if}</td>
+					<td class = "centerAlign">{if $user.has_lesson}{if $user.completed}<img src = "images/16x16/success.png" alt = "{$smarty.const._COMPLETEDON} #filter:timestamp-{$user.timestamp_completed}#" title = "{$smarty.const._COMPLETEDON} #filter:timestamp-{$user.timestamp_completed}#"/>{else}<img src = "images/16x16/forbidden.png" alt = "{$smarty.const._NOTCOMPLETED}" title = "{$smarty.const._NOTCOMPLETED}"/>{/if}{/if}</td>
 					<td class = "centerAlign">
 				{if $smarty.const.G_VERSIONTYPE == 'enterprise'} {* #cpp#ifdef ENTERPRISE *}
 						  <a href = "{$smarty.server.PHP_SELF}?ctg=personal&user={$user.login}&op=evaluations&add_evaluation=1&popup=1" target = "POPUP_FRAME" onclick = "eF_js_showDivPopup(event, '{$smarty.const._NEWEVALUATION}', 1)">
@@ -147,16 +147,16 @@
 						  <a href = "{$smarty.server.PHP_SELF}?ctg=personal&user={$user.login}&op=evaluations">
 							  <img src="images/16x16/search.png" title="{$smarty.const._SHOWEVALUATIONS}" alt="{$smarty.const._SHOWEVALUATIONS}"></a>
 				{/if} {* #cpp#endif *}
-				{if $user.basic_user_type == 'student' && in_array($user.login, $T_LESSON_USERS)}
+				{if $user.basic_user_type == 'student' && ($user.has_lesson)}
 							<img class = "ajaxHandle" src="images/16x16/refresh.png" title="{$smarty.const._RESETPROGRESSDATA}" alt="{$smarty.const._RESETPROGRESSDATA}" onclick = "if (confirm(translations['_IRREVERSIBLEACTIONAREYOUSURE'])) resetProgress(this, '{$user.login}');">
 				{/if}
 
 					</td>
 					<td class = "centerAlign">
 				{if !isset($T_CURRENT_USER->coreAccess.lessons) || $T_CURRENT_USER->coreAccess.lessons== 'change'}
-						<input class = "inputCheckbox" type = "checkbox" name = "checked_{$user.login}" id = "checked_{$user.login}" onclick = "ajaxPost('{$user.login}', this);" {if in_array($user.login, $T_LESSON_USERS)}checked = "checked"{/if} />{if in_array($user.login, $T_LESSON_USERS)}<span style = "display:none">checked</span>{/if} {*Text for sorting*}
+						<input class = "inputCheckbox" type = "checkbox" name = "checked_{$user.login}" id = "checked_{$user.login}" onclick = "ajaxPost('{$user.login}', this);" {if ($user.has_lesson)}checked = "checked"{/if} />{if ($user.has_lesson)}<span style = "display:none">checked</span>{/if} {*Text for sorting*}
 				{else}
-						{if in_array($user.login, $T_LESSON_USERS)}<img src = "images/16x16/success.png" alt = "{$smarty.const._LESSONUSER}" title = "{$smarty.const._LESSONUSER}"><span style = "display:none">checked</span>{/if}
+						{if ($user.has_lesson)}<img src = "images/16x16/success.png" alt = "{$smarty.const._LESSONUSER}" title = "{$smarty.const._LESSONUSER}"><span style = "display:none">checked</span>{/if}
 				{/if}
 					</td>
 				</tr>
@@ -331,14 +331,14 @@
 								{assign var = "change_lessons" value = 1}
 							{/if}
 <!--ajax:lessonsTable-->
-								<table style = "width:100%" class = "sortedTable" activeFilter = 1 size = "{$T_LESSONS_SIZE}" sortBy = "0" useAjax = "1" id = "lessonsTable" rowsPerPage = "20" url = "administrator.php?ctg=lessons&">
+								<table style = "width:100%" class = "sortedTable" activeFilter = 1 size = "{$T_TABLE_SIZE}" sortBy = "0" useAjax = "1" id = "lessonsTable" rowsPerPage = "20" url = "administrator.php?ctg=lessons&">
 									<tr class = "topTitle">
 										<td class = "topTitle" name = "name">{$smarty.const._LESSONNAME} </td>
-										<td class = "topTitle" name = "direction_name">{$smarty.const._CATEGORY}</td>
-										<td class = "topTitle centerAlign" name = "students">{$smarty.const._PARTICIPATION}</td>
+										<td class = "topTitle" name = "directions_ID">{$smarty.const._CATEGORY}</td>
+										{*<td class = "topTitle centerAlign" name = "students">{$smarty.const._PARTICIPATION}</td>*}
 										<td class = "topTitle centerAlign" name = "course_only">{$smarty.const._AVAILABLE}</td>
 									{if $smarty.const.G_VERSIONTYPE == 'enterprise'} {* #cpp#ifdef ENTERPRISE *}
-										<td class = "topTitle centerAlign" name ="skills_offered">{$smarty.const._SKILLS}</td>
+										{*<td class = "topTitle centerAlign" name ="skills_offered">{$smarty.const._SKILLS}</td>*}
 									{/if} {* #cpp#endif *}
 									{if 'payments'|eF_template_isOptionVisible}
 										<td class = "topTitle centerAlign" name = "price">{$smarty.const._PRICE}</td>
@@ -347,14 +347,14 @@
 										<td class = "topTitle centerAlign" name = "active">{$smarty.const._ACTIVE2}</td>
 										<td class = "topTitle noSort centerAlign">{$smarty.const._OPERATIONS}</td>
 									</tr>
-					{foreach name = 'lessons_list2' key = 'key' item = 'lesson' from = $T_LESSONS_DATA}
+					{foreach name = 'lessons_list2' key = 'key' item = 'lesson' from = $T_DATA_SOURCE}
 									<tr id = "row_{$lesson.id}" class = "{cycle values = "oddRowColor, evenRowColor"} {if !$lesson.active}deactivatedTableElement{/if}">
 										<td id = "column_{$lesson.id}" class = "editLink">
 											<a class="editLink {if 'tooltip'|eF_template_isOptionVisible}info{/if}" url = "ask_information.php?lessons_ID={$lesson.id}&type=lesson" href= "{$smarty.server.PHP_SELF}?ctg=lessons&edit_lesson={$lesson.id}">
 												{$lesson.name}
 											</a>
-										<td>{$lesson.direction_name}</td>
-										<td class = "centerAlign">{if !$lesson.course_only}{if $lesson.max_users}{$lesson.students}/{$lesson.max_users}{else}{$lesson.students}{/if}{else}-{/if}</td>
+										<td>{$T_DIRECTIONS_PATHS[$lesson.directions_ID]}</td>
+										{*<td class = "centerAlign">{if !$lesson.course_only}{if $lesson.max_users}{$lesson.students}/{$lesson.max_users}{else}{$lesson.students}{/if}{else}-{/if}</td>*}
 										<td class = "centerAlign">
 									{if $lesson.course_only}
 											<img class = "ajaxHandle" src = "images/16x16/courses.png"	 alt = "{$smarty.const._COURSEONLY}" title = "{$smarty.const._COURSEONLY}" {if $change_lessons}onclick = "setLessonAccess(this, '{$lesson.id}')"{/if}>
@@ -363,7 +363,7 @@
 									{/if}
 										</td>
 									{if $smarty.const.G_VERSIONTYPE == 'enterprise'} {* #cpp#ifdef ENTERPRISE *}
-										<td class = "centerAlign">{if $lesson.skills_offered == 0}-{else}{$lesson.skills_offered}{/if}</td>
+										{*<td class = "centerAlign">{if $lesson.skills_offered == 0}-{else}{$lesson.skills_offered}{/if}</td>*}
 									{/if} {* #cpp#endif *}
 									{if 'payments'|eF_template_isOptionVisible}
 										<td class = "centerAlign">{if !$lesson.course_only}{if $lesson.price == 0}-{else}{$lesson.price_string}{/if}{else}-{/if}</td>

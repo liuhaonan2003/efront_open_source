@@ -426,9 +426,12 @@ class EfrontGroup
      */
     public function useKeyForUser($user) {
     	if ($user instanceOf EfrontUser) {
+    		$userObj = $user;
     		$user = $user -> user['login'];
+    	} else {
+    		$userObj = EfrontUserFactory::factory($user);
     	}
-
+    	  	
 		$groupUsers = $this -> getUsers();
 		if (in_array($user, $groupUsers['student']) || in_array($user, $groupUsers['professor'])) {
 //			throw new Exception(_YOUAREALREADYMEMBEROFTHISGROUP, EfrontGroupException::USER_ALREADY_MEMBER);
@@ -440,8 +443,20 @@ class EfrontGroup
 			throw new Exception(_MAXIMUMKEYUSAGESREACHED, EfrontGroupException::ASSIGNMENT_ERROR);
 		}
 
+		$change_counter = false;
+		foreach ($this -> getCourses() as $course) {
+			if(!$userObj -> hasCourse($course['courses_ID'])) {
+				$change_counter = true;
+			}
+		}
+		foreach ($this -> getLessons as $lesson) {
+			if(!$userObj -> hasLesson($lesson['lessons_ID'])) {
+				$change_counter = true;
+			}
+		}		
+		
 		$max_users_errors = $this -> addUsers($user, $this -> group['user_types_ID'] ? $this -> group['user_types_ID'] : 'student');
-		if ($this -> group['key_max_usage']) {
+		if ($this -> group['key_max_usage'] && $change_counter) {
 			$this -> group['key_current_usage']++;
 			$this -> persist();
 		}

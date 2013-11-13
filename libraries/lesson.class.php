@@ -4714,7 +4714,76 @@ class EfrontLesson
 
 		return $lessons;
 	}
+	
 
+	public static function getAllLessons($constraints = array()) {
+		list($where, $limit, $orderby) = EfrontLesson :: convertLessonConstraintsToSqlParameters($constraints);
+		$result	= eF_getTableData("lessons l", "l.*", implode(" and ", $where), $orderby, false, $limit);
+		return $result;
+	}
+
+	public static function countAllLessons($constraints = array()) {
+		list($where, $limit, $orderby) = EfrontLesson :: convertLessonConstraintsToSqlParameters($constraints);
+		$result = eF_countTableData("lessons l", "l.id", implode(" and ", $where));
+		return $result[0]['count'];
+	}
+
+	public static function convertLessonConstraintsToSqlParameters($constraints) {
+		$where = self::addWhereConditionToLessonConstraints($constraints);
+		$limit = self::addLimitConditionToConstraints($constraints);
+		$order = self::addSortOrderConditionToConstraints($constraints);
+	
+		return array($where, $limit, $order);
+	}
+	private static function addWhereConditionToLessonConstraints($constraints) {
+		$where = array();
+		if (isset($constraints['archive'])) {
+			$constraints['archive'] ? $where[] = 'l.archive!=0' : $where[] = 'l.archive=0';
+		}
+		if (isset($constraints['active'])) {
+			$constraints['active'] ? $where[] = 'l.active=1' : $where[] = 'l.active=0';
+		}
+		
+	
+		if (isset($constraints['filter']) && eF_checkParameter($constraints['filter'], 'text')) {
+			$constraints['filter'] = trim(urldecode($constraints['filter']), "||||");
+			$result 	 = eF_describeTable("lessons");
+			$tableFields = array();
+			foreach ($result as $value) {
+				$tableFields[] = "l.".$value['Field'].' like "%'.$constraints['filter'].'%"';
+			}
+			$where[] = "(".implode(" OR ", $tableFields).")";
+		}
+		if (isset($constraints['condition'])) {
+			$where[] = $constraints['condition'];
+		}
+		if (isset($constraints['table_filters'])) {
+			foreach ($constraints['table_filters'] as $constraint) {
+				$where[] = $constraint['condition'];
+			}
+		}
+		return $where;
+	}
+	private static function addSortOrderConditionToConstraints($constraints) {
+		$order = '';
+		if (isset($constraints['sort']) && eF_checkParameter($constraints['sort'], 'alnum_with_spaces')) {
+			$order = $constraints['sort'];
+			if (isset($constraints['order']) && in_array($constraints['order'], array('asc', 'desc'))) {
+				$order .= ' '.$constraints['order'];
+			}
+		}
+		return $order;
+	}
+	private static function addLimitConditionToConstraints($constraints) {
+		$limit = '';
+		if (isset($constraints['limit']) && eF_checkParameter($constraints['limit'], 'int') && $constraints['limit'] > 0) {
+			$limit = $constraints['limit'];
+		}
+		if ($limit && isset($constraints['offset']) && eF_checkParameter($constraints['offset'], 'int') && $constraints['offset'] >= 0) {
+			$limit = $constraints['offset'].','.$limit;
+		}
+		return $limit;
+	}	
 	/**
 	 * Get system lessons that do not currently belong to a course
 	 *

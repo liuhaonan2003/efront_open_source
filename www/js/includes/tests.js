@@ -818,11 +818,11 @@ function checkQuestions() {
     		r.select('input[type=text]').each(function (s) {s.value ? finished[count] = 1 : null;});
     		r.select('select').each(function (s) {s.value ? finished[count] = 1 : null;});
     	} else if (r.hasClassName('rawTextQuestion')) {
-    		if (typeof(tinyMCE) != 'undefined') {
+    		if (typeof(tinyMCE) != 'undefined' && r.hasClassName('simpleEditor')) { // Added r.hasClassName('simpleEditor') because of #4478
     			if (typeof(tinyMCE.editors[editor_count]) != 'undefined' && tinyMCE.editors[editor_count++].getContent()) {
     				finished[count] = 1;
     			}
-    		} else {
+    		} else {	
     			r.select('textarea').each(function (s) {s.value ? finished[count] = 1 : null;});
     		}
     		

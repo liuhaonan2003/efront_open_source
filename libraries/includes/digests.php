@@ -535,7 +535,10 @@ if ($_GET['op'] == "preview" && eF_checkParameter($_GET['sent_id'], 'id') ) {
             				$condition 		= $send_conditions["lessons_ID"];
             				$event_category = "lessons";
             			}
-            		} else if ($event_category == "courses") {
+            		}else if ($event_category == "survey") {
+            			$condition = $send_conditions["lessons_ID"];
+            			$form -> setDefaults(array('available_lessons'  => $condition));
+            		}else if ($event_category == "courses") {
             			$condition = $send_conditions["courses_ID"];
             		} else {
             			$condition = false;
@@ -610,7 +613,6 @@ if ($_GET['op'] == "preview" && eF_checkParameter($_GET['sent_id'], 'id') ) {
              */
             if ($form -> isSubmitted()) {
             	if ($form -> validate()) {
-
             		// Common information for date/event notifications
             		$subject = $form->exportValue('header');
             		$message = $form->exportValue('message');
@@ -736,6 +738,9 @@ if ($_GET['op'] == "preview" && eF_checkParameter($_GET['sent_id'], 'id') ) {
             				$condition = array("tests_ID" => $condition);
             			} else if ($event_category == "forum" || $event_category == "content") {
             				$condition = array("lessons_ID" => $form -> exportValue('available_lessons'));
+            			} else if ($event_category == "survey") {
+            				$condition = $form -> exportValue('available_lessons');
+            				$condition = array("lessons_ID" => $condition);
             			} else {
             				$condition = array();
             			}

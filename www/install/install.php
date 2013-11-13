@@ -696,6 +696,12 @@ define("PHPLIVEDOCXAPI","'.$defaultConfig['phplivedocx_server'].'");
 					EfrontConfiguration :: setValue('file_encoding', 'UTF7-IMAP');
 				}
 
+				EfrontConfiguration :: setValue('version_type', G_VERSIONTYPE);
+				EfrontConfiguration :: setValue('version_users', '');
+				EfrontConfiguration :: setValue('version_activated', '');
+				EfrontConfiguration :: setValue('version_upgrades', '');
+				EfrontConfiguration :: setValue('version_key', '');
+
 				EfrontConfiguration :: setValue('time_zone', date_default_timezone_get());
 				
 				$defaultConfig = EfrontConfiguration :: getValues();

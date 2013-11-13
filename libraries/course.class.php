@@ -4240,7 +4240,7 @@ class EfrontCourse
 					$evalString .=  $completedLessons[$lessonRules['lesson'][$i]].' '.($lessonRules['condition'][$i+1] == 'and' ? '&' : '|');
 				}
 				$evalString = $evalString.' '.$completedLessons[$lessonRules['lesson'][$i]];				
-				if (!empty($completedLessons) && !$completedLessons[$lessonRules['lesson'][$i]]) {
+				if (!empty($completedLessons) && isset($completedLessons[$lessonRules['lesson'][$i]])) {
 					if (trim($evalString) == '') {
 						$evalString = 'false';
 					}

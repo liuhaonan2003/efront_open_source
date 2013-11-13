@@ -97,7 +97,7 @@ class EfrontIMS
 
                     break;
                 case 'ITEM':
-                    $item_key = $key;
+                	$item_key = $key;
                     $total_fields[$key]['lessons_ID']		= $lessons_ID;
                     $total_fields[$key]['timestamp']		= time();
                     $total_fields[$key]['ctg_type']			= 'theory';
@@ -122,13 +122,36 @@ class EfrontIMS
 		foreach ($references as $key => $value) {
 
 			$ref = array_search($value['IDENTIFIERREF'], $resources);
+			
 			if ($ref !== false && !is_null($ref)) {
 				/*SCORM 2004: The xml:base attribute provides a relative path offset for the content file(s) contained in the manifest*/
 				$path_offset = $tagArray[$ref]['attributes']['XML:BASE'];
 
-				$data = file_get_contents($scormPath."/".$path_offset.$tagArray[$ref]['attributes']['HREF']);
+				if ($tagArray[$ref]['attributes']['TYPE'] == 'imswl_xmlv1p2') {
+					foreach ($tagArray[$ref]['children'] as $node) {
+						if ($tagArray[$node]['tag'] == 'FILE') {
+							$href = $tagArray[$node]['attributes']['HREF'];
+							//debug();
+							//pr($currentLesson -> getDirectory()."/".$scormFolderName."/".$path_offset.$href);
+							$data = file_get_contents($currentLesson -> getDirectory()."/".$scormFolderName."/".$path_offset.$href);
+							file_put_contents($currentLesson -> getDirectory()."/".$scormFolderName."/".$path_offset.dirname($href).'/weblink.html', self::createWebLink($data));
+							$href = dirname($href).'/weblink.html';
+							//exit;
+							//pr($data);exit;
+						}
+					}						
+				} else if (!$tagArray[$ref]['attributes']['HREF']) {
+					foreach ($tagArray[$ref]['children'] as $node) {
+						if ($tagArray[$node]['tag'] == 'FILE') {
+							$href = $tagArray[$node]['attributes']['HREF'];
+						}
+					}
+				} else {
+					$href = $tagArray[$ref]['attributes']['HREF'];
+				}
+				$data = file_get_contents($currentLesson -> getDirectory()."/".$scormFolderName."/".$path_offset.$href);
 
-				$primitive_hrefs[$ref] = $path_offset.$tagArray[$ref]['attributes']['HREF'];
+				$primitive_hrefs[$ref] = $path_offset.$href;
 				$path_part[$ref]       = dirname($primitive_hrefs[$ref]);
 
 				foreach($tagArray[$ref]['children'] as $value2) {
@@ -154,14 +177,15 @@ class EfrontIMS
 				}
 			}
 		}
-
+		
+//pr($tagArray);exit;
 		$lastUnit = $currentContent -> getLastNode();
 		$lastUnit ? $this_id  = $lastUnit['id'] : $this_id = 0;
 		//$this_id = $tree[sizeof($tree) - 1]['id'];
 
 		foreach ($total_fields as $key => $value)  {
 
-			if (isset($value['ctg_type']))  {
+			if (isset($value['ctg_type']) && $value['name'])  {
 				$total_fields[$key]['previous_content_ID'] = $this_id;
 
 				if (!isset($total_fields[$key]['parent_content_ID'])) {
@@ -433,6 +457,14 @@ class EfrontIMS
                         'previous_content_ID' => '');
 
         //pr($item);
+    }
+    
+    protected static function createWebLink($data) {
+        $xml = simplexml_load_string($data);
+
+        $data = "<html><body><a href = '{$xml->url[0]->attributes()->href}' target = '{$xml->url[0]->attributes()->target}' '{$xml->url[0]->attributes()->windowFeatures}'>{$xml->title[0]}</a></body></html>";
+    	
+    	return $data;
     }
 }
 

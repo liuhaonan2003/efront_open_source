@@ -134,6 +134,7 @@ class EfrontNotification
    							   EfrontNotification::TEST_START => array("text" => _TEST_START, "category" => "tests"),
    							   EfrontNotification::TEST_COMPLETION => array("text" => _TEST_COMPLETION, "category" => "tests", "canBeNegated" => _TEST_NOT_COMPLETED),
    							   EfrontNotification::TEST_FAILURE => array("text" => _TEST_FAILURE, "category" => "tests"),
+   							   EfrontNotification::TEST_MARKED => array("text" => _TEST_MARKED, "category" => "tests"),	
 
    							   EfrontNotification::CONTENT_CREATION => array("text" => _CONTENT_CREATION, "category" => "content"),
    							   EfrontNotification::CONTENT_MODIFICATION => array("text" => _CONTENT_MODIFICATION, "category" => "content"),
@@ -1543,6 +1544,8 @@ h) Enhmerwsh ana X meres gia shmantika gegonota sto eFront (auto prepei na to sy
 	            $this -> notification['message'] .=  _COMPLETEDTEST . " <b>" . $this -> notification['entity_name'] ."</b> " . _OFTHELESSON . " <b>" . $this -> notification['lessons_name'] ."</b>";
 	        } else if ($this -> notification['type'] == EfrontNotification::TEST_FAILURE) {
 	            $this -> notification['message'] .=  _FAILEDTEST . " <b>" . $this -> notification['entity_name'] ."</b> " . _OFTHELESSON . " <b>" . $this -> notification['lessons_name'] ."</b>";
+	        } else if ($this -> notification['type'] == EfrontNotification::TEST_MARKED) {
+	            $this -> notification['message'] .=  _MARKEDTEST . " <b>" . $this -> notification['entity_name'] ."</b> " . _OFTHELESSON . " <b>" . $this -> notification['lessons_name'] ."</b>";
 	        } else if ($this -> notification['type'] == EfrontNotification::TEST_CREATION) {
 	            $this -> notification['message'] .=  _CREATEDTHETEST . " <b>" . $this -> notification['entity_name'] ."</b> " . _OFTHELESSON . " <b>" . $this -> notification['lessons_name'] ."</b>";
 	        } else if ($this -> notification['type'] == EfrontNotification::NEW_FORUM) {

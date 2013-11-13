@@ -4308,4 +4308,5 @@ define("_ONLINEUSERSMAIL","Έχετε φτάσει το όριο των συνδ
 define("_ONLINEUSERSMAILBODY", "Αγαπητέ %w,<br/>έχετε φτάσει το όριο των ταυτόχρονα συνδεδεμένων χρηστών για το for %y στο %z");
 define("_ONLINEUSERSTHRESHOLD","Όριο ταυτόχρονα συνδεδεμένων χρηστών");
 define("_ONLINEUSERSTHRESHOLDNOTE","Ο διαχειριστής θα λάβει ενα e-mail όταν καλυφθεί το όριο");
+define("_TEST_MARKED", "Διόρθωση αξιολόγησης");
 ?>

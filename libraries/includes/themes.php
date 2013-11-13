@@ -139,9 +139,9 @@ try {
             $filesystem -> handleAjaxActions($currentUser);
 
             if (isset($_GET['edit_block'])) {
-                $url = basename($_SERVER['PHP_SELF']).'?ctg=themes&theme='.$layoutTheme -> {$layoutTheme -> entity}['id'].'&edit_block='.$_GET['edit_block'];
+                $url = basename($_SERVER['PHP_SELF']).'?ctg=themes&theme_layout='.$layoutTheme -> {$layoutTheme -> entity}['id'].'&theme='.$layoutTheme -> {$layoutTheme -> entity}['id'].'&edit_block='.$_GET['edit_block'];
             } else {
-                $url = basename($_SERVER['PHP_SELF']).'?ctg=themes&theme='.$layoutTheme -> {$layoutTheme -> entity}['id'].'&add_block=1';
+                $url = basename($_SERVER['PHP_SELF']).'?ctg=themes&theme_layout='.$layoutTheme -> {$layoutTheme -> entity}['id'].'&theme='.$layoutTheme -> {$layoutTheme -> entity}['id'].'&add_block=1';
             }
             $options        = array('share' => false);
             $extraFileTools = array(array('image' => 'images/16x16/arrow_right.png', 'title' => _INSERTEDITOR, 'action' => 'insert_editor'));

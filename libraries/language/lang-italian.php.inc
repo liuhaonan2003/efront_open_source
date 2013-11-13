@@ -1353,8 +1353,8 @@ define("_GENERALUSERINFO","Informazioni generali dell'utente");//General user in
 define("_USERCOMMUNICATIONINFO","Informazioni utente - Comunicazione");//User information on communication
 define("_USERUSAGEINFO","Informazioni utente - Utilizzo del sistema");//User information on system usage
 define("_THEUSERHASNOTDONEANYTESTSINTHISLESSON","L'utente non ha completato le prove in questa lezione");//The user has not completed any tests in this lesson
-define("_USERSTATISTICS","Reports dell'utente");//User reports
-define("_REPORTSFORUSER","Reports sull'utente");//Reports for user
+define("_USERSTATISTICS","Reports dell&#39;utente");//User reports
+define("_REPORTSFORUSER","Reports sull&#39;utente");//Reports for user
 define("_OTHERUSERSINROOM","Altri utenti in chat");//Other users in the room
 define("_NOMESSAGESFOUNDFORTHISINTERVALANDUSER","Nessun messaggio individuato nell'intervallo specificato, camera e dipendente");//No messages found for the specified interval, room and user
 define("_INVITEUSERS","invita altri utenti");//Invite users

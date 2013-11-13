@@ -91,6 +91,7 @@ $smarty -> assign("T_TABLE_OPTIONS", $options);
                     $resources    = array();
 
                     $manifestFile = new EfrontFile($imsPath.'imsmanifest.xml');
+                    
                     EfrontIMS :: import($currentLesson, $manifestFile, $imsFolderName, array('embed_type' => $values['embed_type'], 'popup_parameters' => $values['popup_parameters']));
                 }
                 eF_redirect("".basename($_SERVER['PHP_SELF'])."?ctg=ims&message=".urlencode(_SUCCESSFULLYIMPORTEDIMSFILE)."&message_type=success");

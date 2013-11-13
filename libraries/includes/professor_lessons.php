@@ -117,11 +117,11 @@ if (isset($_GET['delete_lesson']) && eF_checkParameter($_GET['delete_lesson'], '
 		if ($lesson->lesson['creator_LOGIN'] != $_SESSION['s_login']) {
 			throw new Exception(_UNAUTHORIZEDACCESS); 
 		}
-		$lessonUsers = $lesson -> getUsers();
-		if (!empty($lessonUsers)) {
+		$result = eF_getTableData("users_to_lessons", "count(*)", "lessons_ID={$_GET['set_course_only']} and archive=0");
+		if ($result[0]['count(*)'] > 0) {
 			throw new Exception (_THISLESSONHASUSERSENROLLEDPLEASEREMOVEBEFORESWITCHINGMODE);
 		}
-
+		
 		$lesson -> lesson['course_only'] = 1;
 
 		if (G_VERSIONTYPE == 'educational' ) { #cpp#ifdef EDUCATIONAL
@@ -243,9 +243,12 @@ if (isset($_GET['delete_lesson']) && eF_checkParameter($_GET['delete_lesson'], '
 			$smarty -> assign("T_SHARE_FOLDER_WITH", $shareFolderLesson->lesson['name']);
 		}
 
-		if (($editLesson -> lesson['course_only'] && sizeof($editLesson -> getCourses()) > 0) || (!$editLesson -> lesson['course_only'] && sizeof($editLesson -> getUsers()) > 0)) {
-			$courseOnly   -> freeze();
-			$directAccess -> freeze();
+		if (($editLesson -> lesson['course_only'] && sizeof($editLesson -> getCourses()) > 0) || (!$editLesson -> lesson['course_only'])) {
+			$result = eF_getTableData("users_to_lessons", "count(*)", "lessons_ID={$editLesson->lesson['id']} and archive=0");
+			if ($result[0]['count(*)'] > 0) {
+				$courseOnly   -> freeze();
+				$directAccess -> freeze();
+			}
 		}
 
 		$smarty -> assign("T_EDIT_LESSON", $editLesson);
@@ -561,10 +564,13 @@ if (isset($_GET['delete_lesson']) && eF_checkParameter($_GET['delete_lesson'], '
 	        					} else if (isset($_GET['set_all_completed'])) {
 	        						try {
 	        							$roles = EfrontLessonUser::getLessonsRoles();
-	        							$lessonUsers    = $editLesson -> getUsers('student');
-	        							foreach ($lessonUsers as $user) {
-	        								$user = EfrontUserFactory :: factory($user['login'], false, $roles[$user['role']]);
-	        								$user -> completeLesson($editLesson, 100);
+	        							$constraints   = array('archive' => false, 'active' => 1, 'return_objects' => false);
+	        							$users         = $editLesson -> getLessonUsers($constraints);
+	        							foreach ($users as $user) {
+	        								if (EfrontLessonUser::isStudentRole($user['role'])) {
+	        									$user = EfrontUserFactory :: factory($user['login'], false, $roles[$user['role']]);
+	        									$user -> completeLesson($editLesson, 100);
+	        								}
 	        							}
 	        							echo json_encode(array('status' => true));
 	        						} catch (Exception $e) {
@@ -584,6 +590,28 @@ if (isset($_GET['delete_lesson']) && eF_checkParameter($_GET['delete_lesson'], '
 
 	        		}
 
+	        		$roles = EfrontLessonUser::getLessonsRoles(true);
+	        		$smarty -> assign("T_ROLES", $roles);
+	        		
+	        		if (isset($_GET['ajax']) && $_GET['ajax'] == 'usersTable') {
+	        			$constraints   = array('archive' => false, 'active' => 1, 'return_objects' => false) + createConstraintsFromSortedTable();
+	        			$users         = $editLesson -> getLessonUsersIncludingUnassigned($constraints);
+	        			$totalEntries  = $editLesson -> countLessonUsersIncludingUnassigned($constraints);
+	        		
+	        			foreach ($users as $key => $user) {
+	        				if (!$user['has_lesson']) {
+	        					$user['user_types_ID'] ? $users[$key]['role'] = $user['user_types_ID'] : $users[$key]['role'] = $user['user_type'];
+	        				}
+	        			}
+	        			$dataSource	   = $users;
+	        			$tableName     = $_GET['ajax'];
+	        			$alreadySorted = 1;
+	        			$smarty -> assign("T_TABLE_SIZE", $totalEntries);
+	        		
+	        			include("sorted_table.php");
+	        			 
+	        		}
+/*	        		 
 	        		$lessonUsers    = $editLesson -> getUsers();                        //Get all users that have this lesson
 	        		$nonLessonUsers = $editLesson -> getNonUsers();                     //Get all the users that can, but don't, have this lesson
 
@@ -656,6 +684,7 @@ if (isset($_GET['delete_lesson']) && eF_checkParameter($_GET['delete_lesson'], '
 	        			$smarty -> display('professor.tpl');
 	        			exit;
 	        		}
+*/	        		
 	        	} catch (Exception $e) {
 	        		handleNormalFlowExceptions($e);
 	        	}
@@ -670,26 +699,35 @@ if (isset($_GET['delete_lesson']) && eF_checkParameter($_GET['delete_lesson'], '
 	        		if (isset($_GET['postAjaxRequest'])) {
 	        			if (isset($_GET['login']) && eF_checkParameter($_GET['login'], 'login')) {
 	        				isset($_GET['user_type']) && in_array($_GET['user_type'], array_keys($roles)) ? $userType = $_GET['user_type'] : $userType = 'student';
-	        				if (in_array($_GET['login'], array_keys($nonLessonUsers))) {
+	        				 
+	        				$result = eF_getTableData("users_to_lessons", "users_LOGIN, user_type", "archive = 0 and users_LOGIN='{$_GET['login']}' and lessons_ID={$editLesson->lesson['id']}");
+	        				if (sizeof($result) == 0) {
 	        					$editLesson -> addUsers($_GET['login'], $userType);
-	        				}
-	        				if (in_array($_GET['login'], array_keys($lessonUsers))) {
-	        					$userType != $lessonUsers[$_GET['login']]['role'] ? $editLesson -> setRoles($_GET['login'], $userType) : $editLesson -> archiveLessonUsers($_GET['login']);
+	        				} else {
+	        					$userType != $result[0]['user_type'] ? $editLesson -> setRoles($_GET['login'], $userType) : $editLesson -> archiveLessonUsers($_GET['login']);
 	        				}
 	        			} else if (isset($_GET['addAll'])) {
+	        				 
+	        				$constraints   = array('archive' => false, 'active' => true, 'condition' => 'r.lessons_ID is null', 'return_objects' => false);
+	        				$users = $editLesson->getLessonUsersIncludingUnassigned($constraints);
+	        				 
+	        				isset($_GET['filter']) ? $users = eF_filterData($users, $_GET['filter']) : null;
+	        				 
 	        				$userTypes = array();
-	        				isset($_GET['filter']) ? $nonLessonUsers = eF_filterData($nonLessonUsers, $_GET['filter']) : null;
-	        				foreach ($nonLessonUsers as $user) {
-	        					$user['user_types_ID'] ? $userTypes[] = $user['user_types_ID'] : $userTypes[] = $user['basic_user_type'];
+	        				foreach ($users as $user) {
+	        					$user['user_types_ID'] ? $userTypes[] = $user['user_types_ID'] : $userTypes[] = $user['user_type'];
 	        				}
-	        				$editLesson -> addUsers(array_keys($nonLessonUsers), $userTypes);
+
+	        				$editLesson -> addUsers($users, $userTypes);
 	        			} else if (isset($_GET['removeAll'])) {
-	        				isset($_GET['filter']) ? $lessonUsers = eF_filterData($lessonUsers, $_GET['filter']) : null;
-	        				$editLesson -> archiveLessonUsers(array_keys($lessonUsers));
+	        				$constraints   = array('archive' => false, 'active' => true, 'return_objects' => false);
+	        				$users = $editLesson->getLessonUsers($constraints);
+	        				 
+	        				isset($_GET['filter']) ? $users = eF_filterData($users, $_GET['filter']) : null;
+	        				$editLesson -> archiveLessonUsers(array_keys($users));
 	        			}
 	        			exit;
-	        			exit;
-	        		}
+	        		}	        	
 	        	} catch (Exception $e) {
 	        		handleAjaxExceptions($e);
 	        	}
@@ -796,6 +834,20 @@ if (isset($_GET['delete_lesson']) && eF_checkParameter($_GET['delete_lesson'], '
 	         */
 
 	        if (isset($_GET['ajax']) && $_GET['ajax'] == 'lessonsTable') {
+	        	$directionsTree = new EfrontDirectionsTree();
+	        	$directionPaths = $directionsTree -> toPathString();
+	        	$smarty->assign("T_DIRECTIONS_PATHS", $directionPaths);
+	        	
+	        	$constraints   = array('archive' => false, 'condition' => "creator_LOGIN='{$_SESSION['s_login']}'") + createConstraintsFromSortedTable();
+	        	$dataSource    = EfrontLesson::getAllLessons($constraints);
+	        	$totalEntries  = EfrontLesson::countAllLessons($constraints);
+	        	
+	        	$tableName     = $_GET['ajax'];
+	        	$alreadySorted = 1;
+	        	$smarty -> assign("T_TABLE_SIZE", $totalEntries);
+	        	
+	        	include("sorted_table.php");
+	        		        	
 	        	isset($_GET['limit']) ? $limit = $_GET['limit'] : $limit = G_DEFAULT_TABLE_SIZE;
 
 	        	if (isset($_GET['sort'])) {
