@@ -61,10 +61,12 @@ if (str_replace(DIRECTORY_SEPARATOR, "/", __FILE__) == $_SERVER['SCRIPT_FILENAME
 	if (!isset($currentUser -> coreAccess['statistics']) || $currentUser -> coreAccess['statistics'] != 'hidden') {
 		$myCoursesOptions[] = array('text' => _STATISTICS, 'image' => "32x32/reports.png", 'href' => basename($_SERVER['PHP_SELF'])."?ctg=statistics");
 	}
-	if (EfrontUser::isOptionVisible('forum')) {
+	//Replaced EfrontUser::isOptionVisible here because forum and calendar must be accesible when they are inactive in last lesson visited
+	if ((!isset($currentUser -> coreAccess['forum']) || $currentUser -> coreAccess['forum'] != 'hidden') && $GLOBALS['configuration']['mode_forum']) {
 		$myCoursesOptions[] = array('text' => _FORUM, 'image' => "32x32/forum.png", 'href' => basename($_SERVER['PHP_SELF'])."?ctg=forum");
 	}
-	if (EfrontUser::isOptionVisible('calendar')) {
+	//Replaced EfrontUser::isOptionVisible here because forum and calendar must be accesible when they are inactive in last lesson visited
+	if ((!isset($currentUser -> coreAccess['calendar']) || $currentUser -> coreAccess['calendar'] != 'hidden') && $GLOBALS['configuration']['mode_calendar']) {
 		$myCoursesOptions[] = array('text' => _CALENDAR, 'image' => "32x32/calendar.png", 'href' => basename($_SERVER['PHP_SELF'])."?ctg=calendar");
 	}
 	if (EfrontUser::isOptionVisible('professor_courses') && $_SESSION['s_type'] == 'professor') {

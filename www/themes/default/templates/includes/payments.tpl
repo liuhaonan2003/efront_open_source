@@ -11,6 +11,7 @@
 					<td class = "topTitle" name = "code">{$smarty.const._COUPONCODE}</td>
 					<td class = "topTitle centerAlign" name = "max_uses">{$smarty.const._MAXIMUMUSES}</td>
 					<td class = "topTitle centerAlign" name = "max_user_uses">{$smarty.const._MAXIMUMUSESBYSINGLEUSER}</td>
+					<td class = "topTitle centerAlign" name = "times_used">{$smarty.const._TIMESUSED}</td>
 					<td class = "topTitle" name = "from_timestamp">{$smarty.const._VALIDFROM}</td>
 					<td class = "topTitle centerAlign" name = "duration">{$smarty.const._DURATION}</td>
 					<td class = "topTitle centerAlign" name = "discount">{$smarty.const._DISCOUNT}</td>
@@ -22,6 +23,7 @@
 					<td><a class = "editLink" href = "{$smarty.server.PHP_SELF}?ctg=payments&coupons=1&edit={$coupon.id}&popup=1" target = "POPUP_FRAME" onclick = "eF_js_showDivPopup(event, '{$smarty.const._EDIT}', 2)">{$coupon.code}</a></td>
 					<td class = "centerAlign">{if $coupon.max_uses}{$coupon.max_uses}{else}{$smarty.const._UNLIMITED}{/if}</td>
 					<td class = "centerAlign">{if $coupon.max_uses}{$coupon.max_user_uses}{else}{$smarty.const._UNLIMITED}{/if}</td>
+					<td class = "centerAlign">{$coupon.times_used}</td>
 					<td>#filter:timestamp_time-{$coupon.from_timestamp}#</td>
 					<td class = "centerAlign">{$coupon.duration} {$smarty.const._DAYS}</td>
 					<td class = "centerAlign">{$coupon.discount} %</td>

@@ -5,7 +5,7 @@ $failed_queries = array();
 if (strcmp($GLOBALS['configuration']['version_type'], G_VERSIONTYPE_CODEBASE) != 0) {
 	try {	
 		$GLOBALS['db'] -> Execute("set foreign_key_checks=0");
-		foreach (explode(";\n", file_get_contents(G_VERSIONTYPE.'.sql')) as $command) {
+		foreach (explode(";\n", str_replace("\r\n", "\n", file_get_contents(G_VERSIONTYPE.'.sql'))) as $command) {
 			if (trim($command)) {
 				$GLOBALS['db'] -> execute(trim($command));
 			}
@@ -179,6 +179,12 @@ if (version_compare($dbVersion, '3.6.14') == -1) {
 	} catch (Exception $e) {
 		$failed_queries[] = $e->getMessage();
 	}
+	
+	try{
+		$db->Execute("ALTER TABLE `coupons` ADD `times_used` INT( 10 ) NOT NULL");
+	} catch (Exception $e) {
+		$failed_queries[] = $e->getMessage();
+	}	
 	
 }		
 

@@ -4309,4 +4309,5 @@ define("_ONLINEUSERSMAILBODY", "Dear %w,<br/>You have reached %x concurrent onli
 define("_ONLINEUSERSTHRESHOLD","Concurrent online users threshold");
 define("_ONLINEUSERSTHRESHOLDNOTE","An e-mail will be sent to administrator when threshold will be reached");
 define("_TEST_MARKED", "Test marked");
+define("_TIMESUSED", "Times used");
 ?>
