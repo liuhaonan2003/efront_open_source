@@ -14,7 +14,7 @@ if (str_replace(DIRECTORY_SEPARATOR, "/", __FILE__) == $_SERVER['SCRIPT_FILENAME
 	exit;
 }
 
-if (!EfrontUser::isOptionVisible('calendar')) {
+if (!EfrontUser::isOptionVisible('calendar') && strpos($_SERVER['HTTP_REFERER'], 'ctg=lessons') === false &&  strpos($_SERVER['HTTP_REFERER'], 'op=dashboard') === false) {
 	eF_redirect(basename($_SERVER['PHP_SELF'])."?ctg=control_panel&message=".urlencode(_UNAUTHORIZEDACCESS)."&message_type=failure");
 }
 

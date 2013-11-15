@@ -490,11 +490,10 @@ try {
 	    require_once "module_facebook.php";
 	}
 	elseif ($ctg == 'calendar') {
-	    if (EfrontUser::isOptionVisible('calendar')) {
-	        require_once "calendar.php";
-	    } else {
-	        eF_redirect("".basename($_SERVER['PHP_SELF'])."?ctg=control_panel&message=".urlencode(_UNAUTHORIZEDACCESS)."&message_type=failure");
-	    }
+	    if (!EfrontUser::isOptionVisible('calendar') && strpos($_SERVER['HTTP_REFERER'], 'ctg=lessons') === false &&  strpos($_SERVER['HTTP_REFERER'], 'op=dashboard') === false) {
+		    eF_redirect(basename($_SERVER['PHP_SELF'])."?ctg=control_panel&message=".urlencode(_UNAUTHORIZEDACCESS)."&message_type=failure");
+		}
+		require_once "calendar.php";
 	}
 	elseif ($ctg == 'glossary') {
 		$_SESSION['s_lessons_ID'] OR eF_redirect(basename($_SERVER['PHP_SELF']));

@@ -1,4 +1,4 @@
-=== Version 3.6.14.1 - build 18009 ===
+=== Version 3.6.14.1 - build 18012 ===
 - v1.0 tincan statements are now explicitly rejected, until support is implemented
 - Added throttling to autosaving for tests
 - Users created by supervisors under a branch url, are not assigned the "no specific job position" by default
@@ -24,6 +24,85 @@
 - Fixed discount coupons being used multiple times for manual/free payments
 - Fixed SCORM 2004 units not being able to move
 - Added uniform cache backend with adapters for APC, APCu, wincache and database
+- Added check about course expiry notification
+- Fixed issue about add placement by supervisor
+- Fixed issue about importing users and select custom profile fields
+- Set default value for mail in contact form for logged in users
+- Fixed issue in IE8 about filter in sorted table when searching forsecond time
+- Fixed time reporting for tests being wrong due to autosaving
+- Fixed timers in background tabs in chrome
+- Fixed issue about filer in usersTable
+- Fixed messages sign not appearing consistently
+- Fixed issue about group filtering and branch url in filter stats 
+- Fixed issue about printBlock and open unit on popup window
+- Fixed instance source lessons with shared folders
+- Created extension in administrator tools module in order to sync shared folders
+- Allow the file manager to read the root folder
+- Reordered tabs in excel export for user reports
+- Fixed error in professor courses that prevented users from accessing course's lessons
+- Added ability about xml certificates with more that one page
+- Allowed import of scorm files with special characters
+- Fixed catalog showing nothing under certain circumstances
+- Fixed sorting by branch name in course instances table
+- Fixed issue about showing balance in payments page for all users
+- Added exception handling when lesson certificate lesson file does not exist
+- Fixed social values in system settings
+- Fixed json response in themes selection
+- Fixed g_servername error in sorted table
+- Fixed surveys not working properly for students with professor role in lessons
+- Added start/end_period/time values to course export and create instance 
+- Fixed issue about assigning all users to a course
+- Update scriptaculous files to fix blocks drag and drop issue in IE 10
+- Added Portrait Minimum Decoration (Unicode) from 3.6.8
+- Fixed enforce question answer in tests, when multiple free text questions are present
+- Change code for json encoding arrays after upgrading prototype
+- Fixed issue about deleting users exception
+- Fixed issue in content page when tests are disabled
+- Fixed issue about upgrading to different editions where some tables were missing after the upgrade
+- Fixed jobs selection not working in signup page, when using IE
+- Fixed importing SCORM from complex url
+- Fixed discount coupons being used multiple times for manual/free payments
+- Copy rules when creating instance
+- Fixed issue about last_login error during installation
+- Fixed skills issues for educational edition
+- projects professor's feedback with file upload & text grades
+- Fixed issue about setting to zero maintain_history option in tests
+- Fixed sorting by branch name in course instances table and branch value
+- Fixed issue about branch column appearing in educational edition
+- Added index to f_personal_messages
+- Added export all to xls in advanced reports
+- Fixed issue about explanation showing in multiple many questions
+- Delete old tokens while creating a new one
+- Fixed prototype 1.9 issue in clonePosition (autocompleter)
+- Performance fix for courses completion page
+- Corrected problem in lightGetUserStatusInLesson
+- Fixed issue about submitting profile page without setting avatar 
+- Fixed issue about preview files in firefox and iframe height
+- Fixed issue where case professor deleted question from test after student clicked to redo only wrong
+- Tests reports graphs getTestInfo for all the times a user took a test
+- Fixed issue about removing all users from dynamic group in advanced user reports
+- Fixed issue in export lesson about content ids list
+- Changed code in askUsers for performance reasons
+- Fix for sending messages when username formatting is different
+- Fixed prototype issue in clonePosition
+- Fixed issue about expiry notification and send immeduately option
+- Fixed issue about scheduling of lessons lost when changing shared/unique mode
+- Fixed issue in editor subfolders
+- Fixed an issue in organization chart permissions
+- Added notification to adminstrator, if a certain threshold of concurrent users is reached
+- Fixed scorm import in popups for filenames containing quotes
+- Fixed issue in common question pool where unit of questions were reset
+- Added branch and jobs filter in skill gap users tab
+- Fixed find users page
+- Fixed issue where lesson was completed but course was not and student in material in process has broken lesson link
+- Fixed issue in random pool tests about getting criteria from tabs (difficulty, type etc)
+- Improved check for tinymce editor in checkQuestions in case someone disables editor in a custom theme
+- Fixed issue in checkRules on course lessons
+- Change counter when adding user to group
+- Added test_marked event/notification triggering when test is not in pending state
+- Fixed issue in certificates reports about specific course certificate expiration export
+- Fixed issue in themes layout file manager about working on a diferrent theme from current
+- Fixed issue about adding survey notification for a specific lesson
 
 === Version 3.6.13.3 - build 18006 ===
 - Added autosaving functionality for tests
