@@ -45,7 +45,6 @@ $currentUser->login($currentUser->user['password'], true);
 	}
 	$smarty -> assign("T_CURRENT_USER", $currentUser);
 } catch (Exception $e) {
-pr($e);exit;
 	if ($e -> getCode() == EfrontUserException :: USER_NOT_LOGGED_IN && !isset($_GET['ajax'])) {
 		setcookie('c_request', htmlspecialchars_decode(basename($_SERVER['REQUEST_URI'])), time() + 300);
 	}
@@ -221,7 +220,10 @@ try {
 	        if ($result[0]['access_counter'] >= $currentLesson->lesson['access_limit']) {
 	        	eF_redirect(basename($_SERVER['PHP_SELF'])."?ctg=lessons&message=".urlencode(_ACCESSDEPLETED)."&message_type=failure");
 	        } else {
-	        	eF_updateTableData("users_to_lessons", array('access_counter' => $result[0]['access_counter']+1), "users_LOGIN='".$currentUser->user['login']."' and lessons_ID='".$currentLesson->lesson['id']."'");
+	        	if (!$_SESSION['visited_lesson'][$currentLesson->lesson['id']]) {
+	        		eF_updateTableData("users_to_lessons", array('access_counter' => $result[0]['access_counter']+1), "users_LOGIN='".$currentUser->user['login']."' and lessons_ID='".$currentLesson->lesson['id']."'");
+	        		$_SESSION['visited_lesson'][$currentLesson->lesson['id']] = 1;
+	        	}
 	        }
         }
         
@@ -490,7 +492,8 @@ try {
 	    require_once "module_facebook.php";
 	}
 	elseif ($ctg == 'calendar') {
-	    if (!EfrontUser::isOptionVisible('calendar') && strpos($_SERVER['HTTP_REFERER'], 'ctg=lessons') === false &&  strpos($_SERVER['HTTP_REFERER'], 'op=dashboard') === false) {
+		//Changed $_SERVER['HTTP_REFERER'] because it has a buggy behavior in IE (#4588)
+	    if (!EfrontUser::isOptionVisible('calendar') && strpos($_SERVER['REQUEST_URI'], 'ctg=lessons') === false && strpos($_SERVER['REQUEST_URI'], 'ctg=calendar') === false && strpos($_SERVER['REQUEST_URI'], 'op=dashboard') === false) {
 		    eF_redirect(basename($_SERVER['PHP_SELF'])."?ctg=control_panel&message=".urlencode(_UNAUTHORIZEDACCESS)."&message_type=failure");
 		}
 		require_once "calendar.php";

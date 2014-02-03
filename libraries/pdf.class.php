@@ -35,7 +35,7 @@ class EfrontPdf
 									'medium_header_font_size' => 10,
 									'small_header_font_size'  => 8,
 									'content_font_size'		  => 6,
-									'default_font'			  => 'dejavusans');
+									'default_font'			  => 'dejavusans'); // Change it to arialuni to support Korean fonts
 
 
 	/**

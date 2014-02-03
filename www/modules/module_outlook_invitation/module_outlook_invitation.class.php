@@ -59,7 +59,7 @@ class module_outlook_invitation extends EfrontModule {
  CREATE TABLE `module_outlook_invitation` (
   `courses_ID` int(11) NOT NULL,
   `email` varchar(150) DEFAULT NULL,
-  `duration` int(10) unsigned NOT NULL,
+  `duration` int(10) unsigned NOT NULL default 0,
   `description` text,
   `location` text,
   `subject` varchar(255) DEFAULT 'Invitation to attend training',

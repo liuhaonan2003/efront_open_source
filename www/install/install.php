@@ -4,7 +4,7 @@
  */
 define("G_VERSIONTYPE_CODEBASE", "community");
 define("G_VERSIONTYPE", "community");
-define("G_BUILD", "18012");
+define("G_BUILD", "18015");
 
 session_cache_limiter('none');          //Initialize session
 session_start();
@@ -248,6 +248,12 @@ if ((isset($_GET['step']) && $_GET['step'] == 2) || isset($_GET['unattended'])) 
 					$backupFile = EfrontSystem :: backup($values['db_name'].'_'.time().'.zip');    //Auto backup database
 				}
 				if (version_compare($dbVersion, '3.6.11') == -1) {
+					$file_contents = trim(file_get_contents("3.6.11.txt")); //Get the sql queries text
+					$file_contents = explode(';',$file_contents); //Form the sql queries, by splitting each CREATE statement
+					if (!end($file_contents)) {
+						array_pop($file_contents); //Remove last element, if it is an empty array (which is usually the case)
+					}
+						
 					Installation :: createTable('themes', $file_contents);
 					
 					

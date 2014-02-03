@@ -1,3 +1,70 @@
+=== Version 3.6.14.5 - build 18016 ===
+- Fixed free text questions not recognizing completion in feedbacks and tests
+- Fixed module wiki on install issue when lesson folder does not exit
+- Fixed duplicate file hcd/reports.php and user_search.php
+- Fixed issue in adding skill gap test in educational version
+- Fixed issue api in user_to_branch in case of branch position 'user'
+- Fixed manual upgrade process from versions older than 3.6.11
+- Fixed issue with maximum number of group key uses 
+- Fixed tincan queries not persisting when under a branch url
+- Reverted fix for issue with ealpath() that broke filemanager's uploads
+
+=== Version 3.6.14.3 - build 18014 ===
+- Added branch url to be set via import branches
+- Added arialuni font in tcpdf that supports Korean (change EfrontPdf -> $defaultSettings['default_font'] = 'arialuni' in pdf.class.php)
+- Fixed issue about assigning user to group event
+- Fixed renaming to existing files under windows using old PHP version
+- Fixed branches autocomplete list containing empty lines and not parsing special characters correctly
+- Fixed units not displaying completion status when custom user types are not present
+- Fixed upgrade issue
+- Fixed max times a user uses a coupon
+- Fixed users self-registering through a branch url not being assigned the branch's courses
+- Fixed cli interface improperly filtering input
+- Fixed issue in coupons about times_used field
+- Fixed issue in catalog, courses with not show in catalog option check are not shown in catalog
+- Fixed issue about access limit in lesson (times after registration option)
+- Fixed issue about toggling subcategories in my courses page (#4324)
+- Fixed importing SCORM files with spaces in their filenames
+- Fixed issue with realpath() and empty argument in normalize
+- Fixed issues about uploading arbitary files in avatar
+- Fixed ajax paremeters values not filtered
+- Fixed issue in coupons about times_used field
+- Fixed performance issue in formatLogin()
+- Fixed issue in sending messages when Username format contains user type
+- Fixed issue in Find Users when picking Registration date
+- Fixed default sorting in User reports generator
+
+=== Version 3.6.14.2 - build 18013 ===
+- Fixed performance issue in notifications messages queue tab
+- Removed js alert when student enters coupon
+- Added strip_tags in eF_truncate modifier
+- Fixed issue in module gradebook about old students of lesson being displayed
+- Fixed issue about loading calendar under specific conditions in IE (#4588), $_SERVER['HTTP_REFERER'] is not reliable in IE
+- Added zero score as allowed value in score ranges in module gradebook 
+- Fixed issue in xml certificates about showing correctly select custom user profile values
+- Added ability to add non custom user fields (email etc) in custom fields in xml certificates
+- Added skill category column in skillsTable when assiging skill to lesson
+- Fixed an issue about sorting lessons (case insensitive sorting)
+- Fixed wrong path in sorted table about progress1.gif
+- Fixed duplicate columns issue in upgrade.php
+- Fixed issue about copying unit files from another lesson
+- Fixed delete coupon issue
+- Fixed issue access to user reports when student - supervisor ask for employees' report 
+- Fixed issue about allowing both 'move only forward' and 'force students answer questions' option in tests
+- Added lesson reset progress and course reset progress events in order to be shown in event reports
+- Fixed edit unit comment
+- Fixed issue about non-english characters in ask_users function
+- Fixed issue about excluding lessons that belong to inactive courses and they do not belong to any other active course in messages
+- Fixed issue about applyThemeToImages filter and an external url
+- Added API calls user_to_branch and branch_jobs
+- Added entity_encoding : "raw" to editor because it converted greek characters to entities
+- Fixed issue in module gradebook about old students of lesson being displayed
+- Fixed issue about applyThemeToImages filter and an external url
+- Delete rows from users_to_lessons and users_to_courses when user is deleted
+- Fixed issues about uploading arbitary files in avatar and course import
+- Removed full path of file when showing exceptions
+- Fixed issue about not allowing users to access backups folder
+
 === Version 3.6.14.1 - build 18012 ===
 - v1.0 tincan statements are now explicitly rejected, until support is implemented
 - Added throttling to autosaving for tests

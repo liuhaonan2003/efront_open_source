@@ -275,7 +275,7 @@ class EfrontFile extends ArrayObject
             	$file = EfrontDirectory :: normalize($file);
                 $result = eF_getTableData("files", "*", "path='".str_replace(G_ROOTPATH, '', eF_addSlashes(EfrontDirectory :: normalize($file)))."'", "id");  //eF_addSlashes for files containing '
             } else {
-                throw new EfrontFileException(_ILLEGALPATH.': '.$file, EfrontFileException :: ILLEGAL_PATH);
+                throw new EfrontFileException(_ILLEGALPATH.': '.basename($file), EfrontFileException :: ILLEGAL_PATH);
             }
 
             if (sizeof($result) > 0) {
@@ -295,9 +295,9 @@ class EfrontFile extends ArrayObject
                     $fileArray = array('id'            => -1,                        //Set 'id' to -1, meaning this file has not a database representation
                                        'path'          => $file);
                 } else if (strpos($file, G_ROOTPATH) === false) {
-                    throw new EfrontFileException(_ILLEGALPATH.': '.$file, EfrontFileException :: ILLEGAL_PATH);
+                    throw new EfrontFileException(_ILLEGALPATH.': '.basename($file), EfrontFileException :: ILLEGAL_PATH);
                 } else {
-                    throw new EfrontFileException(_FILEDOESNOTEXIST.': '.$file, EfrontFileException :: FILE_NOT_EXIST);
+                    throw new EfrontFileException(_FILEDOESNOTEXIST.': '.basename($file), EfrontFileException :: FILE_NOT_EXIST);
                 }
             }
         }
@@ -324,9 +324,9 @@ class EfrontFile extends ArrayObject
                 eF_deleteTableData("files", "id=".$this['id']);
                 EfrontSearch :: removeText('files', $this['id'], 'data');
             }
-            throw new EfrontFileException(_FILEDOESNOTEXIST.': '.$this['path'], EfrontFileException :: FILE_DELETED);
+            throw new EfrontFileException(_FILEDOESNOTEXIST.': '.basename($file), EfrontFileException :: FILE_DELETED);
         } elseif ( strpos($this['path'], G_ROOTPATH) === false ) {
-            throw new EfrontFileException(_ILLEGALPATH.': '.$this['path'], EfrontFileException :: ILLEGAL_PATH);    //The file must be inside root path, otherwise it is illegal
+            throw new EfrontFileException(_ILLEGALPATH.': '.basename($file), EfrontFileException :: ILLEGAL_PATH);    //The file must be inside root path, otherwise it is illegal
         }
     }
 

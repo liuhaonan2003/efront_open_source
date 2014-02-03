@@ -281,6 +281,10 @@ class EfrontGroup
         	}
         }
 		eF_insertTableDataMultiple("users_to_groups", $fields);
+		
+		foreach ($fields as $utg) {
+			EfrontEvent::triggerEvent(array("type" => EfrontEvent::NEW_ASSIGNMENT_TO_GROUP, "users_LOGIN" => $utg['users_LOGIN'] , "entity_ID" => $this -> group['id'], "entity_name" => $this -> group['name']));			
+		}
         foreach ($this -> getCourses(true, true) as $course) {
         	try {
         		$course -> addUsers($users, $userTypeInCourses, 1);
@@ -449,7 +453,7 @@ class EfrontGroup
 				$change_counter = true;
 			}
 		}
-		foreach ($this -> getLessons as $lesson) {
+		foreach ($this -> getLessons() as $lesson) {
 			if(!$userObj -> hasLesson($lesson['lessons_ID'])) {
 				$change_counter = true;
 			}

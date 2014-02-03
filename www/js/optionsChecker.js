@@ -68,7 +68,8 @@
 					break;
 				case "IE10":
 					optionsChecker.supportedClients[10] = /MSIE 10/g;
-					break;	
+					break;
+
 			}
 		}
 		
@@ -109,7 +110,7 @@
 			for (i in optionsChecker.validClients) {
 				optionsChecker.browserRegex(optionsChecker.validClients[i]);
 			}
-			var userAgent = navigator.userAgent;
+			var userAgent = navigator.userAgent;			
 			for(i in optionsChecker.supportedClients) {
 				if (userAgent.search(optionsChecker.supportedClients[i]) > 1 ) {
 					if (navigator.userAgent.indexOf("MSIE 6") > 0) {
@@ -117,8 +118,11 @@
 					} else {
 						return true;
 					}
+				} else if(userAgent.search('Trident') > 1 ) {
+					return true; //IE11 does not return
 				}
 			}
+			
 			return false;
 		}
 		optionsChecker.perform_acrobat_detection = function()

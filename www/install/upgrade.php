@@ -5,8 +5,8 @@ $failed_queries = array();
 if (strcmp($GLOBALS['configuration']['version_type'], G_VERSIONTYPE_CODEBASE) != 0) {
 	try {	
 		$GLOBALS['db'] -> Execute("set foreign_key_checks=0");
-		foreach (explode(";\n", str_replace("\r\n", "\n", file_get_contents(G_VERSIONTYPE.'.sql'))) as $command) {
-			if (trim($command)) {
+		foreach (explode(";\n", str_replace("\r\n", "\n", file_get_contents(G_VERSIONTYPE.'_nodrops.sql'))) as $command) {
+			if (trim($command)) {		
 				$GLOBALS['db'] -> execute(trim($command));
 			}
 		}
@@ -23,12 +23,16 @@ if (strcmp($GLOBALS['configuration']['version_type'], G_VERSIONTYPE_CODEBASE) !=
 if (version_compare($dbVersion, '3.6.12') == -1) {
 	try {
 		$db -> Execute("alter table users add last_login int(10) unsigned default NULL");
-		$db->Execute("update users u set last_login=(select max(timestamp) from logs where users_LOGIN=u.login and action='login')");
 	} catch (Exception $e) {
 		if ($e ->getCode() != 1060) {
 			$failed_queries[] = $e->getMessage();
 		}
 	}
+	
+	try {
+		$db->Execute("update users u set last_login=(select max(timestamp) from logs where users_LOGIN=u.login and action='login')");
+	} catch (Exception $e) {}
+	
 	try {
 		$db->Execute("alter table lessons add access_limit int(10) default 0");
 	} catch (Exception $e) {
@@ -165,27 +169,27 @@ if (version_compare($dbVersion, '3.6.14') == -1) {
 		$db->Execute("ALTER TABLE `users_to_projects` ADD `professor_upload_filename` VARCHAR( 255) NULL DEFAULT NULL");
 		$db->Execute("ALTER TABLE `users_to_projects` ADD `text_grade` VARCHAR( 100 ) NULL DEFAULT NULL");
 	} catch (Exception $e) {
-		$failed_queries[] = $e->getMessage();
+		if ($e ->getCode() != 1060) {
+			$failed_queries[] = $e->getMessage();
+		}
 	}
 	
 	try{
 		$db->Execute("create index pm_index ON f_personal_messages (users_LOGIN)");
 	} catch (Exception $e) {
-		$failed_queries[] = $e->getMessage();
+		if ($e ->getCode() != 1061) {
+			$failed_queries[] = $e->getMessage();
+		}
 	}
 	
 	try{
 		$db->Execute("create index users_LOGIN ON scorm_data(users_LOGIN)");
 	} catch (Exception $e) {
-		$failed_queries[] = $e->getMessage();
+		if ($e ->getCode() != 1061) {
+			$failed_queries[] = $e->getMessage();
+		}
 	}
-	
-	try{
-		$db->Execute("ALTER TABLE `coupons` ADD `times_used` INT( 10 ) NOT NULL");
-	} catch (Exception $e) {
-		$failed_queries[] = $e->getMessage();
-	}	
-	
+		
 }		
 
 

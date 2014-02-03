@@ -368,7 +368,7 @@ var customFieldsKeys 	= new Array();
             <table style = "width:100%" class = "sortedTable" size = "{$T_MESSAGE_QUEUE_SIZE}" sortBy = "0" id = "msgQueueTable" useAjax = "1" rowsPerPage = "{$smarty.const.G_DEFAULT_TABLE_SIZE}" url = "administrator.php?ctg=digests&">
                 <tr class = "topTitle">
                     <td class = "topTitle" name="timestamp" width = "35%">{$smarty.const._DATE}</td>
-                    <td name="recipients" class = "topTitle">{$smarty.const._RECIPIENTS}</td>
+                    <td name="recipient" class = "topTitle">{$smarty.const._RECIPIENTS}</td>
                     <td name="subject" class = "topTitle">{$smarty.const._SUBJECT}</td>
                     <td class = "topTitle noSort centerAling">{$smarty.const._OPERATIONS}</td>
                 </tr>

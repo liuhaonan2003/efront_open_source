@@ -8,7 +8,7 @@ $path = "../../libraries/";
 require_once $path."configuration.php";
 
 $request = $_SERVER['REQUEST_URI'];
-$request = str_replace(G_OFFSET.'XAPI/', '', $request);
+$request = preg_replace('#[\w-/]+XAPI/#', '', $request);
 $parts = parse_url($request);
 
 if ($_SERVER['HTTP_X_EXPERIENCE_API_VERSION']) {

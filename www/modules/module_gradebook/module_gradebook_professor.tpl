@@ -74,7 +74,7 @@
 <!--ajax:usersTable-->
 <table style = "width:100%" class = "sortedTable" size = "{$T_TABLE_SIZE}" sortBy = "0" id = "usersTable" useAjax = "1" activeFilter = 1 rowsPerPage = "{$smarty.const.G_DEFAULT_TABLE_SIZE}" url = "{$T_GRADEBOOK_BASEURL}&">
 	<tr>
-		<td class="topTitle">{$smarty.const._GRADEBOOK_STUDENT_NAME}</td>
+		<td class="topTitle" name ="surname">{$smarty.const._GRADEBOOK_STUDENT_NAME}</td>
 {foreach name = 'columns_loop' key = "id" item = "column" from = $T_GRADEBOOK_LESSON_COLUMNS}
 		<td class="topTitle rightAlign">{$column.name} ({$smarty.const._GRADEBOOK_COLUMN_WEIGHT_DISPLAY}: {$column.weight})</td>
 		<td class="topTitle leftAlign noSort" style="width:16px;">

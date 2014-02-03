@@ -222,7 +222,7 @@ var quickformSkillQuestCount  	= '{$T_QUICKTEST_FORM.skill_questions_count_row.h
 						<td class = "elementCell">{$T_TEST_FORM.display_weights.html}</td></tr>
 					{if $T_TEST_FORM.display_weights.error}<tr><td></td><td class = "formError">{$T_TEST_FORM.display_weights.error}</td></tr>{/if}
 					<tr style="display:none;" id = "answer_all"><td class = "labelCell">{$smarty.const._FORCEUSERANSERALLQUESTIONS}:&nbsp;</td>
-						<td class = "elementCell">{$T_TEST_FORM.answer_all.html}</td></tr>
+						<td class = "elementCell">{$T_TEST_FORM.answer_all.html} <span class = "infoCell">{$smarty.const._NOTAPPLIEDFORONLYFORWARD}</span></td></tr>
 					{if $T_TEST_FORM.answer_all.error}<tr><td></td><td class = "formError">{$T_TEST_FORM.answer_all.error}</td></tr>{/if}
 					<tr style="display:none;" id = "keep_best"><td class = "labelCell">{$smarty.const._RETAINBESTEXECUTION}:&nbsp;</td>
 						<td class = "elementCell">{$T_TEST_FORM.keep_best.html}</td></tr>

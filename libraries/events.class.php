@@ -78,6 +78,7 @@ class EfrontEvent
     const PROJECT_SUBMISSION = 30;				 // users_LOGIN, lessons_ID, lessons_name, entity_ID = project_ID, entity_name = project_name
     const PROJECT_CREATION = 31;				// users_LOGIN, lessons_ID, lessons_name, entity_ID = project_ID, entity_name = project_name
 
+    const LESSON_PROGRESS_RESET = 45;
 	const LESSON_PROGRAMMED_START = 39;		 	// users_LOGIN, lessons_ID, lessons_name
 	const LESSON_PROGRAMMED_EXPIRY = 40;
     const PROJECT_EXPIRY = 41;					// users_LOGIN, lessons_ID, lessons_name, entity_ID = project_ID, entity_name = project_name
@@ -95,6 +96,7 @@ class EfrontEvent
 	const COURSE_PROGRAMMED_START = 57;		 	// users_LOGIN, lessons_ID, lessons_name
     const COURSE_PROGRAMMED_EXPIRY = 58;
     const COURSE_CERTIFICATE_EXPIRY = 59;		// users_LOGIN, lessons_ID, lessons_name
+    const COURSE_PROGRESS_RESET = 65;		// users_LOGIN, lessons_ID, lessons_name
     
 
     // Test codes: [75-99]
@@ -240,7 +242,9 @@ class EfrontEvent
    							   EfrontEvent::LESSON_VISITED => array("text" => _LESSON_VISITED, "category" => "lessons", "canBeNegated" => _LESSON_NOT_VISITED, "afterEvent" => 1),
    							   EfrontEvent::LESSON_REMOVAL => array("text" => _LESSON_REMOVAL, "category" => "lessons"),
    							   EfrontEvent::LESSON_COMPLETION => array("text" => _LESSON_COMPLETION, "category" => "lessons", "canBeNegated" => _LESSON_NOT_COMPLETED, "priority" => 1, "afterEvent" => 1),
-
+   							   EfrontEvent::LESSON_PROGRESS_RESET => array("text" => _LESSON_PROGRESS_RESET, "category" => "lessons", "priority" => 1),
+   					
+   					
    							   EfrontEvent::PROJECT_CREATION => array("text" => _NEWLESSONPROJECT, "category" => "lessons", "priority" => 1),
    							   EfrontEvent::PROJECT_SUBMISSION => array("text" => _PROJECT_SUBMISSION, "category" => "lessons", "priority" => 1, "afterEvent" => 1),
    							   EfrontEvent::LESSON_PROGRAMMED_START  => array("text" => _PROGRAMMEDLESSONSTART, "category" => "lessons", "canBePreceded" => 1, "priority" => 1, "afterEvent" => 1),
@@ -258,7 +262,8 @@ class EfrontEvent
 							   EfrontEvent::COURSE_PROGRAMMED_START => array("text" => _PROGRAMMEDCOURSESTART, "category" => "courses", "canBePreceded" => 1, "priority" => 1, "afterEvent" => 1),
 							   EfrontEvent::COURSE_PROGRAMMED_EXPIRY => array("text" => _PROGRAMMEDCOURSEEXPIRY, "category" => "courses", "canBePreceded" => 1, "priority" => 1, "afterEvent" => 1),
 							   EfrontEvent::COURSE_CERTIFICATE_EXPIRY => array("text" => _CERTIFICATEEXPIRY, "category" => "courses", "canBePreceded" => 1, "priority" => 1),
-							   
+   							   EfrontEvent::COURSE_PROGRESS_RESET => array("text" => _COURSE_PROGRESS_RESET, "category" => "courses", "priority" => 1),
+   					
    							   EfrontEvent::NEW_POST_FOR_LESSON_TIMELINE_TOPIC => array("text" => _NEW_POST_FOR_LESSON_TIMELINE_TOPIC, "category" => "social"),
    							   EfrontEvent::DELETE_POST_FROM_LESSON_TIMELINE => array("text" => _DELETE_POST_FROM_LESSON_TIMELINE, "category" => "social"),
 
@@ -1126,6 +1131,8 @@ class EfrontEvent
 	            $this -> event['message'] .=  _NOLONGERATTENDSLESSON . " <b>" . $this -> event['lessons_name'] ."</b>";
 	        }  else if ($this -> event['type'] == EfrontEvent::LESSON_COMPLETION) {
 	            $this -> event['message'] .=  _HASCOMPLETEDLESSON . " <b>" . $this -> event['lessons_name'] ."</b>";
+	        }  else if ($this -> event['type'] == EfrontEvent::LESSON_PROGRESS_RESET) {
+	            $this -> event['message'] .=  _WASBEINGRESETLESSONPROGRESS . " <b>" . $this -> event['lessons_name'] ."</b>";
 	        }  else if ($this -> event['type'] == EfrontEvent::PROJECT_SUBMISSION) {
 	            $this -> event['message'] .=  _SUBMITTEDPROJECT  . " <b>" . $this -> event['entity_name'] ."</b> " . _OFTHELESSON . " <b>" . $this -> event['lessons_name'] ."</b>";
 	        }  else if ($this -> event['type'] == EfrontEvent::PROJECT_CREATION) {
@@ -1166,7 +1173,8 @@ class EfrontEvent
 	            $this -> event['message'] .=  _SCHEDULEDSTARTOFCOURSE . " <b>" . $this -> event['lessons_name'] ."</b>";
 	        }  else if ($this -> event['type'] == EfrontEvent::COURSE_PROGRAMMED_EXPIRY) {
 	            $this -> event['message'] .=  _SCHEDULEDEXPIRYOFCOURSE . " <b>" . $this -> event['lessons_name'] ."</b>";
-
+	        } else if ($this -> event['type'] == EfrontEvent::COURSE_PROGRESS_RESET) {
+	            	$this -> event['message'] .=  _WASBEINGRESETCOURSEPROGRESS . " <b>" . $this -> event['lessons_name'] ."</b>";
 	        }  else if ($this -> event['type'] == EfrontEvent::TEST_CREATION) {
 	        	$this -> event['message'] .=  _CREATEDTHETEST . " <b>" . $this -> event['entity_name'] ."</b> " . _FORTHELESSON . " <b>" . $this -> event['lessons_name'] ."</b>";
 	        }  else if ($this -> event['type'] == EfrontEvent::CONTENT_MODIFICATION) {

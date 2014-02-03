@@ -27,9 +27,9 @@ class module_gradebook extends EfrontModule{
 
 			$currentLesson = $this->getCurrentLesson();
 			$currentLessonID = $currentLesson->lesson['id'];
-			$lessonUsers = $currentLesson->getUsers('student');	// get all students that have this lesson
+			$lessonUsers = $currentLesson->getUsers('student');	// get all students that have this lesson		
 			$lessonColumns = $this->getLessonColumns($currentLessonID);
-			$allUsers = $this->getLessonUsers($currentLessonID, $lessonColumns);
+			$allUsers = $this->getLessonUsers($currentLessonID, $lessonColumns);		
 			$gradeBookLessons = $this->getGradebookLessons($currentUser->getLessons(false, 'professor'), $currentLessonID);
 		}
 		else if($currentUser->getRole($this->getCurrentLesson()) == 'student'){
@@ -43,7 +43,8 @@ class module_gradebook extends EfrontModule{
 
 			$object = eF_getTableData("module_gradebook_objects", "creator", "id=".$_GET['import_grades']);
 
-			if($object[0]['creator'] != $_SESSION['s_login']){
+			//if($object[0]['creator'] != $_SESSION['s_login']){
+			if($currentUser->getRole($this->getCurrentLesson()) != 'professor') {	
 				eF_redirect($this->moduleBaseUrl."&message=".urlencode(_GRADEBOOK_NOACCESS));
 				exit;
 			}
@@ -61,7 +62,8 @@ class module_gradebook extends EfrontModule{
 
 			$object = eF_getTableData("module_gradebook_objects", "creator", "id=".$_GET['delete_column']);
 
-			if($object[0]['creator'] != $_SESSION['s_login']){
+			//if($object[0]['creator'] != $_SESSION['s_login']){
+			if($currentUser->getRole($this->getCurrentLesson()) != 'professor') {	
 				eF_redirect($this->moduleBaseUrl."&message=".urlencode(_GRADEBOOK_NOACCESS));
 				exit;
 			}
@@ -81,8 +83,7 @@ class module_gradebook extends EfrontModule{
 			$workBook = new Spreadsheet_Excel_Writer();
 			$workBook->setTempDir(G_UPLOADPATH);
 			$workBook->setVersion(8);
-			$workBook->send('GradeBook.xls');
-
+			$workBook->send('GradeBook.xls');			
 			if($_GET['export_excel'] == 'one'){
 
 				$workSheet = &$workBook->addWorksheet($currentLesson->lesson['name']);
@@ -167,7 +168,7 @@ class module_gradebook extends EfrontModule{
 
 			$grades = array();
 
-			for($i = 1; $i <= 100; $i++)
+			for($i = 0; $i <= 100; $i++)
 				$grades[$i] = $i;
 
 			isset($_GET['add_range']) ? $postTarget = "&add_range=1" : $postTarget = "&edit_range=".$_GET['edit_range'];
@@ -211,11 +212,10 @@ class module_gradebook extends EfrontModule{
 					if($fields['range_from'] >= $range['range_from'] && $fields['range_to'] <= $range['range_to'])
 						$invalid_range = true;
 
-					if($fields['range_from'] >= $range['range_from'] && $fields['range_from'] <= $range['range_to'] &&
-							$fields['range_to'] >= $range['range_to'])
+					if($fields['range_from'] >= $range['range_from'] && $fields['range_from'] < $range['range_to'] && $fields['range_to'] >= $range['range_to'])
 						$invalid_range = true;
 
-					if($fields['range_to'] >= $range['range_from'] && $fields['range_to'] <= $range['range_to'])
+					if($fields['range_to'] > $range['range_from'] && $fields['range_to'] <= $range['range_to'])
 						$invalid_range = true;
 
 					if($fields['range_from'] <= $range['range_from'] && $fields['range_to'] >= $range['range_to'])
@@ -464,9 +464,16 @@ class module_gradebook extends EfrontModule{
 
 				$smarty->assign("T_GRADEBOOK_LESSON_COLUMNS", $lessonColumns);
 				$smarty->assign("T_GRADEBOOK_GRADEBOOK_LESSONS", $gradeBookLessons);
-				
-				if ($_GET['ajax'] == 'usersTable') {
-					list($tableSize, $allUsers) = filterSortPage($allUsers);
+		
+				//Added by makriria because of #4613
+				foreach ($allUsers as $key => $value) {
+					if (!isset($lessonUsers[$value['users_LOGIN']])) {
+						unset($allUsers[$key]);
+					}
+				}		
+
+				if ($_GET['ajax'] == 'usersTable') {						
+					list($tableSize, $allUsers) = filterSortPage($allUsers);				
 					$smarty -> assign("T_SORTED_TABLE", $_GET['ajax']);
 					$smarty -> assign("T_TABLE_SIZE", $tableSize);
 					$smarty -> assign("T_DATA_SOURCE", $allUsers);
@@ -682,7 +689,7 @@ class module_gradebook extends EfrontModule{
 
 	private function getLessonUsers($lessonID, $objects){
 
-		$result = eF_getTableData("module_gradebook_users gu, users u, users_to_lessons ul", "gu.*, u.active, ul.completed as lesson_completed", "ul.users_LOGIN=gu.users_LOGIN and ul.lessons_ID=gu.lessons_ID and u.login=gu.users_LOGIN and u.archive=0 and gu.lessons_ID=".$lessonID, "uid");
+		$result = eF_getTableData("module_gradebook_users gu, users u, users_to_lessons ul", "gu.*, u.active, ul.completed as lesson_completed, u.surname", "ul.users_LOGIN=gu.users_LOGIN and ul.lessons_ID=gu.lessons_ID and u.login=gu.users_LOGIN and u.archive=0 and gu.lessons_ID=".$lessonID, "uid");
 		$users = array();
 
 		foreach($result as $value){
@@ -790,6 +797,15 @@ class module_gradebook extends EfrontModule{
 
 		$lessonColumns = $this->getLessonColumns($lessonID);
 		$allUsers = $this->getLessonUsers($lessonID, $lessonColumns);
+		$currentLesson = $this->getCurrentLesson();
+		$lessonUsers = $currentLesson->getUsers('student');
+		
+		foreach ($allUsers as $key => $value) {
+			if (!isset($lessonUsers[$value['users_LOGIN']])) {
+				unset($allUsers[$key]);
+			}
+		}
+		$allUsers = eF_multiSort($allUsers, 'surname', 'desc');
 		$columnsNr = $this->getNumberOfColumns($lessonID);
 
 		$workSheet->setInputEncoding('utf-8');
@@ -931,10 +947,11 @@ class module_gradebook extends EfrontModule{
 	}
 
 	private function computeScoreGrade($lessonColumns, $ranges, $userLogin, $uid){
-
 		$divisionBy = 0;
 		$sum = 0;
 
+		$ranges = array_reverse($ranges, true); //Added to give the greater value when (0,50),(50,100)  because of #4837
+		
 		foreach($lessonColumns as $key => $object){
 
 			$result = eF_getTableData("module_gradebook_grades", "grade",

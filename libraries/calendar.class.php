@@ -168,7 +168,7 @@ class calendar extends EfrontEntity
 			// clear cache
 			$user = EfrontUserFactory::factory($_SESSION['s_login']);
 			$cacheKey = "calendar:{$user->user['login']}";
-			Cache::resetCache($cacheKey);	
+			EfrontCache::getInstance()->deleteCache($cacheKey);	
 		} else {
 			$fields = array("data"        => $values['data'],
 					"timestamp"   => $timestamp,
@@ -182,7 +182,7 @@ class calendar extends EfrontEntity
 			// clear cache
 			$user = $_SESSION['s_login'];
 			$cacheKey = "calendar:{$user}";
-			Cache::resetCache($cacheKey);
+			EfrontCache::getInstance()->deleteCache($cacheKey);
 		}
 	}
 

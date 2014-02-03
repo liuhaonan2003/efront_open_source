@@ -959,11 +959,10 @@ class EfrontLesson
 		!empty($constraints) OR $constraints = array('archive' => false, 'active' => true);
 
 		list($where, $limit, $orderby) = EfrontUser :: convertUserConstraintsToSqlParameters($constraints);
-
+		
 		$select  = "u.*, ul.lessons_ID,ul.completed,ul.score,ul.user_type as role,ul.from_timestamp as active_in_lesson, ul.to_timestamp as timestamp_completed, ul.comments, ul.done_content, 1 as has_lesson";
 		$where[] = "u.login=ul.users_LOGIN and ul.lessons_ID='".$this -> lesson['id']."' and ul.archive=0";
 		$from = EfrontLesson::appendTableFiltersUserConstraints("users u JOIN users_to_lessons ul ON u.login=ul.users_LOGIN", $constraints);
-	
 		$result  = eF_getTableData($from, $select, implode(" and ", $where), $orderby, 'u.login', $limit);	// Added group by because of #3943	
 		
 		if (!isset($constraints['return_objects']) || $constraints['return_objects'] == true) {
@@ -988,7 +987,7 @@ class EfrontLesson
 		$where[] = "u.login=ul.users_LOGIN and ul.lessons_ID='".$this -> lesson['id']."' and ul.archive=0";
 		$from = EfrontLesson::appendTableFiltersUserConstraints("users u JOIN users_to_lessons ul ON u.login=ul.users_LOGIN", $constraints);
 		$result  = eF_countTableData($from, "distinct(u.login)", implode(" and ", $where));
-	
+
 		return $result[0]['count'];
 	}
 
@@ -1845,7 +1844,6 @@ class EfrontLesson
 		!empty($constraints) OR $constraints = array('archive' => false, 'active' => true);
 		$constraints['return_objects'] = false;
 		$lessonUsers = $this -> getLessonUsers($constraints);
-
 		$units		 = array();
 		$contentTree = new EfrontContentTree($this -> lesson['id']);
 		foreach ($iterator = new EfrontVisitableFilterIterator(new EfrontNodeFilterIterator(new RecursiveIteratorIterator(new RecursiveArrayIterator($contentTree -> tree), RecursiveIteratorIterator :: SELF_FIRST))) as $key => $value) {
@@ -1853,15 +1851,14 @@ class EfrontLesson
 		}
 
 		$usersTimes = $this -> getLessonTimesForUsers();		
-		foreach($this->getUsersActiveTimeInLesson() as $key => $value) {
+
+		foreach($this->getUsersActiveTimeInLesson($constraints) as $key => $value) {
 			$activeUsersTimes[$key] = EfrontTimes::formatTimeForReporting($value);
 		}		
-
 		foreach ($lessonUsers as $key => $user) {
 			if ((!$user['user_types_ID'] && $user['role'] != $user['user_type']) || ($user['user_types_ID'] && $user['role'] != $user['user_types_ID'])) {
 				$user['different_role'] = 1;
 			}
-
 			$lessonUsers[$key]['overall_progress'] = $this -> getLessonOverallProgressForUser($user, $units);
 			if (!$onlyContent) {
 				$lessonUsers[$key]['project_status']   = $this -> getLessonProjectsStatusForUser($user);
@@ -1870,7 +1867,6 @@ class EfrontLesson
 				$lessonUsers[$key]['active_time_in_lesson']   = $activeUsersTimes[$user['login']];
 			}
 		}
-	
 		return $lessonUsers;
 
 	}
@@ -5448,9 +5444,10 @@ class EfrontLesson
 		}
 	}
 
-	public function getUsersActiveTimeInLesson() {
+	public function getUsersActiveTimeInLesson($constraints) {
 		$lessonUsers = array();
-		foreach ($this->getLessonUsers(array('return_objects' => false)) as $key=>$value) {
+		$constraints   = array('return_objects' => false) + $constraints;
+		foreach ($this->getLessonUsers($constraints) as $key=>$value) {
 			$lessonUsers[$key] = 0;
 		}
 		$result = eF_getTableData("users_to_content", "users_LOGIN, sum(total_time) as total_time", "lessons_ID=".$this->lesson['id'], "", "users_LOGIN");

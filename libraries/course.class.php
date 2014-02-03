@@ -231,13 +231,14 @@ class EfrontCourse
 	 * @access public
 	 */
 	public function shouldDisplayInCatalog() {
-		if ($this -> course['show_catalog']) {
+		//pr($this -> course['name'] . ' - ' . $this -> course['show_catalog']);
+		if ($this -> course['show_catalog']) { 
 			return $this -> course['id'];
 		} else {
 			$result = eF_getTableData("courses", "id,show_catalog", "instance_source is not null");
 			if (!empty($result)) {
 				foreach ($result as $value) {
-					if ($value['show_catalog']) {
+					if ($value['show_catalog'] && $value['id'] == $this -> course['id']) {
 						return $value['id'];
 					}
 				}
@@ -3127,6 +3128,10 @@ class EfrontCourse
         $newFileName = str_replace(array('"', '>', '<', '*', '?', ':'), array('&quot;', '&gt;', '&lt;', '&#42;', '&#63;', '&#58;'), $newFileName);
 		//$file -> rename($userTempDir['path'].'/'.$newFileName, true);
 		//changed because of checkFile in rename
+	if (is_file($userTempDir['path'].'/'.$newFileName)) {
+		$newfile = new EfrontFile($userTempDir['path'].'/'.$newFileName);
+		$newfile->delete();
+	}
         rename($file['path'], $userTempDir['path'].'/'.$newFileName);
         
         //FileSystemTree :: importFiles($userTempDir['path'].'/'.$newFileName);

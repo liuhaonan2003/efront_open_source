@@ -7,7 +7,7 @@
 */
 define("G_VERSIONTYPE_CODEBASE", "community");
 define("G_VERSIONTYPE", "community");
-define("G_BUILD", "18012");
+define("G_BUILD", "18015");
 
 //This file cannot be called directly, only included.
 if (str_replace(DIRECTORY_SEPARATOR, "/", __FILE__) == $_SERVER['SCRIPT_FILENAME']) {
@@ -110,13 +110,16 @@ if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
 foreach ($_GET as $key => $value) {
     if (is_string($value)) {
         $_GET[$key] = strip_tags($value);
+        if (($key == 'limit' || $key == 'offset' || $key == 'filter') && !eF_checkParameter($value, 'text')) {
+        	unset($_GET[$key]);
+        }
     } else if (is_array($value) || is_object($value)) { 
 		unset($_GET[$key]); 
     }
 }
 $_SERVER['PHP_SELF'] = strip_tags($_SERVER['PHP_SELF']);
 
-if (!is_file(basename($_SERVER['PHP_SELF']))) {exit;} // for something like this index.php/"onmouseover=prompt(1234)>
+if (php_sapi_name() !='cli' && !is_file(basename($_SERVER['PHP_SELF']))) {exit;} // for something like this index.php/"onmouseover=prompt(1234)>
 if ($GLOBALS['configuration']['eliminate_post_xss']) {
 	foreach ($_POST as $key => $value) {
 	    if (is_string($value)) {
@@ -128,7 +131,7 @@ if ($GLOBALS['configuration']['eliminate_post_xss']) {
 #cpp#ifdef ENTERPRISE
 if (defined('G_BRANCH_URL')) {
 	try {
-		$branch = EfrontBranch::getBranchByUrl(G_BRANCH_URL);		
+		$branch = EfrontBranch::getBranchByUrl(G_BRANCH_URL);
 		$_SESSION['s_current_branch'] = $branch->branch['branch_ID'];
 		if ($branch->branch['languages_NAME'] && in_array($branch->branch['languages_NAME'], array_keys(EfrontSystem::getLanguages(true, true)))) {
 			$_SESSION['s_language'] = $branch->branch['languages_NAME'];
@@ -344,7 +347,6 @@ function setDefines() {
 		if (!is_file(dirname(G_ROOTPATH).$request_uri) && basename($_SERVER['PHP_SELF']) != basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) && strpos($request_uri, 'content/lessons') === false) {
 			$request_uri .= basename($_SERVER['PHP_SELF']);	
 		}
-
 		if (!is_file(dirname(G_ROOTPATH).$request_uri) && dirname($request_uri) != dirname($_SERVER['PHP_SELF']) && strpos($request_uri, 'content/lessons') === false && strpos($request_uri, 'editor/tiny_mce') === false) {
 			define("G_BRANCH_URL", basename(dirname($request_uri)).'/');			
 		} elseif (strpos($request_uri, 'content/lessons') !== false && strpos($request_uri, 'editor') === false) {
@@ -356,7 +358,10 @@ function setDefines() {
 		} else {
 			define("G_BRANCH_URL", '');
 			//unset($_SESSION['s_theme']);
-			unset($_SESSION['s_current_branch']);
+			if (!empty($_SESSION['s_current_branch'])) {
+				unset($_SESSION['s_current_branch']);
+				unset($_SESSION['s_theme']);
+			}
 		}		
 		if (basename($_SERVER['PHP_SELF']) == 'index.php' && basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) != basename($_SERVER['PHP_SELF']) && mb_substr(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), -1) != '/') {
 			header("location:".parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH).'/index.php');

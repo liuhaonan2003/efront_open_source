@@ -250,7 +250,8 @@ if (isset($_GET['excel'])) {
     //$workSheet -> write(2, 7, _TOTALTIME, $titleCenterFormat);
     $workSheet -> write(2, 8, _SCORE, $titleCenterFormat);
     $workSheet -> write(2, 9, _PERCENTAGE, $titleCenterFormat);
-    $workSheet -> write(2, 10, _COMPLETED, $titleCenterFormat);
+    $workSheet -> write(2, 10, _ENROLLEDON, $titleCenterFormat);
+    $workSheet -> write(2, 11, _COMPLETED, $titleCenterFormat);
 
     $roles = EfrontLessonUser :: getLessonsRoles(true);
     $row = 3;
@@ -284,8 +285,8 @@ if (isset($_GET['excel'])) {
     }     
     
     if (G_VERSIONTYPE == 'enterprise') { #cpp#ifdef ENTERPRISE
-    	$workSheet -> mergeCells(1, 4, 1, 11);
-    	$workSheet -> write(2, 11, _BRANCH, $titleCenterFormat);
+    	$workSheet -> mergeCells(1, 4, 1, 12);
+    	$workSheet -> write(2, 12, _BRANCH, $titleCenterFormat);
     	$result = eF_getTableData("module_hcd_branch b, module_hcd_employee_works_at_branch wb", "users_login, b.name", "b.branch_ID=wb.branch_ID and assigned=1");
     	foreach ($result as $value) {
     		$userBranches[$value['users_login']][] = $value['name'];
@@ -312,9 +313,10 @@ if (isset($_GET['excel'])) {
 		} else {
 			$completedString = _NO;
 		}
-        $workSheet -> write($row, 10, $completedString, $fieldLeftFormat);
+		$workSheet -> write($row, 10, formatTimestamp($info['enrolled_on']), $fieldLeftFormat);
+        $workSheet -> write($row, 11, $completedString, $fieldLeftFormat);
         if (G_VERSIONTYPE == 'enterprise') { #cpp#ifdef ENTERPRISE
-        	$workSheet -> write($row, 11, $userBranches[$info['login']], $fieldLeftFormat);
+        	$workSheet -> write($row, 12, $userBranches[$info['login']], $fieldLeftFormat);
         } #cpp#endif
         
         $row++;
@@ -381,7 +383,8 @@ if (isset($_GET['excel'])) {
 	$formatting = array(_USER		 => array('width' => '20%', 'fill' => false),
 						_COURSEROLE  => array('width' => '20%', 'fill' => false),
 						_PERCENTAGE	 => array('width' => '20%', 'fill' => false),
-						_COMPLETED	 => array('width' => '20%', 'fill' => false),
+						_ENROLLEDON	 => array('width' => '10%', 'fill' => false),
+						_COMPLETED	 => array('width' => '10%', 'fill' => false),
 						_SCORE		 => array('width' => '20%', 'fill' => false, 'align' => 'R'));
 	$data = array();
     $constraints = array('table_filters' => $stats_filters);
@@ -419,8 +422,9 @@ if (isset($_GET['excel'])) {
 							_COURSEROLE  => array('width' => '16%', 'fill' => false),
 							_BRANCH 	 => array('width' => '16%', 'fill' => false),
 							_PERCENTAGE	 => array('width' => '16%', 'fill' => false),
-							_COMPLETED	 => array('width' => '16%', 'fill' => false),
-							_SCORE		 => array('width' => '16%', 'fill' => false, 'align' => 'R'));
+							_ENROLLEDON	 => array('width' => '10%', 'fill' => false),
+							_COMPLETED	 => array('width' => '11%', 'fill' => false),
+							_SCORE		 => array('width' => '11%', 'fill' => false, 'align' => 'R'));
     } #cpp#endif
     
 	foreach ($users as $login => $info) {
@@ -436,12 +440,14 @@ if (isset($_GET['excel'])) {
 							_COURSEROLE=> $roles[$info['role']],
 							_BRANCH		=> $userBranches[$login],
 							_PERCENTAGE	=> $rolesBasic[$info['user_type']] == 'student' ? $info['lesson_percentage']."%" : "",
+							_ENROLLEDON => formatTimestamp($info['enrolled_on']),
 							_COMPLETED => $completedString,
 							_SCORE	   => formatScore($info['score'])."%");
 		} else { #cpp#else
 			$data[] = array(_USER	   => formatLogin( $info['login']),
 							_COURSEROLE=> $roles[$info['role']],
 							_PERCENTAGE	=> $rolesBasic[$info['user_type']] == 'student' ? $info['lesson_percentage']."%" : "",
+							_ENROLLEDON => formatTimestamp($info['enrolled_on']),
 							_COMPLETED => $completedString,
 							_SCORE	   => formatScore($info['score'])."%");
 		} #cpp#endif

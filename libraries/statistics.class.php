@@ -138,12 +138,8 @@ class EfrontStats
 		        }
 //		        
 	        }
-	        $temp = eF_getTableData("user_types", "*");
-			if (sizeof($temp) == 0) {
-				$result = eF_getTableData("users u, users_to_lessons ul", "u.login, ul.lessons_ID, ul.done_content", "ul.archive=0 and ul.user_type = 'student' and u.login = ul.users_LOGIN and u.login in ('".implode("','", $users)."') and ul.lessons_ID in (".implode(",", $lessons).")") ;
-			} else {
-				$result = eF_getTableData("users u, users_to_lessons ul, user_types as ut", "u.login, ul.lessons_ID, ul.done_content", "ul.archive=0 and (ul.user_type = 'student' OR (ul.user_type=ut.id AND ut.basic_user_type = 'student')) and u.login = ul.users_LOGIN and u.login in ('".implode("','", $users)."') and ul.lessons_ID in (".implode(",", $lessons).")");
-    		}
+			$result = eF_getTableData("users u, users_to_lessons ul", "u.login, ul.lessons_ID, ul.done_content", "ul.archive=0 and ul.user_type in ('".implode("','", array_keys(EfrontLessonUser::getStudentRoles()))."')  and u.login = ul.users_LOGIN and u.login in ('".implode("','", $users)."') and ul.lessons_ID in (".implode(",", $lessons).")");
+    		
 			//$result           = eF_getTableData("users u, users_to_lessons ul, user_types as ut", "u.login, ul.lessons_ID, ul.done_content", "(ul.user_type = 'student' OR (ul.user_type=ut.id AND ut.basic_user_type = 'student')) and u.login = ul.users_LOGIN");
 	        //$result           = eF_getTableData("users u, users_to_lessons ul", "u.login, ul.lessons_ID, ul.done_content", "ul.user_type = 'student' and u.login = ul.users_LOGIN");
 
@@ -1252,7 +1248,7 @@ class EfrontStats
                     list($conditionsMet, $lessonPassed) = self :: checkConditions($doneContent[$login], $lessonConditions, $visitableUnits, $visitableTestIds, $usersTimesInLessonContent[$login]);
 
                     //Content progress is theory and examples units seen
-                    $contentProgress = 0;
+                    $contentProgress = 0;                    
                     if (isset($doneContent[$login]) && sizeof($doneContent[$login]) > 0 && (sizeof($visitableContentIds) > 0 || sizeof($visitableExampleIds) > 0)) {
                         $contentProgress = round(100 * sizeof(array_diff_key($doneContent[$login], $visitableTestIds)) / (sizeof($visitableContentIds) + sizeof($visitableExampleIds)), 2);
                     }

@@ -560,12 +560,11 @@ class EfrontUnit extends ArrayObject
     public function getFiles($returnObjects = false) { 	
     	$files 	  = array();
         $data     = parent :: offsetGet('data');
-        preg_match_all("/view_file\.php\?file=(\d+)/", $data, $matchesId);
-        $filesId = $matchesId[1];
+        preg_match_all("/view_file\.php(.*)file=(\d+)/", $data, $matchesId);   
+        $filesId = $matchesId[2];
         preg_match_all("#(".G_SERVERNAME.")*content/lessons/(.*)\"#U", $data, $matchesPath);
         $filesPath = $matchesPath[2];
-
-        
+      
         try {
 	        foreach ($filesId as $file) {
 	        	$file = trim($file, "';");
@@ -1722,7 +1721,7 @@ class EfrontContentTree extends EfrontTree
         }
 
         if ($copyFiles) {
-            $files  = $unit -> getFiles();
+            $files  = $unit -> getFiles();                     
             $lesson = new EfrontLesson($this -> lessonId);
             $data   = $unit -> offsetGet('data');
             foreach ($files as $file){
@@ -1739,21 +1738,31 @@ class EfrontContentTree extends EfrontTree
 						$destinationPath = $lesson -> getDirectory().basename($sourceFile['path']);
 						$copiedFile = $sourceFile -> copy($destinationPath, false);
 					}
-                    str_replace("view_file.php?file=".$file, "view_file.php?file=".$copiedFile -> offsetGet('id'), $data);
-               
+		
+					//@todo view_file.php?action=download&file=10410 
+                    //$data = str_replace("view_file.php?file=".$file, "view_file.php?file=".$copiedFile -> offsetGet('id'), $data);
+                    //$data = str_replace("&file=".$file, "&file=".$copiedFile -> offsetGet('id'), $data);
+                    //$data = str_replace("&amp;file=".$file, "&amp;file=".$copiedFile -> offsetGet('id'), $data);
+                
+                    $data = preg_replace('#view_file\.php(.*)file='.$file.'#', 'view_file.php${1}file='.$copiedFile -> offsetGet('id'), $data);                  
+                    
                     $folderId = $lesson -> lesson['share_folder'] ? $lesson -> lesson['share_folder'] : $lesson -> lesson['id'];            	    
                     $data = preg_replace("#(".G_SERVERNAME.")*content/lessons/".$sourceUnit['lessons_ID']."/(.*)#", "content/lessons/".$folderId.'/${2}', $data);
             	    
                 } catch (EfrontFileException $e) {
                     if ($e -> getCode() == EfrontFileException :: FILE_ALREADY_EXISTS) {
-                        $copiedFile = new EfrontFile($destinationPath);
-                        str_replace("view_file.php?file=".$file, "view_file.php?file=".$copiedFile -> offsetGet('id'), $data);
+                        $copiedFile = new EfrontFile($destinationPath);   
+                        //$data = str_replace("view_file.php?file=".$file, "view_file.php?file=".$copiedFile -> offsetGet('id'), $data);
+                        //$data = str_replace("&file=".$file, "&file=".$copiedFile -> offsetGet('id'), $data);
+                        //$data = str_replace("&amp;file=".$file, "&amp;file=".$copiedFile -> offsetGet('id'), $data);
+
+                        $data = preg_replace('#view_file\.php(.*)file='.$file.'#', 'view_file.php${1}file='.$copiedFile -> offsetGet('id'), $data);                      
                         $folderId = $lesson -> lesson['share_folder'] ? $lesson -> lesson['share_folder'] : $lesson -> lesson['id'];            	    
                         $data = preg_replace("#(".G_SERVERNAME.")*content/lessons/".$sourceUnit['lessons_ID']."/(.*)#", "content/lessons/".$folderId.'/${2}', $data, -1, $count);
                     }
                 } //this means that the file already exists
 
-            }
+            }     
             $unit -> offsetSet('data', $data);
 	        if ($file && $unit['ctg_type'] == 'scorm' || $unit['ctg_type'] == 'scorm_test') {
 	        	$d = new EfrontDirectory(dirname($file));

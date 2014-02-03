@@ -195,7 +195,7 @@ abstract class EfrontImport
 		if ($father_branch_name != "") {
 			$array_of_father_branch_ids	= $this -> getBranchByName($father_branch_name);
 			if (empty($array_of_father_branch_ids)) {
-				 $new_father_branch = EfrontBranch::createBranch(array("name" => $father_branch_name));
+				 $new_father_branch = EfrontBranch::createBranch(array("name" => $father_branch_name, "url" => EfrontBranch::getBranchUrl($father_branch_name)));
 				 $father_branch_ID = $new_father_branch -> branch['branch_ID'];
 
 				 $this -> setBranchByName($new_father_branch -> branch['name'], $father_branch_ID);
@@ -1178,6 +1178,7 @@ class EfrontImportCsv extends EfrontImport
 			            throw new EfrontBranchException(_BRANCHALREADYEXISTS, EfrontBranchException :: BRANCH_EXISTS);
 					} else {
 						unset($data['father_branch_name']);
+						$data['url'] = EfrontBranch::getBranchUrl($data['name']);
 						$branch = EfrontBranch::createBranch($data);
 						$this -> setBranchByName($branch_name, $branch -> branch['branch_ID']);
 					}

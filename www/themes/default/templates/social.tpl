@@ -28,7 +28,6 @@ translations['_YOUHAVEBEENSUCCESSFULLYADDEDTOTHEGROUP'] = '{$smarty.const._YOUHA
                                 {/capture}
 							
 
-							{if 'calendar'|eF_template_isOptionVisible}
 								{capture name = "moduleCalendar"}
 			                                <tr><td class = "moduleCell">
 			                                        {capture name='t_calendar_code'}
@@ -43,7 +42,6 @@ translations['_YOUHAVEBEENSUCCESSFULLYADDEDTOTHEGROUP'] = '{$smarty.const._YOUHA
 
 			                                </td></tr>
                                 {/capture}
-                            {/if}
 
 							{if $T_FACEBOOK_ENABLED}
 								{capture name = "moduleFacebook"}
@@ -239,7 +237,7 @@ translations['_YOUHAVEBEENSUCCESSFULLYADDEDTOTHEGROUP'] = '{$smarty.const._YOUHA
 	                    </li>
 	{/foreach}
 
-	{if !in_array('moduleCalendar', $T_POSITIONS) && $smarty.capture.moduleCalendar && 'calendar'|eF_template_isOptionVisible}
+	{if !in_array('moduleCalendar', $T_POSITIONS) && $smarty.capture.moduleCalendar}
 	                    <li id="secondlist_moduleCalendar">
 	                        <table class = "singleColumnData">
 	                            {$smarty.capture.moduleCalendar}

@@ -127,6 +127,7 @@ class EfrontNotification
    							   EfrontNotification::LESSON_VISITED => array("text" => _LESSON_VISITED, "category" => "lessons", "canBeNegated" => _LESSON_NOT_VISITED),
    							   EfrontNotification::LESSON_REMOVAL => array("text" => _LESSON_REMOVAL, "category" => "lessons"),
    							   EfrontNotification::LESSON_COMPLETION => array("text" => _LESSON_COMPLETION, "category" => "lessons", "canBeNegated" => _LESSON_NOT_COMPLETED),
+   							   EfrontNotification::LESSON_PROGRESS_RESET => array("text" => _LESSON_PROGRESS_RESET, "category" => "lessons"),
    							   EfrontNotification::NEW_POST_FOR_LESSON_TIMELINE_TOPIC => array("text" => _NEW_POST_FOR_LESSON_TIMELINE_TOPIC, "category" => "lesson"),
    							   EfrontNotification::DELETE_POST_FROM_LESSON_TIMELINE => array("text" => _DELETE_POST_FROM_LESSON_TIMELINE, "category" => "lesson"),
 
@@ -613,7 +614,8 @@ h) Enhmerwsh ana X meres gia shmantika gegonota sto eFront (auto prepei na to sy
         } else if (EfrontEvent::LESSON_ACQUISITION_AS_STUDENT == $event_notification['event_type'] ||
                    EfrontEvent::LESSON_ACQUISITION_AS_PROFESSOR == $event_notification['event_type'] ||
                    EfrontEvent::LESSON_COMPLETION == abs($event_notification['event_type']) ||          // for the corresponding AFTER NOT event
-                   EfrontEvent::LESSON_PROGRAMMED_START == abs($event_notification['event_type']) ||    // for the corresponding BEFORE event
+        		EfrontEvent::LESSON_PROGRESS_RESET == abs($event_notification['event_type']) ||
+        		EfrontEvent::LESSON_PROGRAMMED_START == abs($event_notification['event_type']) ||    // for the corresponding BEFORE event
                    EfrontEvent::LESSON_PROGRAMMED_EXPIRY == abs($event_notification['event_type']) ) {  // for the corresponding BEFORE event
 
             $conditions = unserialize($event_notification['send_conditions']);
@@ -1536,6 +1538,8 @@ h) Enhmerwsh ana X meres gia shmantika gegonota sto eFront (auto prepei na to sy
 	            $this -> notification['message'] .=  _WILLBETEACHINGLESSON . " <b>" . $this -> notification['lessons_name'] ."</b>";
 	        }  else if ($this -> notification['type'] == EfrontNotification::LESSON_COMPLETION) {
 	            $this -> notification['message'] .=  _HASCOMPLETEDLESSON . " <b>" . $this -> notification['lessons_name'] ."</b>";
+	        }  else if ($this -> notification['type'] == EfrontNotification::LESSON_PROGRESS_RESET) {
+	            $this -> notification['message'] .=  _WASBEINGRESETLESSONPROGRESS . " <b>" . $this -> notification['lessons_name'] ."</b>";
 	        }  else if ($this -> notification['type'] == EfrontNotification::LESSON_REMOVAL) {
 	            $this -> notification['message'] .=  _NOLONGERATTENDSLESSON . " <b>" . $this -> notification['lessons_name'] ."</b>";
 	        }  else if ($this -> notification['type'] == EfrontNotification::NEW_COMMENT_WRITING) {
@@ -1632,5 +1636,57 @@ h) Enhmerwsh ana X meres gia shmantika gegonota sto eFront (auto prepei na to sy
                 return true;
         }
 
+    }
+    
+    public static function convertNotificationConstraintsToSqlParameters($constraints) {
+    	$where = self::addWhereConditionToNotificationConstraints($constraints);
+    	$limit = self::addLimitConditionToConstraints($constraints);
+    	$order = self::addSortOrderConditionToConstraints($constraints);
+    
+    	return array($where, $limit, $order);
+    }
+    
+    
+    private static function addWhereConditionToNotificationConstraints($constraints) {
+    	$where = array();    
+    	if (isset($constraints['filter']) && eF_checkParameter($constraints['filter'], 'text')) {
+    		$constraints['filter'] = trim(urldecode($constraints['filter']), "||||");
+    		$result 	 = eF_describeTable("notifications");
+    		$tableFields = array();
+    		foreach ($result as $value) {
+    			$tableFields[] = "n.".$value['Field'].' like "%'.$constraints['filter'].'%"';
+    		}
+    		$where[] = "(".implode(" OR ", $tableFields).")";
+    	}
+    	if (isset($constraints['condition'])) {
+    		$where[] = $constraints['condition'];
+    	}
+    	if (isset($constraints['table_filters'])) {
+    		foreach ($constraints['table_filters'] as $constraint) {
+    			$where[] = $constraint['condition'];
+    		}
+    	}
+
+    	return $where;
+    }
+    private static function addSortOrderConditionToConstraints($constraints) {
+    	$order = '';
+    	if (isset($constraints['sort']) && eF_checkParameter($constraints['sort'], 'alnum_with_spaces')) {
+    		$order = $constraints['sort'];
+    		if (isset($constraints['order']) && in_array($constraints['order'], array('asc', 'desc'))) {
+    			$order .= ' '.$constraints['order'];
+    		}
+    	}
+    	return $order;
+    }
+    private static function addLimitConditionToConstraints($constraints) {
+    	$limit = '';
+    	if (isset($constraints['limit']) && eF_checkParameter($constraints['limit'], 'int') && $constraints['limit'] > 0) {
+    		$limit = $constraints['limit'];
+    	}
+    	if ($limit && isset($constraints['offset']) && eF_checkParameter($constraints['offset'], 'int') && $constraints['offset'] >= 0) {
+    		$limit = $constraints['offset'].','.$limit;
+    	}
+    	return $limit;
     }
 }

@@ -54,8 +54,8 @@
     $actions[] = "get_user_autologin_key";
     $actions[] = "set_user_autologin_key";
     $actions[] = "languages";
-    
-    
+    $actions[] = "user_to_branch";
+    $actions[] = "branch_jobs";
     
     $smarty -> assign("T_ACTIONS", $actions);
     
@@ -359,6 +359,20 @@
         	$form -> addElement('text', 'token', _TOKEN,   'class = "inputText"');
         	break;
         }
+        case 'user_to_branch': {
+        	$form -> addElement('text', 'token', _TOKEN,   'class = "inputText"');
+        	$form -> addElement('text', 'login', _LOGIN,   'class = "inputText"');
+        	$form -> addElement('text', 'branch', _BRANCH,   'class = "inputText"');
+        	$form -> addElement('text', 'job', _JOBDESCRIPTION,   'class = "inputText"');
+        	$form -> addElement('text', 'position', _EMPLOYEEPOSITION,   'class = "inputText"');
+        	$form -> addElement('text', 'job_description', _JOBANALYTICALDESCRIPTION,   'class = "inputText"');
+        	break;
+        }
+        case 'branch_jobs': {
+        	$form -> addElement('text', 'token', _TOKEN,   'class = "inputText"');
+        	$form -> addElement('text', 'branch', _BRANCH,   'class = "inputText"');
+        	break;
+        }        
         
     }
     $form -> addElement('textarea', 'output', _OUTPUT, 'id = "output" class = "simpleEditor inputTextarea" style = "disabled:true;width:60%;height:120px"'); 
@@ -803,6 +817,29 @@
                 	 
                 	break;
                 }
+                case 'user_to_branch': {
+                	$token = $values['token'];
+                	$login = $values['login'];
+                	$branch = $values['branch'];
+                	$job = $values['job'];
+                	$position = $values['position'];
+                	$job_description = $values['job_description'];
+                	if ($stream = fopen(G_SERVERNAME.'api2.php?action=user_to_branch&token='.$token.'&login='.$login.'&branch='.$branch.'&job='.$job.'&position='.$position.'&job_description='.$job_description, 'r')) {
+                		$output = stream_get_contents($stream);
+                		fclose($stream);
+                	}
+                	break;
+                }
+                case 'branch_jobs': {
+                	$token = $values['token'];
+                	$branch = $values['branch'];
+                	pr(G_SERVERNAME.'api2.php?action=branch_jobs&token='.$token.'&branch='.$branch);
+                	if ($stream = fopen(G_SERVERNAME.'api2.php?action=branch_jobs&token='.$token.'&branch='.$branch, 'r')) {
+                		$output = stream_get_contents($stream);
+                		fclose($stream);
+                	}
+                	break;
+                }                
             }
         }
     }

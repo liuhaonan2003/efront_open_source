@@ -195,6 +195,7 @@
 											<table style = "width:100%" class = "sortedTable" size = "{$T_SKILLS_SIZE}" sortBy = "0" id = "skillsTable" useAjax = "1" rowsPerPage = "{$smarty.const.G_DEFAULT_TABLE_SIZE}" url = "{$smarty.server.PHP_SELF}?ctg=lessons&edit_lesson={$smarty.get.edit_lesson}&">
 												<tr class = "topTitle">
 													<td class = "topTitle" name = "description" style = "width:35%">{$smarty.const._SKILL}</td>
+													<td class = "topTitle" name = "category" style = "width:35%">{$smarty.const._CATEGORY}</td>
 													<td class = "topTitle" name = "specification" >{$smarty.const._SPECIFICATION}</td>
 													<td class = "topTitle centerAlign" name="lesson_ID" style = "width:5%">{$smarty.const._CHECK}</td>
 												</tr>
@@ -202,6 +203,7 @@
 											{foreach name = 'skill_list' key = 'key' item = 'skill' from = $T_SKILLS}
 												<tr class = "{cycle values = "oddRowColor, evenRowColor"}">
 													<td><a href="{$smarty.server.PHP_SELF}?ctg=module_hcd&op=skills&edit_skill={$skill.skill_ID}">{$skill.description}</a></td>
+													<td>{$skill.category}</td>
 													<td><input class = "inputText" type="text" name="spec_skill_{$skill.skill_ID}"  id="spec_skill_{$skill.skill_ID}" onchange="ajaxLessonSkillUserPost(2,'{$skill.skill_ID}', this);" value="{$skill.specification}"{if $skill.lesson_ID != $smarty.get.edit_lesson} style="visibility:hidden" {/if}></td>
 													<td class = "centerAlign"><input class = "inputCheckBox" type = "checkbox" name = "{$skill.skill_ID}" onclick="javascript:show_hide_spec('{$skill.skill_ID}');ajaxLessonSkillUserPost(1,'{$skill.skill_ID}', this);" {if $skill.lesson_ID == $smarty.get.edit_lesson} checked {/if} ></td>
 												</tr>

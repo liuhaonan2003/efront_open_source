@@ -15,7 +15,7 @@ $smarty -> assign("_change_", $_change_);
 $loadScripts[] = 'includes/entity';
 
 if (isset($_GET['delete']) && in_array($_GET['delete'], $legalValues) && eF_checkParameter($_GET['delete']) && $_change_) {
-    try {
+	try {
         $entity = new $entityName($_GET['delete']);
         $entity -> delete();
     } catch (Exception $e) {

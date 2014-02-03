@@ -374,7 +374,7 @@ if ($form -> isSubmitted() && $form -> validate()) {
 		}
 		exit;
 	} catch (EfrontUserException $e) {
-		if ($GLOBALS['configuration']['activate_ldap']) {
+		if ($GLOBALS['configuration']['activate_ldap'] && $e -> getCode() == EfrontUserException :: USER_NOT_EXISTS) {
 			if (!extension_loaded('ldap')) {
 				$message      = $e -> getMessage().'<br/>'._LDAPEXTENSIONNOTLOADED;
 				$message_type = 'failure';
@@ -504,7 +504,7 @@ if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
 									}
 									exit;
 								} catch (EfrontUserException $e) {	
-									if ($GLOBALS['configuration']['activate_ldap']) {
+									if ($GLOBALS['configuration']['activate_ldap'] && $e -> getCode() == EfrontUserException :: USER_NOT_EXISTS) {
 										if (!extension_loaded('ldap')) {
 											$message      = $e -> getMessage().'<br/>'._LDAPEXTENSIONNOTLOADED;
 											$message_type = 'failure';
@@ -601,7 +601,7 @@ if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
 											}
 											exit;
 										} catch (EfrontUserException $e) {
-											if ($GLOBALS['configuration']['activate_ldap']) {
+											if ($GLOBALS['configuration']['activate_ldap'] && $e -> getCode() == EfrontUserException :: USER_NOT_EXISTS) {
 												if (!extension_loaded('ldap')) {
 													$message      = $e -> getMessage().'<br/>'._LDAPEXTENSIONNOTLOADED;
 													$message_type = 'failure';

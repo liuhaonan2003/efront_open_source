@@ -34,7 +34,7 @@ class coupons extends EfrontEntity
     	$returnValue = $this -> checkStartDate() && 
     	               $this -> checkActive() && 
     	               $this -> checkExpired() &&
-    	               $this -> checkExceededUses();
+    	               $this -> checkExceededUses($user);
     	
 		return $returnValue;
     }
@@ -51,7 +51,7 @@ class coupons extends EfrontEntity
     	$this -> {$this -> entity}['duration'] && $this -> {$this -> entity}['from_timestamp'] + $this -> {$this -> entity}['duration']*24*3600 < time() ? $returnValue = false : $returnValue = true;
     	return $returnValue;
     }
-    private function checkExceededUses() {
+    private function checkExceededUses($user) {
         $returnValue = true;
 		if ($this -> {$this -> entity}['max_uses'] && $this -> getTotalUsedTimes() >= $this -> {$this -> entity}['max_uses']) {
     		$returnValue = false;
@@ -88,8 +88,6 @@ class coupons extends EfrontEntity
     					'products_list' => serialize($productsList),
     					'timestamp'	    => time());
     	eF_insertTableData("users_to_coupons", $fields);
-    	$result = eF_getTableData('coupons', 'times_used', 'id="'.$this -> {$this -> entity}['id'].'"');
-    	eF_updateTableData("coupons",array("times_used" => $result[0]['times_used']+1), "id = '". $this -> {$this -> entity}['id'] ."'");
     	
     	EfrontEvent::triggerEvent(array("type" => EfrontEvent::COUPON_USAGE, 
     									"users_LOGIN"   => $user -> user['login'], 
@@ -157,8 +155,7 @@ class coupons extends EfrontEntity
                         'duration'  	  => $fields['duration']       ? $fields['duration']       : 0,
         				'discount'  	  => $fields['discount'] 	   ? $fields['discount'] 	   : 0,
                         'description'	  => $fields['description'],
-                        'active' 		  => $fields['active']		   ? $fields['active']		   : 1,
-        				'times_used'	  => 0);                
+                        'active' 		  => $fields['active']		   ? $fields['active']		   : 1);                
 
         $newId   = eF_insertTableData("coupons", $fields);
         $result  = eF_getTableData("coupons", "*", "id=".$newId);                                            //We perform an extra step/query for retrieving data, sinve this way we make sure that the array fields will be in correct order (forst id, then name, etc)

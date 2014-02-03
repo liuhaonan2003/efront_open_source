@@ -4309,5 +4309,9 @@ define("_ONLINEUSERSMAILBODY", "Dear %w,<br/>You have reached %x concurrent onli
 define("_ONLINEUSERSTHRESHOLD","Concurrent online users threshold");
 define("_ONLINEUSERSTHRESHOLDNOTE","An e-mail will be sent to administrator when threshold will be reached");
 define("_TEST_MARKED", "Test marked");
-define("_TIMESUSED", "Times used");
+define("_NOTAPPLIEDFORONLYFORWARD", "Is not applied for move only forward tests");
+define("_LESSON_PROGRESS_RESET", "Lesson progress reset");
+define("_COURSE_PROGRESS_RESET", "Course progress reset");
+define("_WASBEINGRESETLESSONPROGRESS", "was being reset in lesson progress for");
+define("_WASBEINGRESETCOURSEPROGRESS", "was being reset in course progress for");
 ?>

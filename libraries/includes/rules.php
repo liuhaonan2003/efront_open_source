@@ -143,7 +143,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'auto_complete') {
                 if (eF_updateTableData("rules", $fields, "id=".$_GET['edit_rule'])) {
                     $message      = _SUCCESFULLYUPDATEDRULE;
                     $message_type = 'success';
-                    eF_redirect("".basename($_SERVER['PHP_SELF'])."?ctg=rules&message=".$message."&message_type=".$message_type);
+                    eF_redirect("".basename($_SERVER['PHP_SELF'])."?ctg=rules&message=".urlencode($message)."&message_type=".$message_type);
                 } else {
                     $message      = _SOMEPROBLEMEMERGED;
                     $message_type = 'failure';
@@ -152,7 +152,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'auto_complete') {
                 if (eF_insertTableData("rules", $fields)) {
                     $message      = _SUCCESFULLYINSERTEDRULE;
                     $message_type = 'success';
-                    eF_redirect("".basename($_SERVER['PHP_SELF'])."?ctg=rules&message=".$message."&message_type=".$message_type);
+                    eF_redirect("".basename($_SERVER['PHP_SELF'])."?ctg=rules&message=".urlencode($message)."&message_type=".$message_type);
                 } else {
                     $message      = _SOMEPROBLEMEMERGED;
                     $message_type = 'failure';
@@ -190,7 +190,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'auto_complete') {
         if (eF_insertTableData("rules", $fields)) {
             $message      = _SUCCESFULLYINSERTEDRULE;
             $message_type = 'success';
-            eF_redirect("".basename($_SERVER['PHP_SELF'])."?ctg=rules&message=".$message."&message_type=".$message_type);
+            eF_redirect("".basename($_SERVER['PHP_SELF'])."?ctg=rules&message=".urlencode($message)."&message_type=".$message_type);
         } else {
             $message      = _SOMEPROBLEMEMERGED;
             $message_type = 'failure';
@@ -296,7 +296,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'auto_complete') {
                 if (eF_insertTableData('lesson_conditions', $fields)) {
                     $message      = _SUCCESFULLYADDEDCONDITION;
                     $message_type = 'success';
-                    eF_redirect("".basename($_SERVER['PHP_SELF'])."?ctg=rules&tab=conditions&message=".$message."&message_type=".$message_type);
+                    eF_redirect("".basename($_SERVER['PHP_SELF'])."?ctg=rules&tab=conditions&message=".urlencode($message)."&message_type=".$message_type);
                 } else {
                     $message      = _SOMEPROBLEMEMERGED;
                     $message_type = 'failure';
@@ -305,7 +305,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'auto_complete') {
                 if (eF_updateTableData('lesson_conditions', $fields, "id=".$_GET['edit_condition'])) {
                     $message      = _SUCCESFULLYUPDATEDCONDITION;
                     $message_type = 'success';
-                    eF_redirect("".basename($_SERVER['PHP_SELF'])."?ctg=rules&tab=conditions&message=".$message."&message_type=".$message_type);
+                    eF_redirect("".basename($_SERVER['PHP_SELF'])."?ctg=rules&tab=conditions&message=".urlencode($message)."&message_type=".$message_type);
                 } else {
                     $message      = _SOMEPROBLEMEMERGED;
                     $message_type = 'failure';

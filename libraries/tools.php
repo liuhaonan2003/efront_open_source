@@ -36,7 +36,10 @@ function filterSortPage($dataSource) {
 
 	$dataSource = eF_multiSort($dataSource, $sort, $order);
 	if (isset($_GET['filter'])) {
-		$dataSource = eF_filterData($dataSource, $_GET['filter']);
+		$filter = explode("||||", $_GET['filter']);		
+		$actual_filter = $filter[0];
+		$dataSource = eF_filterData($dataSource, $actual_filter);
+		//$dataSource = eF_filterData($dataSource, $_GET['filter']);
 	}
 	$tableSize = sizeof($dataSource);
 
@@ -341,6 +344,10 @@ function formatLogin($login, $fields = array(), $duplicate = true) {
 		return $login;
 	}
 	
+	if (isset($GLOBALS['_usernames'][$login])) {
+		return $GLOBALS['_usernames'][$login];
+	}
+	
 	if ($usernames = EfrontCache::getInstance()->getCache('usernames')) {
 		$GLOBALS['_usernames'] = $usernames;
 		if (isset($GLOBALS['_usernames'][$login])) {
@@ -594,9 +601,17 @@ function replaceCustomFieldsCertificate($custom, $issuedTimestamp, $login = '', 
 			if (preg_match("/###".$value."###/", $custom, $matches)) {
 				if ($userProfile['type'][$key] == 'date'){
 					$custom = str_replace($matches[0], formatTimestamp($result[0][$value]), $custom);
+				}  else if ($userProfile['type'][$key] == 'select') {
+					$userProfileValues = unserialize($userProfile['options'][$key]);
+					$custom = str_replace($matches[0], $userProfileValues[$result[0][$value]], $custom);
 				} else {
 					$custom = str_replace($matches[0], $result[0][$value], $custom);
 				}
+			}
+		}
+		foreach ($result[0] as $key => $value) {
+			if (preg_match("/###".$key."###/", $custom, $matches)) {
+				$custom = str_replace($matches[0], $value, $custom);
 			}
 		}
 	}
@@ -1026,6 +1041,7 @@ function eF_checkParameter($parameter, $type, $correct = false)
             break;
 
         case 'uint':
+        case 'int':
         case 'id':
             if (!preg_match("/^[0-9]{1,100}$/", $parameter)) {                              //Caution: If 0 is met, then it will return 0 and not false! so, it must checked against false to make sure
                 return false;
@@ -1610,7 +1626,7 @@ function vd($ar) {
  */
 function eF_filterHcdData($dataSource, $filter, $userField = false) {
 
-    $filters = explode("||||", $filter);
+    $filters = trim(urldecode(explode("||||", $filter)));
 
     if ($filters[0] != "" && $filters[0] != _FILTER."...") {
     	$dataSource = eF_filterData($dataSource, $filters[0]);	// the default filter
@@ -1669,7 +1685,7 @@ function eF_filterData($data, $filter) {
 	
 	if (G_VERSIONTYPE == 'enterprise') { #cpp#ifdef ENTERPRISE
 	    if (mb_strpos($filter, "||") !== false) {
-    		return eF_filterHcdData($data, $filter);
+    		//return eF_filterHcdData($data, $filter);
 	    }
 	} #cpp#endif
 	$filter = trim(mb_strtolower($filter), '||');

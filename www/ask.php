@@ -132,7 +132,7 @@ function askUsers() {
 					// Append to logins array the employees of supervisor
 					if (isset($user ->aspects['hcd']) && $user ->aspects['hcd']->isSupervisor()) {
 						include_once $path."module_hcd_tools.php";
-						//$supervised_employees = eF_getTableData("users LEFT OUTER JOIN module_hcd_employee_has_job_description ON users.login = module_hcd_employee_has_job_description.users_LOGIN LEFT OUTER JOIN module_hcd_employee_works_at_branch ON users.login = module_hcd_employee_works_at_branch.users_LOGIN","users.login","(users.user_type <> 'administrator' AND ((module_hcd_employee_works_at_branch.branch_ID IN (" . $_SESSION['supervises_branches'] ." ) AND module_hcd_employee_works_at_branch.assigned='1'))) AND active = 1 GROUP BY login", "login");
+						$supervised_employees = eF_getTableData("users LEFT OUTER JOIN module_hcd_employee_has_job_description ON users.login = module_hcd_employee_has_job_description.users_LOGIN LEFT OUTER JOIN module_hcd_employee_works_at_branch ON users.login = module_hcd_employee_works_at_branch.users_LOGIN","users.login","(users.user_type <> 'administrator' AND ((module_hcd_employee_works_at_branch.branch_ID IN (" . $_SESSION['supervises_branches'] ." ) AND module_hcd_employee_works_at_branch.assigned='1'))) AND active = 1 GROUP BY login", "login");
 						foreach ($supervised_employees as $employee) {
 							if (!isset($logins[$employee['login']])) {
 								$logins[$employee['login']] = $employee['login'];
@@ -282,7 +282,7 @@ function askUsers() {
 	$strs = array();
 	$strs[] =  '<ul>';
 	for ($k = 0; $k < sizeof($users); $k++){
-		$strs[] = '<li id="'.htmlentities($users[$k]['login']).'">'.htmlentities($formattedLogins[$users[$k]['login']]).'</li>';
+		$strs[] = '<li id="'.htmlentities($users[$k]['login'], ENT_COMPAT | ENT_HTML401, 'UTF-8').'">'.htmlentities($formattedLogins[$users[$k]['login']], ENT_COMPAT | ENT_HTML401, 'UTF-8').'</li>';
 	}
 
 	$strs[] = '</ul>';
@@ -747,13 +747,14 @@ function askBranches() {
 		
 		$branchKeys = array_keys($branches);
 		$branchKeys = array_combine($branchKeys, $branchKeys);
+		$branch_results = array();
 		foreach ($tree -> toPathString() as $key => $branch) {
 			if (isset($branchKeys[$key])) {
-				if ($preffix == '%' || stripos($branch, $preffix) !== false) {
+				if ($preffix == '%' || stripos($branch, $preffix) !== false || stripos($branch, htmlentities($preffix)) !== false) {
 					$truncated = eF_truncatePath($branch, 80, 6, "...", "&nbsp;&rarr;&nbsp;");
 					$hiname = highlightSearch($truncated, $preffix);
 
-					$branches[$key] = array('branch_ID' => $key,
+					$branch_results[$key] = array('branch_ID' => $key,
 		    					 'name'        	=> $branch,
 		    					 'path_string' 	=> $hiname);
 				}
@@ -762,7 +763,7 @@ function askBranches() {
 
 		$strs = array();
 		$strs[] = '<ul>';
-		foreach ($branches as $key => $branch) {
+		foreach ($branch_results as $key => $branch) {
 			$strs[] = '<li id='.$key.'>'.$branch['path_string'].'</li>';
 		}
 		$strs[] = '</ul>';

@@ -33,7 +33,7 @@ function onUpdateCoupon(el, response) {
 			}
 		}
 		eF_js_showDivPopup();
-	} catch (e) {alert(e);}
+	} catch (e) {}
 }
 
 function addToCart(el, id, type) {
@@ -124,17 +124,21 @@ function showHideDirections(el, ids, id, mode) {
 	}
 	
 	Element.extend(el);		//IE intialization
-	if (mode == 'show') {
+	if (mode == 'show') {	
 		el.up().up().nextSiblings().each(function(s) {s.show();});
 		if (ids) {
 			ids.split(',').each(function (s) { showHideDirections($('subtree_img'+id), $('subtree_children_'+s) ? $('subtree_children_'+s).innerHTML : '', s, 'show');});
 			ids.split(',').each(function (s) { obj = $('direction_'+s); obj ? obj.show() : '';});
 		}
-		setImageSrc(el, 16, 'navigate_up');
-		$('subtree_img'+id) ? $('subtree_img'+id).addClassName('visible') : '';
+		setImageSrc(el, 16, 'navigate_up');		
+		//$('subtree_img'+id) ? $('subtree_img'+id).addClassName('visible') : ''; //changed due to #4324
+		//$(el) ? $(el).addClassName('visible') : '';  // this works too for #4324 but decided the line below
+		$('subtree_img'+id) && $('subtree_img'+id).hasClassName('sprite16-navigate_up') ? $('subtree_img'+id).addClassName('visible') : '';
+		
+		
 		var idx = hidden_catalog_entries.indexOf(id);
 		if(idx!=-1) hidden_catalog_entries.splice(idx, 1);
-	} else {
+	} else {		
 		el.up().up().nextSiblings().each(function(s) {s.hide();});
 		if (ids) {
 			ids.split(',').each(function (s) { showHideDirections($('subtree_img'+id), $('subtree_children_'+s) ? $('subtree_children_'+s).innerHTML : '', s, 'hide') });

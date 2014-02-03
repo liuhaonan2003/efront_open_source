@@ -22,9 +22,8 @@
     var currentJobFilter 	= new Array();
     var activeFilter = new Array();
     
-    var checkedEntries = new Array();
-    
-    var progressImg = location.toString()+'js/ajax_sorted_table/images/progress1.gif';
+    var checkedEntries = new Array(); 
+    var progressImg = 'js/ajax_sorted_table/images/progress1.gif';
 	    
     for (var k = 0; k < allTables.length; k++) {                            //Walk through all document tables
         if (allTables[k].className.match('sortedTable')) {                  //Get all tables that have 'sortedTable' as part of their class definition. These will be paging/sorting enabled

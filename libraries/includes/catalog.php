@@ -122,7 +122,7 @@ if (isset($_GET['fct'])) {
     	try {
     		if ($_GET['coupon']) {
     			$coupon = new coupons($_GET['coupon'], true);
-    			if (!$coupon -> checkEligibility()) {
+    			if (!$coupon -> checkEligibility($currentUser)) {
     				throw new Exception(_INVALIDCOUPON);
     			}
     			$totalPrice = round($totalPrice * (1 - $coupon -> {$coupon -> entity}['discount'] / 100), 2);
@@ -163,7 +163,7 @@ if (isset($_GET['fct'])) {
 
                 //Calculate price after discount, if any
                 if (($form -> isSubmitted() && $form -> validate()) && $form -> exportValue('coupon') && $coupon = new coupons($form -> exportValue('coupon'), true)) {
-		    		if (!$coupon -> checkEligibility()) {
+		    		if (!$coupon -> checkEligibility($currentUser)) {
 		    			throw new Exception(_INVALIDCOUPON);
 		    		}
 
@@ -475,7 +475,7 @@ if (isset($_GET['fct'])) {
                 if (isset($_POST['submit_checkout_balance'])) {
                 	$message = _SUCCESSFULLYENROLLED;
                 	if ($form -> exportValue('coupon') && $coupon = new coupons($form -> exportValue('coupon'), true)) {
-			    		if (!$coupon -> checkEligibility()) {
+			    		if (!$coupon -> checkEligibility($currentUser)) {
 			    			throw new Exception(_INVALIDCOUPON);
 			    		}
 			    		if (!$GLOBALS['configuration']['paypalbusiness']) {        //If we have paypal, the reduction is already done
@@ -511,7 +511,7 @@ if (isset($_GET['fct'])) {
 
                 } else {
                    if ($form -> exportValue('coupon') && $coupon = new coupons($form -> exportValue('coupon'), true)) {
-			    		if (!$coupon -> checkEligibility()) {
+			    		if (!$coupon -> checkEligibility($currentUser)) {
 			    			throw new Exception(_INVALIDCOUPON);
 			    		}
 			    		if (!$GLOBALS['configuration']['paypalbusiness']) {        //If we have paypal, the reduction is already done

@@ -455,6 +455,16 @@ if (isset($_GET['delete_lesson']) && eF_checkParameter($_GET['delete_lesson'], '
 	        			if (G_VERSIONTYPE == 'enterprise') { #cpp#ifdef ENTERPRISE
 	        				/** MODULE HCD: Get all skills this lesson has to offer **/
 	        				$skills = $editLesson -> getSkills();
+	        				$result  = eF_getTableData("module_hcd_skill_categories", "id, description", "");
+	        				foreach ($result as $value) {
+	        					$skill_categories [$value['id']] = $value['description'];
+	        				}
+	        				
+	        				foreach ($skills as $key => $value) {
+	        					$skills[$key]['category'] =  $skill_categories[$value['categories_ID']];
+	        				}
+							$smarty -> assign("T_SKILLS_CATEGORIES", $skill_categories);  
+							 			
 	        				if (isset($_GET['ajax'])) {
 
 	        					if ($_GET['ajax'] == 'skillsTable') {

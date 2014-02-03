@@ -337,7 +337,7 @@ if ($form -> isSubmitted() && $form -> validate()) {
                                 'pause_test'        => $values['pause_test'],
                                 'display_list'      => $values['display_list'],
                                 'display_weights'   => $values['display_weights'],
-								'answer_all'   		=> $values['answer_all'],
+								'answer_all'   		=> $values['only_forward'] ? 0 : $values['answer_all'],
 								'test_password'   	=> $values['test_password'],
 								'redo_wrong'   		=> $values['redo_wrong'],
                         		'general_threshold' => $values['general_threshold'],        //skill-gap option
@@ -454,7 +454,9 @@ $smarty -> assign('T_TEST_FORM', $renderer -> toArray());
 // Code to find users to who a skillgap tests has been assigned
 if ($skillgap_tests) {
     // AJAX CODE TO RELOAD SKILL-GAP TEST USERS
+	if (G_VERSIONTYPE == 'enterprise') { #cpp#ifdef ENTERPRISE
 	$smarty -> assign("T_JOBS_FILTER", eF_createJobFilterSelect());
+	} #cpp#endif
     if (isset($_GET['ajax']) && $_GET['ajax'] == 'testUsersTable') {
         isset($_GET['limit']) && eF_checkParameter($_GET['limit'], 'uint') ? $limit = $_GET['limit'] : $limit = G_DEFAULT_TABLE_SIZE;
 

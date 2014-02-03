@@ -139,7 +139,6 @@ function eF_js_selectRecipients(recipient) {
     document.getElementById('lesson_recipients').disabled    = 'disabled';
     document.getElementById('user_type_recipients').disabled = 'disabled';
     document.getElementById('lesson_professor_recipients').disabled    = 'disabled';
-
     switch (recipient) {
         case 'specific_lesson':
             document.getElementById('lesson_recipients').disabled    = '';
@@ -425,7 +424,7 @@ function changeMessageType(el, shouldChangeTemplates) {
 				
 				if ($('av_' + _currentEventCategory + '_div')) {
 					$('av_' + _currentEventCategory + '_div').setStyle({display:'none'});
-				}  else if (_currentEventCategory != "system" && _currentEventCategory != "branch" && _currentEventCategory != "job") {
+				}  else if (_currentEventCategory != "system" && _currentEventCategory != "groups" && _currentEventCategory != "branch" && _currentEventCategory != "job") {
 					$('av_lessons_div').setStyle({display:'none'});
 				}					
 			}
@@ -475,7 +474,7 @@ function changeMessageType(el, shouldChangeTemplates) {
 			if (_currentEventCategory != "") {
 				if ($('av_' + _currentEventCategory + '_div')) {
 					$('av_' + _currentEventCategory + '_div').setStyle({display:'block'});
-				}  else if (_currentEventCategory != "system" && _currentEventCategory != "branch" && _currentEventCategory != "job") {
+				}  else if (_currentEventCategory != "system" && _currentEventCategory != "groups" && _currentEventCategory != "branch" && _currentEventCategory != "job") {
 					$('av_lessons_div').setStyle({display:'block'});
 				}
 			}							
@@ -499,15 +498,14 @@ function changeMessageFrequency() {
 }
 
 var _currentEventCategory = "";
-function changeEventCategory(el) {
+function changeEventCategory(el) {	
 	if (_currentEventCategory != "") {
 		if ($('av_' + _currentEventCategory + '_div')) {
 			$('av_' + _currentEventCategory + '_div').setStyle({display:'none'});
-		} else if (_currentEventCategory != "system" && _currentEventCategory != "branch" && _currentEventCategory != "job") {
+		} else if (_currentEventCategory != "system" && _currentEventCategory != "groups" && _currentEventCategory != "branch" && _currentEventCategory != "job") {
 			$('av_lessons_div').setStyle({display:'none'});
 		}
 	}
-
 	$('explicitlySelectedHelp').setStyle({display:'none'});
 
 	parts = el.value.split("_");
@@ -520,7 +518,7 @@ function changeEventCategory(el) {
 	
 		if ($('av_' + _currentEventCategory + '_div')) {
 			$('av_' + _currentEventCategory + '_div').setStyle({display:'block'});
-		} else if (_currentEventCategory != "system" && _currentEventCategory != "branch" && _currentEventCategory != "job") {
+		} else if (_currentEventCategory != "system" && _currentEventCategory != "groups" && _currentEventCategory != "branch" && _currentEventCategory != "job") {
 			$('av_lessons_div').setStyle({display:'block'});
 		}
 	}	

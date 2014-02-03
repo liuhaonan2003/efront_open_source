@@ -30,6 +30,7 @@ function smarty_modifier_eF_truncate($string, $length = 80, $etc = '...',
         return '';
 
     if (mb_strlen($string) > $length) {
+    	$string = strip_tags($string);
         $length -= mb_strlen($etc);
         if (!$middle) {
             return mb_substr($string, 0, $length).$etc;

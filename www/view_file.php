@@ -94,7 +94,9 @@ try {
 	if (pathinfo($file['path'], PATHINFO_EXTENSION) == 'php') {
 		throw new EfrontFileException(_ILLEGALPATH.': '.$file['path'], EfrontFileException :: ILLEGAL_PATH);
 	}
-
+	if (strpos($file['path'], G_ROOTPATH.'backups') !== false && $_SESSION['s_type'] != 'administrator') {
+		throw new EfrontFileException(_YOUCANNOTACCESSTHEREQUESTEDRESOURCE, EfrontFileException::UNAUTHORIZED_ACTION);
+	}
     if (isset($_GET['action']) && $_GET['action'] == 'download') {
     	$file -> sendFile(true);
     } else {

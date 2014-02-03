@@ -183,8 +183,10 @@ try {
         foreach ($lessons_excluded as $key => $value) {
         	if($value['active'] == 0) {
         		$lessonToRemove = array_search($value['id'] , $lessons['id']);
-        		unset($lessons['id'][$lessonToRemove]);
-        		unset($lessons['name'][$lessonToRemove]);
+        		if($lessonToRemove !== false) {
+        			unset($lessons['id'][$lessonToRemove]);
+        			unset($lessons['name'][$lessonToRemove]);
+        		}
         	}
         } 
 
@@ -394,7 +396,7 @@ try {
             }
 
 			if ($values['recipient']) {				
-				$result = eF_getTableData("users", "id,name,surname,login", "active=1 and archive=0");//@todo: change this, performance hog
+				$result = eF_getTableData("users", "id,name,surname,login,user_type", "active=1 and archive=0");//@todo: change this, performance hog
 				foreach ($result as $value) {
 					$usernames[$value['login']] = formatLogin($value['login'], $value);
 				}

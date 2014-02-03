@@ -50,7 +50,8 @@ Below are the available action arguments an the corresponding arguments needed (
 /api2.php?token=<token>&action=get_user_autologin_key&login=<user_login>
 /api2.php?token=<token>&action=set_user_autologin_key&login=<user_login>
 /api2.php?token=<token>&action=languages
-
+/api2.php?token=<token>&action=user_to_branch&login=<user_login>&branch=<branch_id>&job=<job_id>&position=<position>&job_description=<job_description>
+/api2.php?token=<token>&action=branch_jobs&branch=<branch_id>
 
 API returns xml corresponding to the action argument. For actions like efrontlogin, activate_user etc it returns a status entity ("ok" or "error").
 In case of error it returns also a message entity with description of the error occured.
@@ -2474,7 +2475,129 @@ In case of error it returns also a message entity with description of the error 
                 		echo "</xml>";                		
                 	}
                 	break;
-                }               
+                }
+                case 'user_to_branch': {
+                	if (isset($_GET['token']) && checkToken($_GET['token'])) {
+                		
+                		if (eF_checkParameter($_GET['login'], 'login') == false) {
+                			echo "<xml>";
+                			echo "<status>error</status>";
+                			echo "<message>Invalid login format</message>";
+                			echo "</xml>";
+                			exit;
+                		}
+                		if (eF_checkParameter($_GET['branch'], 'id') == false) {
+                			echo "<xml>";
+                			echo "<status>error</status>";
+                			echo "<message>Invalid branch id</message>";
+                			echo "</xml>";
+                			exit;
+                		}
+                		if (eF_checkParameter($_GET['job'], 'id') == false) {
+                			echo "<xml>";
+                			echo "<status>error</status>";
+                			echo "<message>Invalid job id</message>";
+                			echo "</xml>";
+                			exit;
+                		}
+                		if (eF_checkParameter($_GET['position'], 'id') === false) {
+                			echo "<xml>";
+                			echo "<status>error</status>";
+                			echo "<message>Invalid position</message>";
+                			echo "</xml>";
+                			exit;
+                		}
+                		if (eF_checkParameter($_GET['job_description'], 'text') == false) {
+                			echo "<xml>";
+                			echo "<status>error</status>";
+                			echo "<message>Invalid job description</message>";
+                			echo "</xml>";
+                			exit;
+                		}                		
+                		
+                		
+                		try {
+                			$user = EfrontUserFactory :: factory($_GET['login']);
+                			$employee = $user -> aspects['hcd'];
+                		} catch (Exception $e) {
+                			echo "<xml>";
+                			echo "<status>error</status>";
+                			echo "<message>This user does not exist</message>";
+                			echo "</xml>";
+                			exit;
+                		}
+                		try {
+                			$branch = new EfrontBranch($_GET['branch']);
+                		} catch (Exception $e) {
+                			echo "<xml>";
+                			echo "<status>error</status>";
+                			echo "<message>This branch does not exist</message>";
+                			echo "</xml>";
+                			exit;
+                		}
+
+                		try{
+                			$employee -> addJob($user,$_GET['job'],$_GET['branch'],$_GET['position'],$_GET['job_description']);                		
+	                		echo "<xml>";
+	                		echo "<status>ok</status>";
+	                		echo "</xml>";
+	                		break;
+                		} catch (Exception $e) {
+                			echo "<xml>";
+                			echo "<status>error</status>";
+                			echo "<message>".$e->getMessage()."</message>";
+                			echo "</xml>";
+                			exit;
+                		}
+                	} else {
+                		echo "<xml>";
+                		echo "<status>error</status>";
+                		echo "<message>Invalid token</message>";
+                		echo "</xml>";
+                		exit;             		
+                	}
+                	break;                	
+                }
+                case 'branch_jobs': {
+                	if (isset($_GET['token']) && checkToken($_GET['token'])) {
+                		if (eF_checkParameter($_GET['branch'], 'id') == false) {
+                			echo "<xml>";
+                			echo "<status>error</status>";
+                			echo "<message>Invalid branch id</message>";
+                			echo "</xml>";
+                			exit;
+                		}
+                		
+                		try {
+                			$branch = new EfrontBranch($_GET['branch']);
+                		} catch (Exception $e) {
+                			echo "<xml>";
+                			echo "<status>error</status>";
+                			echo "<message>This branch does not exist</message>";
+                			echo "</xml>";
+                			break;
+                		}
+
+                		$branch_job_descriptions = eF_getTableData("module_hcd_job_description", "description, branch_ID, job_description_ID", "branch_ID='".$_GET['branch']."'");
+                		echo "<xml>";
+                		echo "<jobs>";
+                		foreach ($branch_job_descriptions as $job) {
+                			echo "<job>";
+                			echo "<id>" .$job['job_description_ID']. "</id>"; 
+                			echo "<name>".$job['description']."</name>";
+                			echo "</job>";
+                		}
+                		echo "</jobs>";
+                		echo "</xml>";
+                		break;
+                	} else {
+                		echo "<xml>";
+                		echo "<status>error</status>";
+                		echo "<message>Invalid token</message>";
+                		echo "</xml>";
+                		break;
+                	}
+                }
 				default: {
 					//make it so a module can handle an api call but only after they have a valid login (proton)
 					if (isset($_GET['token']) && checkToken($_GET['token']))

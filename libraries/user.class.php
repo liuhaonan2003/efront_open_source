@@ -1294,7 +1294,8 @@ abstract class EfrontUser
 		eF_deleteTableData("profile_comments", "users_LOGIN='".$this -> user['login']."'");
 		eF_deleteTableData("users_to_content", "users_LOGIN='".$this -> user['login']."'");
 		
-		
+		eF_deleteTableData("users_to_lessons", "users_LOGIN='".$this -> user['login']."'");
+		eF_deleteTableData("users_to_courses", "users_LOGIN='".$this -> user['login']."'");
 		
 		if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
 			eF_deleteTableData("payments", "users_LOGIN='".$this -> user['login']."'");
@@ -1502,11 +1503,6 @@ abstract class EfrontUser
 				$group = new EfrontGroup($groupId);
 				$group -> removeUsers($this -> user['login']);
 				unset($this -> groups[$key]);										//Remove groups from cache array."
-
-				// Register group assignment into the event log - event log only available in HCD
-				if (G_VERSIONTYPE == 'enterprise') { #cpp#ifdef ENTERPRISE
-					EfrontEvent::triggerEvent(array("type" => EfrontEvent::REMOVAL_FROM_GROUP, "users_LOGIN" => $this -> user['login'], "users_name" => $this -> user['name'], "users_surname" => $this -> user['surname'] , "entity_ID" => $id, "entity_name" => $group_names[$id]));
-				} #cpp#endif
 			}
 		}
 
@@ -2156,14 +2152,21 @@ abstract class EfrontLessonUser extends EfrontUser
 							   "comments"		    => "",
 							   "completed"		    => 0,
 							   "current_unit"	    => 0,
-							   "score"			    => 0);
+							   "score"			    => 0,
+							   "access_counter" 	=> 0);
 		eF_updateTableData("users_to_lessons", $tracking_info, "users_LOGIN='".$this -> user['login']."' and lessons_ID = ".$lesson -> lesson['id']);
 
 		eF_deleteTableData("completed_tests", "users_LOGIN = '".$this -> user['login']."' and tests_ID in (select id from tests where lessons_ID='".$lesson -> lesson['id']."')");
 		eF_deleteTableData("scorm_data", "users_LOGIN = '".$this -> user['login']."' and content_ID in (select id from content where lessons_ID='".$lesson -> lesson['id']."')");
 		eF_deleteTableData("users_to_content", "users_LOGIN = '".$this -> user['login']."' and content_ID in (select id from content where lessons_ID='".$lesson -> lesson['id']."')");
 		eF_deleteTableData("user_times", "users_LOGIN = '".$this -> user['login']."' and lessons_ID=".$lesson -> lesson['id']);
+		
+		$event = array(	"type"				=> EfrontEvent::LESSON_PROGRESS_RESET,
+				"users_LOGIN"		=> $this -> user['login'],
+				"lessons_ID"		=> $lesson -> lesson['id'],
+				"lessons_name" 		=> $lesson -> lesson['name']);
 	
+		EfrontEvent::triggerEvent($event);
 	}
 	
 	public function changeProgressInLesson($lesson, $timestamp = false) {
@@ -2233,6 +2236,12 @@ abstract class EfrontLessonUser extends EfrontUser
 				$this -> resetProgressInLesson($lesson);
 			}
 		}
+		
+		$event = array(	"type"				=> EfrontEvent::COURSE_PROGRESS_RESET,
+						"users_LOGIN"		=> $this -> user['login'],
+						"lessons_ID"		=> $course -> course['id'],
+						"lessons_name" 		=> $course -> course['name']);
+		EfrontEvent::triggerEvent($event);
 
 		foreach (eF_loadAllModules(true, true) as $key => $module) {
 			$module -> onResetProgressInCourse($course -> course['id'], $this -> user['login']);

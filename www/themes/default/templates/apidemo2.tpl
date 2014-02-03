@@ -483,7 +483,41 @@
                         <tr>
                             <td class = "labelCell">{$T_ACTION_FORM.token.label}:&nbsp;</td>
                             <td class = "elementCell">{$T_ACTION_FORM.token.html}</td>
-                        </tr>                                
+                        </tr>
+                    {elseif $T_ACTION == 'user_to_branch'}
+                        <tr>
+                            <td class = "labelCell">{$T_ACTION_FORM.token.label}:&nbsp;</td>
+                            <td class = "elementCell">{$T_ACTION_FORM.token.html}</td>
+                        </tr>
+                        <tr>
+                            <td class = "labelCell">{$T_ACTION_FORM.login.label}:&nbsp;</td>
+                            <td class = "elementCell">{$T_ACTION_FORM.login.html}</td>
+                        </tr>
+                        <tr>
+                            <td class = "labelCell">{$T_ACTION_FORM.branch.label}:&nbsp;</td>
+                            <td class = "elementCell">{$T_ACTION_FORM.branch.html}</td>
+                        </tr>
+                        <tr>
+                            <td class = "labelCell">{$T_ACTION_FORM.job.label}:&nbsp;</td>
+                            <td class = "elementCell">{$T_ACTION_FORM.job.html}</td>
+                        </tr>
+                        <tr>
+                            <td class = "labelCell">{$T_ACTION_FORM.position.label}:&nbsp;</td>
+                            <td class = "elementCell">{$T_ACTION_FORM.position.html}</td>
+                        </tr>
+                        <tr>
+                            <td class = "labelCell">{$T_ACTION_FORM.job_description.label}:&nbsp;</td>
+                            <td class = "elementCell">{$T_ACTION_FORM.job_description.html}</td>
+                        </tr>
+					{elseif $T_ACTION == 'branch_jobs'}
+                        <tr>
+                            <td class = "labelCell">{$T_ACTION_FORM.token.label}:&nbsp;</td>
+                            <td class = "elementCell">{$T_ACTION_FORM.token.html}</td>
+                        </tr>
+                        <tr>
+                            <td class = "labelCell">{$T_ACTION_FORM.branch.label}:&nbsp;</td>
+                            <td class = "elementCell">{$T_ACTION_FORM.branch.html}</td>
+                        </tr>
                     {/if}
                     
                     <tr><td></td><td class = "submitCell centerAlign">

@@ -813,9 +813,18 @@ if ($_GET['op'] == "preview" && eF_checkParameter($_GET['sent_id'], 'id') ) {
 				$sort = 'timestamp';
 				$order = 'asc';
 			}
+			
+			
+			
+			$constraints = createConstraintsFromSortedTable();
+			list($where, $limit, $orderby) = EfrontNotification :: convertNotificationConstraintsToSqlParameters($constraints);
+			
 
 			// ** Get queue messages **
-			$sending_queue_msgs = eF_getTableData("notifications", "*", "active = 1", "timestamp ASC");
+			$sending_queue_msgs = eF_getTableData("notifications as n","*", implode(" and ", $where), $orderby, false, $limit);
+			$sending_queue_size = eF_countTableData("notifications as n", "n.id", implode(" and ", $where));
+			//$sending_queue_msgs = eF_getTableData("notifications", "*", "active = 1", "timestamp ASC");
+			
 			// Create the corresponding info per message
 			foreach ($sending_queue_msgs as $key => $sending_queue_msg) {
 
@@ -905,16 +914,8 @@ if ($_GET['op'] == "preview" && eF_checkParameter($_GET['sent_id'], 'id') ) {
 				}
 			}
 
-			$sending_queue_msgs = eF_multiSort($sending_queue_msgs, $sort, $order);
-			$smarty -> assign("T_MESSAGE_QUEUE_SIZE", sizeof($sending_queue_msgs));
-			if (isset($_GET['filter'])) {
-				$sending_queue_msgs = eF_filterData($sending_queue_msgs, $_GET['filter']);
-			}
-			if (isset($_GET['limit']) && eF_checkParameter($_GET['limit'], 'int')) {
-				isset($_GET['offset']) && eF_checkParameter($_GET['offset'], 'int') ? $offset = $_GET['offset'] : $offset = 0;
-				$sending_queue_msgs = array_slice($sending_queue_msgs, $offset, $limit);
-			}
 
+			$smarty -> assign("T_MESSAGE_QUEUE_SIZE", $sending_queue_size[0]['count']);
 			// This is almost buggy - cannot filter according to recipients count - significant optimization however
 
 			foreach ($sending_queue_msgs as $key => $message) {
@@ -930,11 +931,7 @@ if ($_GET['op'] == "preview" && eF_checkParameter($_GET['sent_id'], 'id') ) {
 
 			$smarty -> display('administrator.tpl');
 			exit;
-		} else {
-			$sending_queue_msgs = eF_getTableData("notifications", "*", "", "timestamp ASC");
-			$smarty -> assign("T_QUEUE_MSGS", $sending_queue_msgs);
-
-		}
+		} 
 
 
 

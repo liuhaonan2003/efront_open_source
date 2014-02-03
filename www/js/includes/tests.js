@@ -700,7 +700,7 @@ function zeroPad(nr,base,chr){
 function eF_js_printTimer() {
 	var diff = Math.abs((endTime-new Date().getTime())/1000);
 	hours = zeroPad(Math.floor(diff/3600));
-	minutes = zeroPad(Math.floor(diff/60));
+	minutes = zeroPad(Math.floor(diff/60)-hours*60);
 	seconds = zeroPad(Math.floor(diff%60));
     if (hours <= 0 && minutes <= 0 && seconds <= 0 && duration) {
         alert(timeup);
@@ -817,8 +817,9 @@ function checkQuestions() {
     	} else if (r.hasClassName('emptySpacesQuestion')) {
     		r.select('input[type=text]').each(function (s) {s.value ? finished[count] = 1 : null;});
     		r.select('select').each(function (s) {s.value ? finished[count] = 1 : null;});
-    	} else if (r.hasClassName('rawTextQuestion')) {
-    		if (typeof(tinyMCE) != 'undefined' && r.hasClassName('simpleEditor')) { // Added r.hasClassName('simpleEditor') because of #4478
+    	} else if (r.hasClassName('rawTextQuestion')) {    		
+    		if (typeof(tinyMCE) != 'undefined' && r.select('.simpleEditor').length) { // Added r.hasClassName('simpleEditor') because of #4478
+    			console.log(r);
     			if (typeof(tinyMCE.editors[editor_count]) != 'undefined' && tinyMCE.editors[editor_count++].getContent()) {
     				finished[count] = 1;
     			}

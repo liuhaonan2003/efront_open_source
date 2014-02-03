@@ -372,7 +372,7 @@
 							<td>
 								<div style = "float:right">
 								{if $T_COMMENTS[comments_list].users_LOGIN == $T_CURRENT_USER->user.login}
-									<a href = "{$smarty.server.PHP_SELF}?ctg=comments&edit={$T_COMMENTS[comments_list].id}&popup=1", onclick = "eF_js_showDivPopup(event, '{$smarty.const._EDITCOMMENT}', 1)" target = "POPUP_FRAME"><img class = "handle" src = "images/16x16/edit.png" alt = "{$smarty.const._CORRECTION}" title = "{$smarty.const._CORRECTION}"/></a>&nbsp;
+									<a href = "{$smarty.server.PHP_SELF}?ctg=comments&view_unit={$smarty.get.view_unit}&edit={$T_COMMENTS[comments_list].id}&popup=1", onclick = "eF_js_showDivPopup(event, '{$smarty.const._EDITCOMMENT}', 1)" target = "POPUP_FRAME"><img class = "handle" src = "images/16x16/edit.png" alt = "{$smarty.const._CORRECTION}" title = "{$smarty.const._CORRECTION}"/></a>&nbsp;
 								{/if}
 								{if $T_COMMENTS[comments_list].users_LOGIN == $T_CURRENT_USER->user.login || $_professor_}
 									<img class = "ajaxHandle" src = "images/16x16/error_delete.png" alt = "{$smarty.const._DELETE}" title = "{$smarty.const._DELETE}" onclick = "if (confirm ('{$smarty.const._IRREVERSIBLEACTIONAREYOUSURE}')) deleteComment(this, '{$T_COMMENTS[comments_list].id}')"/>

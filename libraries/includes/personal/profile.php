@@ -300,11 +300,18 @@ if ($form -> isSubmitted() && $form -> validate()) {
 			try {
 				$filesystem   = new FileSystemTree($avatarDirectory);
 				$uploadedFile = $filesystem -> uploadFile('file_upload', $avatarDirectory);
+				if (strpos($uploadedFile['mime_type'], 'image') === false) {
+					throw new EfrontFileException(_NOTANIMAGEFILE, EfrontFileException::NOT_APPROPRIATE_TYPE);
+				}
 				eF_normalizeImage($avatarDirectory . "/" . $uploadedFile['name'], $uploadedFile['extension'], 150, 100);// Normalize avatar picture to 150xDimY or DimX x 100
 				$editedUser -> user['avatar'] = $uploadedFile['id'];
 //pr($editedUser -> user['avatar']);exit;				
 			} catch (Exception $e) {
 //pr($e);	exit;		
+				if ($e -> getCode() == EfrontFileException::NOT_APPROPRIATE_TYPE) {
+					$uploadedFile -> delete();
+				}
+				
 				if ($e -> getCode() != UPLOAD_ERR_NO_FILE) {
 					throw $e;
 				}

@@ -451,6 +451,7 @@ else if (isset($_GET['ajax']) && isset($_GET['edit_course']) && $_change_) {
 			$newCourse   -> import($exportedFile, false, true);
 		}
 	} catch (EfrontFileException $e) {
+		$file -> delete();
 	    handleNormalFlowExceptions($e);
 	}
 	$renderer = prepareFormRenderer($form);

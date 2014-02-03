@@ -303,7 +303,7 @@ try {
                 $userProgress = EfrontStats::lightGetUserStatusInLesson($_SESSION['s_login'], $currentLesson, $seenContent, $iterator);
                 $result       = eF_getTableData("users_to_lessons", "current_unit", "users_LOGIN = '".$currentUser -> user['login']."' and lessons_ID = ".$currentLesson -> lesson['id']);
                 sizeof($result) > 0 ? $userProgress['current_unit']  = $result[0]['current_unit'] : $userProgress['current_unit'] = false;
-
+                
                 if ($userProgress['lesson_passed'] && !$userProgress['completed']) {
                     if (!$userProgress['completed'] && $currentLesson -> options['auto_complete']) {
                     	$userProgress = EfrontStats :: getUsersLessonStatus($currentLesson, $currentUser -> user['login']);
@@ -588,7 +588,7 @@ try {
                 $currentLesson -> options['glossary'] ? $controlPanelOptions[11]  = array('text' => _GLOSSARY,    'image' => "32x32/glossary.png",    'href' => basename($_SERVER['PHP_SELF'])."?ctg=glossary")  : null;
             }
             if ($currentUser -> coreAccess['statistics'] != 'hidden') {
-                $controlPanelOptions[14]  = array('text' => _STATISTICS,        'image' => "32x32/reports.png",       'href' => basename($_SERVER['PHP_SELF'])."?ctg=statistics&option=lesson");
+                $controlPanelOptions[14]  = array('text' => _LESSONSTATISTICS,        'image' => "32x32/reports.png",       'href' => basename($_SERVER['PHP_SELF'])."?ctg=statistics&option=lesson");
             }
             if ($currentUser -> coreAccess['settings'] != 'hidden' && $currentLesson -> lesson['course_only'] != 1) {
                 $controlPanelOptions[13] = array('text' => _SCHEDULING,        'image' => "32x32/schedule.png",    'href' => basename($_SERVER['PHP_SELF'])."?ctg=scheduling");

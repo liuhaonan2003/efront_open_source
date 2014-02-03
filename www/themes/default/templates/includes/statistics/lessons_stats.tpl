@@ -62,8 +62,9 @@ table#lessonUsersTable td.overall_progress{width:10%;}
 table#lessonUsersTable td.test_status{width:10%;}
 table#lessonUsersTable td.project_status{width:10%;}
 table#lessonUsersTable td.completed{width:5%;text-align:center;}
-table#lessonUsersTable td.completedon{width:15%;text-align:center;}
+table#lessonUsersTable td.completedon{width:5%;text-align:center;}
 table#lessonUsersTable td.score{width:10%;text-align:center;}
+table#lessonUsersTable td.last_login{width:10%;text-align:center;}
 {/literal}
 </style>
 <!--ajax:lessonUsersTable-->
@@ -87,6 +88,7 @@ table#lessonUsersTable td.score{width:10%;text-align:center;}
 				<td class = "topTitle completed" 		name = "completed">{$smarty.const._COMPLETED}</td>
 				<td class = "topTitle completedon" 		name = "completed">{$smarty.const._COMPLETEDON}</td>
 				<td class = "topTitle score" 			name = "score">{$smarty.const._SCORE}</td>
+				<td class = "topTitle last_login" 		name = "last_login">{$smarty.const._LASTLOGIN}</td>
 			</tr>
 			{foreach name = 'users_to_lessons_list' key = 'key' item = 'user' from = $T_DATA_SOURCE}
 			<tr class = "defaultRowHeight {cycle values = "oddRowColor, evenRowColor"} {if !$user.active}deactivatedTableElement{/if}">
@@ -132,6 +134,7 @@ table#lessonUsersTable td.score{width:10%;text-align:center;}
 				
 				</td>
 				<td class = "score">{if $user.role != 'professor'}#filter:score-{$user.score}#%{else}<div class = "centerAlign">-</div>{/if}</td>
+				<td class = "lastlogin">#filter:timestamp_time-{$user.last_login}#</td>
 			</tr>
 			{foreachelse}
 			<tr class = "defaultRowHeight oddRowColor"><td class = "emptyCategory" colspan = "100%">{$smarty.const._NODATAFOUND}</td></tr>

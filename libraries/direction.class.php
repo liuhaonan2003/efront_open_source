@@ -574,7 +574,7 @@ class EfrontDirectionsTree extends EfrontTree
 			}
 		}
 
-		asort($lessonNames);
+		asort($lessonNames, SORT_NATURAL | SORT_FLAG_CASE);	// Added in php 5.4.0	
 		foreach ($lessonNames as $key => $foo) {
 			$temp[$key] = $lessons[$key];
 		}

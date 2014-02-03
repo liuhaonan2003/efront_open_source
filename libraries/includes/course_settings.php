@@ -821,7 +821,7 @@ if ($_GET['op'] == 'course_info') {
 					$currentCourse->persist();
 
 					$message = urlencode(_SUCCESFULLYUPDATEDCERTIFICATE)."&message_type=success";
-					eF_redirect(basename($_SERVER['PHP_SELF'])."?".$baseUrl."&op=course_certificates&message=".$message);
+					eF_redirect(basename($_SERVER['PHP_SELF'])."?".$baseUrl."&op=course_certificates&message=".urlencode($message));
 				}
 				catch(Exception $e){
 					handleNormalFlowExceptions($e);
@@ -1073,9 +1073,9 @@ if ($_GET['op'] == 'course_info') {
 					$message = urlencode(_ADDCERTIFICATETEMPLATEEMPTYXML)."&message_type=failure";
 
 					if($_GET['op'] == 'add_certificate_template')
-					eF_redirect("".basename($_SERVER['PHP_SELF'])."?".$baseUrl."&op=add_certificate_template&message=".$message.$popup_);
+					eF_redirect("".basename($_SERVER['PHP_SELF'])."?".$baseUrl."&op=add_certificate_template&message=".urlencode($message).$popup_);
 					else if($_GET['op'] == 'edit_certificate_template')
-					eF_redirect("".basename($_SERVER['PHP_SELF'])."?".$baseUrl."&op=edit_certificate_template&template_id=".$tid."&message=".$message.$popup_);
+					eF_redirect("".basename($_SERVER['PHP_SELF'])."?".$baseUrl."&op=edit_certificate_template&template_id=".$tid."&message=".urlencode($message).$popup_);
 				}
 
 				if($_GET['op'] == 'add_certificate_template'){
@@ -1261,7 +1261,7 @@ if ($_GET['op'] == 'course_info') {
 		if(!in_array($_GET['template_id'], $userTemplates)){
 
 			$message = urlencode(_CERTIFICATETEMPLATENOACCESS)."&message_type=failure";
-			eF_redirect("".basename($_SERVER['PHP_SELF'])."?".$baseUrl."&op=format_certificate&switch=1&message=".$message);
+			eF_redirect("".basename($_SERVER['PHP_SELF'])."?".$baseUrl."&op=format_certificate&switch=1&message=".urlencode($message));
 		}
 
 		if($currentCourse->options['certificate_tpl_id'] == $_GET['template_id']){
@@ -1274,11 +1274,11 @@ if ($_GET['op'] == 'course_info') {
 		if(eF_deleteTableData("certificate_templates", "id=".$_GET['template_id'])){
 
 			$message = urlencode(_SUCCESSFULLYDELETECERTIFICATETEMPLATE)."&message_type=success";
-			eF_redirect("".basename($_SERVER['PHP_SELF'])."?".$baseUrl."&op=format_certificate&switch=1&message=".$message);
+			eF_redirect("".basename($_SERVER['PHP_SELF'])."?".$baseUrl."&op=format_certificate&switch=1&message=".urlencode($message));
 		}
 		else{
 			$message = urlencode(_PROBLEMDELETECERTIFICATETEMPLATE)."&message_type=failure";
-			eF_redirect("".basename($_SERVER['PHP_SELF'])."?".$baseUrl."&op=format_certificate&switch=1&message=".$message);
+			eF_redirect("".basename($_SERVER['PHP_SELF'])."?".$baseUrl."&op=format_certificate&switch=1&message=".urlencode($message));
 		}
 
 	} #cpp#endif

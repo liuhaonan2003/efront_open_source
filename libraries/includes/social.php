@@ -201,8 +201,8 @@ if (str_replace(DIRECTORY_SEPARATOR, "/", __FILE__) == $_SERVER['SCRIPT_FILENAME
 			$smarty -> assign("T_LESSON_COMMENTS", array_values($comments));													 //Assign to smarty
 		}
 
-		/* Calendar */
-		if (!isset($currentUser -> coreAccess['calendar']) || $currentUser -> coreAccess['calendar'] != 'hidden') {
+		/* Calendar */	
+		if ((!isset($currentUser -> coreAccess['calendar']) || $currentUser -> coreAccess['calendar'] != 'hidden') && $GLOBALS['configuration']['mode_calendar']) {
 			$today = getdate(time());																		   //Get current time in an array
 			$today = mktime(0, 0, 0, $today['mon'], $today['mday'], $today['year']);							//Create a timestamp that is today, 00:00. this will be used in calendar for displaying today
 			isset($_GET['view_calendar']) && eF_checkParameter($_GET['view_calendar'], 'timestamp') ? $view_calendar = $_GET['view_calendar'] : $view_calendar = $today;	//If a specific calendar date is not defined in the GET, set as the current day to be today
@@ -219,16 +219,17 @@ if (str_replace(DIRECTORY_SEPARATOR, "/", __FILE__) == $_SERVER['SCRIPT_FILENAME
 
 			$events = calendar :: getCalendarEventsForUser($currentUser);
 			$events = calendar :: getCalendarEventsForUser($currentUser);
+
 			if ($_SESSION['s_type'] != 'administrator' && $_SESSION['s_current_branch']) {	//this applies to branch urls
 				$currentBranch = new EfrontBranch($_SESSION['s_current_branch']);
-				$branchTreeUsers = array_keys($currentBranch->getBranchTreeUsers());
+				$branchTreeUsers = array_keys($currentBranch->getBranchTreeUsers());			
 				foreach ($events as $key => $value) {
-					if ($value['type'] != 'global' && !in_array($value['users_LOGIN'], $branchTreeUsers)) {
+					if ($value['type'] != 'global' && !in_array($value['users_LOGIN'], $branchTreeUsers)) {				
 						unset($events[$key]);
 					}
 				}
 			}
-						
+					
 			$events = calendar :: sortCalendarEventsByTimestamp($events);
 
 			$smarty -> assign("T_CALENDAR_EVENTS", $events);													//Assign events and specific day timestamp to smarty, to be used from calendar

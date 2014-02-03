@@ -473,6 +473,7 @@ if (isset($_GET['excel']) && $_GET['excel'] == 'lesson') {
     }
     $workSheet -> write(2, 11, _COMPLETED, $titleCenterFormat);
     $workSheet -> write(2, 12, _GRADE, $titleCenterFormat);
+    $workSheet -> write(2, 13, _LASTLOGIN, $titleCenterFormat);
     $roles = EfrontLessonUser :: getLessonsRoles(true);
 
     $row = 3;
@@ -501,6 +502,7 @@ if (isset($_GET['excel']) && $_GET['excel'] == 'lesson') {
 		}
         $workSheet -> write($row, 11, $completedString, $fieldCenterFormat);
         $workSheet -> write($row, 12, formatScore($user['score'])."%", $fieldCenterFormat);
+        $workSheet -> write($row, 13, formatTimestamp($user['last_login'], true), $fieldCenterFormat);
         $row++;
     }
     $row += 2;
@@ -842,8 +844,9 @@ if (isset($_GET['excel']) && $_GET['excel'] == 'lesson') {
 						_CONTENT 	   => array('width' => '10%', 'fill' => false, 'align' => 'C'),
 						_TESTS 		   => array('width' => '10%', 'fill' => false, 'align' => 'C'),
 						_PROJECTS	   => array('width' => '10%', 'fill' => false, 'align' => 'C'),
-						_COMPLETED	   => array('width' => '20%', 'fill' => false),
-						_SCORE		   => array('width' => '10%', 'fill' => false, 'align' => 'R'));
+						_COMPLETED	   => array('width' => '10%', 'fill' => false),
+						_SCORE		   => array('width' => '10%', 'fill' => false, 'align' => 'R'),
+						_LASTLOGIN	   => array('width' => '10%', 'fill' => false));
 	$data = array();
 	foreach ($students as $user) {
 		if ($GLOBALS['configuration']['time_reports']) {
@@ -860,7 +863,8 @@ if (isset($_GET['excel']) && $_GET['excel'] == 'lesson') {
 						_TESTS		  => formatScore($user['test_status']['mean_score'])."%",
 						_PROJECTS	  => formatScore($user['project_status']['mean_score'])."%",
 						_COMPLETED	  => $user['completed'] ? _YES.', '._ON.' '.formatTimestamp($user['timestamp_completed']) : _NO,
-						_SCORE		  => formatScore($user['score'])."%");
+						_SCORE		  => formatScore($user['score'])."%",
+						_LASTLOGIN    => formatTimestamp($user['last_login'], true));
     }
 	$pdf->printDataSection(_USERSINFO, $data, $formatting);
 

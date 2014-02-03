@@ -195,7 +195,7 @@ function smarty_function_eF_template_html_select_date($params, &$smarty)
         }
 //        $search_type_name = '"' . $prefix . 'SearchType'.$instance.'"';
 
-        $search_type_result .= $search_type_name . " id = '". $search_type_name ."' ";
+        $search_type_result .= $search_type_name . " id = ". $search_type_name ."";
 
         $search_type_result .= $extra_attrs . '>'."\n";
 
