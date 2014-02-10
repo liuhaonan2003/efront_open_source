@@ -47,7 +47,6 @@ $$('div.block').ancestors().each(function (s) {
 </div>
 {*This table is used to display popups*}
 
-<iframe  width="100%" height="600px" name = "POPUP_FRAME" id = "popup_frame" src = "javascript:''" >Sorry, but your browser needs to support iframes to see this</iframe>
 <table id = "popup_table" class = "divPopup" style = "display:none;">
     <tr class = "defaultRowHeight">
         <td class = "topTitle" id = "popup_title"></td>
@@ -55,6 +54,7 @@ $$('div.block').ancestors().each(function (s) {
     </td></tr>
     <tr><td colspan = "2" id = "popup_data" style = ""></td></tr>
     <tr><td colspan = "2" id = "frame_data" style = "display:none;">
+		<iframe  width="100%" height="600px" name = "POPUP_FRAME" id = "popup_frame" src = "javascript:''" >Sorry, but your browser needs to support iframes to see this</iframe>
     </td></tr>
 </table>
 <div id = "error_details" style = "display:none">{eF_template_printBlock title=$smarty.const._ERRORDETAILS data="<pre>`$T_EXCEPTION_TRACE`</pre>" image='32x32/error_delete.png'}</div>

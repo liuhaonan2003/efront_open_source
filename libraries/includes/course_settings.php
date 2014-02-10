@@ -820,8 +820,7 @@ if ($_GET['op'] == 'course_info') {
 					$currentCourse->options['certificate_export_method'] = 'xml';
 					$currentCourse->persist();
 
-					$message = urlencode(_SUCCESFULLYUPDATEDCERTIFICATE)."&message_type=success";
-					eF_redirect(basename($_SERVER['PHP_SELF'])."?".$baseUrl."&op=course_certificates&message=".urlencode($message));
+					eF_redirect(basename($_SERVER['PHP_SELF'])."?".$baseUrl."&op=course_certificates&message=".urlencode(_SUCCESFULLYUPDATEDCERTIFICATE)."&message_type=success");
 				}
 				catch(Exception $e){
 					handleNormalFlowExceptions($e);

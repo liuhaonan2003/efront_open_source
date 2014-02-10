@@ -1,4 +1,4 @@
-=== Version 3.6.14.5 - build 18016 ===
+=== Version 3.6.14.4 - build 18016 ===
 - Fixed free text questions not recognizing completion in feedbacks and tests
 - Fixed module wiki on install issue when lesson folder does not exit
 - Fixed duplicate file hcd/reports.php and user_search.php
@@ -8,6 +8,13 @@
 - Fixed issue with maximum number of group key uses 
 - Fixed tincan queries not persisting when under a branch url
 - Reverted fix for issue with ealpath() that broke filemanager's uploads
+- Fixed information message when editting a course certificate
+- Fixed certificate reports formatted logins in excel output
+- Fixed show thank you message if such option on submiting a test
+- Fixed issue empty lesson list when not logged in and simple layout active
+- Fixed issue ask groups returns what you type not all groups
+- Fixed injected text in message at the end of the message
+- Fixed module course reports includes users from all user types based to student
 
 === Version 3.6.14.3 - build 18014 ===
 - Added branch url to be set via import branches

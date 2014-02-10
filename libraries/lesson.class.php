@@ -5444,7 +5444,7 @@ class EfrontLesson
 		}
 	}
 
-	public function getUsersActiveTimeInLesson($constraints) {
+	public function getUsersActiveTimeInLesson($constraints = array()) {
 		$lessonUsers = array();
 		$constraints   = array('return_objects' => false) + $constraints;
 		foreach ($this->getLessonUsers($constraints) as $key=>$value) {

@@ -124,12 +124,17 @@
 				<table class = "doneTestInfo">
                     <tr><td>
 						{if $T_UNIT.ctg_type != 'feedback'}
+
+							{if $T_TEST_DATA->options.redirect}
+								<div class = "mediumHeader">{$smarty.const._THANKYOUFORCOMPLETING} "{$T_TEST_DATA->test.name}"</div>
+							{/if}
 							{$smarty.const._THETESTISDONE} {$T_TEST_STATUS.timesDone} {$smarty.const._TIMES}
-									{if $T_TEST_DATA->options.redoable}
-										{$smarty.const._ANDCANBEDONE}
-										{if $T_TEST_STATUS.timesLeft > 0} {$T_TEST_STATUS.timesLeft}{else}0{/if}
-										{$smarty.const._TIMESMORE}
-									{/if}
+							{if $T_TEST_DATA->options.redoable}
+								{$smarty.const._ANDCANBEDONE}
+								{if $T_TEST_STATUS.timesLeft > 0} {$T_TEST_STATUS.timesLeft}{else}0{/if}
+								{$smarty.const._TIMESMORE}
+							{/if}
+									
 						{else}
 							<div class = "mediumHeader">{$smarty.const._THANKYOUFORCOMPLETING} "{$T_TEST_DATA->test.name}"</div>
 						{/if}

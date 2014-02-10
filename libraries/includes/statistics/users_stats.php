@@ -65,22 +65,25 @@ if (isset($_GET['sel_user'])) {
 			$smarty -> assign("T_BASIC_ROLES_ARRAY", $rolesBasic);
 
 			if (isset($_GET['ajax']) && $_GET['ajax'] == 'lessonsTable') {
-				$tableName   = $_GET['ajax'];
-				$smarty -> assign("T_DATASOURCE_COLUMNS", array('name', 'location', 'user_type', 'num_lessons', 'status', 'completed', 'score', 'operations', 'sort_by_column' => 4));
+				$tableName   = $_GET['ajax'];			
+				$smarty -> assign("T_DATASOURCE_COLUMNS", array('name', 'location', 'user_type', 'num_lessons', 'status', 'active_in_lesson', 'completed', 'score', 'operations', 'sort_by_column' => 4));
 				$smarty -> assign("T_DATASOURCE_OPERATIONS", array('progress'));
 				$lessons 	 = $infoUser -> getUserStatusInIndependentLessons();
+
 				if ($currentUser -> user['user_type'] != 'administrator') {
+					$userLessons  = $infoUser -> getUserLessons();
 					$lessons = array_intersect_key($lessons, $userLessons);
 				}
+				
 				$lessons 	 = EfrontLesson :: convertLessonObjectsToArrays($lessons);
 				foreach ($lessons as $key => $value) {
 					$lessons[$key]['name'] = $directionsTreePaths[$value['directions_ID']].'&nbsp;&rarr;&nbsp;'.$value['name'];
-				}				
-				$dataSource  = $lessons;
+				}							
+				$dataSource  = $lessons;				
 			}
 			if (isset($_GET['ajax']) && $_GET['ajax'] == 'courseLessonsTable' && eF_checkParameter($_GET['courseLessonsTable_source'], 'id')) {
 				$tableName   = $_GET['ajax'];
-				$smarty -> assign("T_DATASOURCE_COLUMNS", array('name', 'location', 'user_type', 'num_lessons', 'status', 'completed', 'score', 'operations', 'sort_by_column' => 4));
+				$smarty -> assign("T_DATASOURCE_COLUMNS", array('name', 'location', 'user_type', 'num_lessons', 'status', 'active_in_lesson', 'completed', 'score', 'operations', 'sort_by_column' => 4));
 				$smarty -> assign("T_DATASOURCE_OPERATIONS", array('progress'));
 				$lessons 	 = $infoUser -> getUserStatusInCourseLessons(new EfrontCourse($_GET['courseLessonsTable_source']), true);
 				$lessons 	 = EfrontLesson :: convertLessonObjectsToArrays($lessons);
@@ -89,16 +92,17 @@ if (isset($_GET['sel_user'])) {
 					$_GET['sort'] = 'eliminate';		//Assign a default sort that does not exist, thus eliminating default sorting by name. This happens because $dataSource here is alread pre-sorted by course succession
 				}
 			}
-			$smarty -> assign("T_DATASOURCE_COLUMNS", array('name', 'location', 'user_type', 'num_lessons', 'status', 'completed', 'score', 'operations', 'sort_by_column' => 4));
-			$smarty -> assign("T_DATASOURCE_OPERATIONS", array('progress'));
-			$smarty -> assign("T_DATASOURCE_SORT_BY", 0);
+			
 			if ($_GET['ajax'] == 'coursesTable' || $_GET['ajax'] == 'instancesTable') {
+				$smarty -> assign("T_DATASOURCE_COLUMNS", array('name', 'location', 'user_type', 'num_lessons', 'active_in_course', 'status', 'completed', 'score', 'operations', 'sort_by_column' => 4));
+				$smarty -> assign("T_DATASOURCE_OPERATIONS", array('progress'));
+				$smarty -> assign("T_DATASOURCE_SORT_BY", 0);
 				$tableName   = $_GET['ajax'];
 				if (isset($_GET['ajax']) && $_GET['ajax'] == 'coursesTable') {
 					//$constraints = array('archive' => false, 'active' => true, 'instance' => false) + createConstraintsFromSortedTable();
 					$constraints = array('archive' => false, 'active' => true, 'instance' => false);
 
-					$constraints['required_fields'] = array('has_instances', 'location', 'user_type', 'completed', 'score', 'has_course', 'num_lessons');
+					$constraints['required_fields'] = array('has_instances', 'location', 'user_type', 'active_in_course', 'completed', 'score', 'has_course', 'num_lessons');
 					$constraints['return_objects']  = false;
 					$courses	 = $infoUser -> getUserCoursesAggregatingResults($constraints);
 
@@ -421,7 +425,7 @@ if (isset($_GET['excel']) && $_GET['excel'] == 'user') {
 	if ($infoUser -> user['user_type'] != 'administrator') {
 		//course users info
 		$constraints = array('instance' => false, 'archive' => false, 'active' => true);
-		$constraints['required_fields'] = array('has_instances', 'location', 'user_type', 'completed', 'score', 'has_course', 'num_lessons', 'to_timestamp');
+		$constraints['required_fields'] = array('has_instances', 'location', 'user_type', 'completed', 'score', 'has_course', 'num_lessons', 'to_timestamp', 'active_in_course');
 		$constraints['return_objects']  = false;
 		$userCourses = $infoUser -> getUserCoursesAggregatingResults($constraints);
 
@@ -432,7 +436,7 @@ if (isset($_GET['excel']) && $_GET['excel'] == 'user') {
 
 			$row++;
 			$workSheet -> write($row, 4, _COURSE, $titleLeftFormat);
-			//$workSheet -> write($row, 5, _LESSONS, $titleCenterFormat);
+			$workSheet -> write($row, 5, _ENROLLEDON, $titleCenterFormat);
 			$workSheet -> write($row, 6, _SCORE, $titleCenterFormat);
 			$workSheet -> write($row, 7, _COMPLETED, $titleCenterFormat);
 			$workSheet -> write($row, 8, _COMPLETEDON, $titleCenterFormat);
@@ -440,7 +444,7 @@ if (isset($_GET['excel']) && $_GET['excel'] == 'user') {
 				//$course = $course -> course;
 				$row++;
 				$workSheet -> write($row, 4, $course['name'], $fieldLeftFormat);
-				//$workSheet -> write($row, 5, $course['lessons'], $fieldCenterFormat);
+				$workSheet -> write($row, 5, formatTimestamp($course['active_in_course']), $fieldCenterFormat);
 				$workSheet -> write($row, 6, formatScore($course['score'])."%", $fieldCenterFormat);
 				$workSheet -> write($row, 7, $course['completed'] ? _YES : _NO, $fieldCenterFormat);
 				$workSheet -> write($row, 8, formatTimestamp($course['to_timestamp']), $fieldCenterFormat);

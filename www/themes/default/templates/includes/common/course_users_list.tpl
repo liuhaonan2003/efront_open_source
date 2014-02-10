@@ -211,6 +211,7 @@ table#lessonsTable td.time_in_lesson, table#courseLessons td.time_in_lesson{widt
 table#lessonsTable td.overall_progress,table#courseLessons td.overall_progress{width:5%;text-align:center;}
 table#lessonsTable td.test_status, table#courseLessons td.test_status{width:5%;text-align:center;}
 table#lessonsTable td.project_status,table#courseLessons td.project_status{width:5%;text-align:center;}
+table#lessonsTable td.active_in_lesson,table#courseLessons td.active_in_lesson{width:5%;text-align:center;}
 table#lessonsTable td.completed,table#courseLessons td.completed{width:5%;text-align:center;}
 table#lessonsTable td.score,table#courseLessons td.score{width:5%;text-align:center;}
 {/literal}
@@ -225,6 +226,8 @@ table#lessonsTable td.score,table#courseLessons td.score{width:5%;text-align:cen
 		{if 'projects'|eF_template_isOptionVisible}
 {if in_array('project_status', $T_DATASOURCE_COLUMNS)}	<td class = "topTitle project_status"   name = "project_status">{$smarty.const._PROJECTSSCORE}</td>{/if}
 		{/if}
+{if in_array('active_in_lesson', $T_DATASOURCE_COLUMNS)} <td class = "topTitle active_in_lesson" name = "active_in_lesson">{$smarty.const._ENROLLEDON}</td>{/if}
+		
 {if in_array('completed', $T_DATASOURCE_COLUMNS)}		<td class = "topTitle completed" 		name = "completed">{$smarty.const._COMPLETED}</td>{/if}
 {if in_array('score', $T_DATASOURCE_COLUMNS)}			<td class = "topTitle score" 			name = "score">{$smarty.const._SCORE}</td>{/if}
 		</tr>
@@ -275,6 +278,9 @@ table#lessonsTable td.score,table#courseLessons td.score{width:5%;text-align:cen
 			</td>
 {/if}
 			{/if}
+{if in_array('active_in_lesson', $T_DATASOURCE_COLUMNS)}
+<td class = "active_in_lesson">#filter:timestamp_time-{$user.active_in_lesson}#</td>
+{/if}			
 {if in_array('completed', $T_DATASOURCE_COLUMNS)}
 			<td class = "completed">
 			{if (!$T_BASIC_ROLES_ARRAY || $T_BASIC_ROLES_ARRAY[$user.user_type] == 'student')}

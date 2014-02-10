@@ -299,6 +299,7 @@ if (isset($_GET['register_lessons'])) {
 } elseif (!isset($_GET['ctg']) || $_GET['ctg'] == 'lessons') {
 //	setcookie('c_request', '', time() - 86400);
 	$_SESSION['login_mode'] = '0';
+	include "catalog_page.php";
 }
 
 isset($_GET['ctg']) && $_GET['ctg'] == 'login' ? $postTarget = basename($_SERVER['PHP_SELF'])."?ctg=login" : $postTarget = basename($_SERVER['PHP_SELF'])."?index_page";

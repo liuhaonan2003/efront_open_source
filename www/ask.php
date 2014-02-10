@@ -614,10 +614,12 @@ function askGroups() {
 	eF_checkParameter($_POST['preffix'], 'text') ? $preffix = $_POST['preffix'] : $preffix = '%';
 
 	if($_SESSION['s_type'] == "administrator"){
-		$result = array_values(EfrontGroup::getGroups());
+		//$result = array_values(EfrontGroup::getGroups());
+		$result = eF_getTableData("groups", "id, name, self_enroll", "name like '%$preffix%'", "name");
 	} else {
-		$currentUser = EfrontUserFactory::factory($_SESSION['s_login']);
-		$result = array_values($currentUser -> getGroups());
+		//$currentUser = EfrontUserFactory::factory($_SESSION['s_login']);
+		//$result = array_values($currentUser -> getGroups());
+		$result = eF_getTableData("users_to_groups ug, groups g", "g.id, g.name, g.self_enroll", "ug.users_LOGIN = '".$_SESSION['s_login']."' and g.id=ug.groups_ID and g.active=1 and name like '%$preffix%'", "name");		
 	}
 
 	for ($i = 0 ; $i < sizeof($result) ; $i ++) {

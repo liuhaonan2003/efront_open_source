@@ -165,9 +165,9 @@ function createEmployeeSearchUrl() {
 		size = criteria.length;
 		for (i = 0; i < size; i++) {
 			if (criteria[i] != "" && document.getElementById(criteria[i] + "Year").value != "" && document.getElementById(criteria[i] + "Day").value != "" && document.getElementById(criteria[i] + "Month").value != "") {	
-				datesCriteria += "&" + criteria[i] + "=" + document.getElementById('"' + criteria[i] + 'SearchType"').value +
-				"&" + criteria[i] + "Day=" + document.getElementById('"' + criteria[i] + 'Day"').value +
-				"&" + criteria[i] + "Month=" + document.getElementById('"' + criteria[i] + 'Month"').value +
+				datesCriteria += "&" + criteria[i] + "=" + document.getElementById(criteria[i] + "SearchType").value +
+				"&" + criteria[i] + "Day=" + document.getElementById(criteria[i] + "Day").value +
+				"&" + criteria[i] + "Month=" + document.getElementById(criteria[i] + "Month").value +
 				"&" + criteria[i] + "Year=" + document.getElementById(criteria[i] + "Year").value;
 				datesCriteriaFound = true;		
 			}
