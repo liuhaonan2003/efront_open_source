@@ -4,7 +4,7 @@
  */
 define("G_VERSIONTYPE_CODEBASE", "community");
 define("G_VERSIONTYPE", "community");
-define("G_BUILD", "18016");
+define("G_BUILD", "18024");
 
 session_cache_limiter('none');          //Initialize session
 session_start();
@@ -244,7 +244,7 @@ if ((isset($_GET['step']) && $_GET['step'] == 2) || isset($_GET['unattended'])) 
 				//Include old configuration file in order to perform the automatic backup, use database functions, etc
 				require_once($path."configuration.php");
 				
-				if ($values['backup'] || isset($_GET['unattended'])) {
+				if ($values['backup'] || $_GET['force_backup'] !== 'false') {
 					$backupFile = EfrontSystem :: backup($values['db_name'].'_'.time().'.zip');    //Auto backup database
 				}
 				if (version_compare($dbVersion, '3.6.11') == -1) {

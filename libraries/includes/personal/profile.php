@@ -4,7 +4,7 @@ try {
 	$systemAvatars = array('' => ''); // Added because of #4444 
 	$avatarsFileSystemTree = new FileSystemTree(G_SYSTEMAVATARSPATH);
 	foreach (new EfrontFileTypeFilterIterator(new EfrontFileOnlyFilterIterator(new EfrontNodeFilterIterator(new RecursiveIteratorIterator($avatarsFileSystemTree -> tree, RecursiveIteratorIterator :: SELF_FIRST))), array('png')) as $key => $value) {
-		$systemAvatars[basename($key)] = basename($key);
+		$systemAvatars[eFront_basename($key)] = eFront_basename($key);
 	}
 	$smarty -> assign("T_SYSTEM_AVATARS", $systemAvatars);
 } catch (Exception $e) {
@@ -43,7 +43,7 @@ if (!isset($_GET['add_user'])) {
 			$constrainAccess[] = 'passrepeat';
 			$constrainAccess[] = 'password_';
 			$constrainAccess[] = 'user_type';			
-			$roles = EfrontUser :: getRoles(true);	//so that the selected user type appears correctly
+			$roles = EfrontUser :: getRoles(true);	//so that the selected user type appears correctly		
 		}
 		if ($editedUser -> isLdapUser) {
 			$constrainAccess[] = 'passrepeat';
@@ -53,7 +53,7 @@ if (!isset($_GET['add_user'])) {
 			$constrainAccess[] = 'user_type';
 			$constrainAccess[] = 'active';
 			$constrainAccess[] = 'ldap';
-			$roles = EfrontUser :: getRoles(true);	//so that the selected user type appears correctly
+			$roles = EfrontUser :: getRoles(true);	//so that the selected user type appears correctly	
 			if ($currentUser->user['user_type'] != 'administrator') {
 				if (!EfrontUser::isOptionVisible('change_info') && !EfrontUser::isOptionVisible('change_pass')) {
 					$constrainAccess = 'all';
@@ -87,6 +87,7 @@ if (!in_array('password_', $constrainAccess) && $constrainAccess != 'all') {
 $form -> addElement('text', 'name', _FIRSTNAME, 'class = "inputText"');
 $form -> addElement('text', 'surname', _LASTNAME, 'class = "inputText"');
 $form -> addElement('text', 'email', _EMAILADDRESS, 'class = "inputText"');
+$form -> addElement('advcheckbox', 'email_block', _BLOCKEMAILS, null, 'class = "inputCheckbox" id="blockCheckbox" ', array(0, 1));
 if (!in_array('active', $constrainAccess) && $constrainAccess != 'all') {
 	$form -> addElement('advcheckbox', 'active', _ACTIVEUSER, null, 'class = "inputCheckbox" id="activeCheckbox" ', array(0, 1));
 }
@@ -98,7 +99,7 @@ if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
 	} #cpp#endif
 } #cpp#endif
 
-$select = $form -> addElement('select', 'user_type', _USERTYPE, $roles);
+$select = $form -> addElement('select', 'user_type', _USERTYPE, $roles, 'id="profile_user_type"');
 
 $languages = EfrontSystem :: getLanguages(true, true);
 if ($GLOBALS['configuration']['onelanguage']) {
@@ -121,6 +122,8 @@ $form -> addRule('name', _THEFIELD.' '._FIRSTNAME.' '._ISMANDATORY, 'required', 
 $form -> addRule('surname', _THEFIELD.' '._LASTNAME.' '._ISMANDATORY, 'required', null, 'client');
 $form -> addRule('email', _THEFIELD.' '._EMAILADDRESS.' '._ISMANDATORY, 'required', null, 'client');
 $form -> addRule('email', _INVALIDFIELDDATA, 'checkParameter', 'email');
+$form -> addRule('name', _INVALIDFIELDDATA, 'checkParameter', 'name');
+$form -> addRule('surname', _INVALIDFIELDDATA, 'checkParameter', 'name');
 if (isset($_GET['add_user'])) {
 	$form -> addRule('login', _INVALIDFIELDDATA, 'checkParameter', 'login');
 	$form -> addRule('login',  _THELOGIN.' &quot;'.($form -> exportValue('login')).'&quot; '._ALREADYEXISTS, 'checkNotExist', 'login');
@@ -230,23 +233,29 @@ if ($constrainAccess != 'all') {
 	$form -> freeze();
 }
 
+$form -> setJsWarnings(_BEFOREJAVASCRIPTERROR, _AFTERJAVASCRIPTERROR);          //Set javascript error messages
+
 if ($form -> isSubmitted() && $form -> validate()) {
 	try {
+		
 		$values = $form -> exportValues();
 		$roles  = EfrontUser :: getRoles();
-		$userProperties = array('login'		     => $values['login'],
-								'name'		     => $values['name'],
-							    'surname'		 => $values['surname'],
-								'active'		 => $values['active'],
-								'email'		  	 => $values['email'],
-								'user_type'	  	 => $roles[$values['user_type']],
-								'languages_NAME' => $values['languages_NAME'],
-								'timezone'	   	 => $values['timezone'],
-				 				'timestamp'		 => time(),
-								'password'		 => $values['password_'],
-								'user_types_ID'  => is_numeric($values['user_type']) ? $values['user_type'] : 0,
+		
+
+		$userProperties = array('login'		     	=> $values['login'],
+								'name'		     	=> $values['name'],
+							    'surname'			=> $values['surname'],
+								'active'		 	=> $values['active'],
+								'email'		  	 	=> $values['email'],
+								'email_block'		=> $values['email_block'],
+								'user_type'	  	 	=> $roles[$values['user_type']],
+								'languages_NAME' 	=> $values['languages_NAME'],
+								'timezone'	   	 	=> $values['timezone'],
+				 				'timestamp'		 	=> time(),
+								'password'		 	=> $values['password_'],
+								'user_types_ID'  	=> is_numeric($values['user_type']) ? $values['user_type'] : 0,
 								'short_description' => $values['short_description'],
-								'comments' 		 => $values['comments']);
+								'comments' 		 	=> $values['comments']);	
 		foreach ($userProfile as $field) {										 //Get the custom fields values
 			if ($field['type'] == "date") {
 				$timestampValues 		= $values[$field['name']];
@@ -256,6 +265,9 @@ if ($form -> isSubmitted() && $form -> validate()) {
 		}
 
 		if (isset($_GET['add_user'])) {
+			if ($values['ldap_user'] && $GLOBALS['configuration']['activate_ldap']) {
+				$userProperties['password'] = 'ldap';
+			}
 			$editedUser = EfrontUser :: createUser($userProperties);
 			//EfrontEvent::triggerEvent(array("type" => (-1) * EfrontEvent::SYSTEM_VISITED, "users_LOGIN" => $userProperties['login'], "users_name" => $userProperties['name'], "users_surname" => $userProperties['surname']));
 		} else {
@@ -268,9 +280,13 @@ if ($form -> isSubmitted() && $form -> validate()) {
 				
 			}
 			
+			if (!$editedUser->user['active'] && $userProperties['active']) {
+				EfrontEvent::triggerEvent(array("type" => EfrontEvent::SYSTEM_USER_ACTIVATE, "users_LOGIN" => $editedUser->user['login'], "users_name" => $editedUser->user['name'], "users_surname" => $editedUser->user['surname']));
+			}
+			
 			foreach ($constrainAccess as $value) {
 				unset($userProperties[$value]);
-			}
+			}		
 			if ($values['ldap_user'] && !$editedUser -> isLdapUser) {
 				$userProperties['password'] = 'ldap';
 			} else if (!$values['password_']) {//If a password is not set, don't set it

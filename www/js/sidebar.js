@@ -806,13 +806,13 @@ function showStatusChange() {
 	} catch (e) {sidebarExceptionHandler(e, 'showStatusChange');}
 }
 
-function changeStatus() {
+function changeStatus(user_login) {
 	try {
 		if (__initStatus != $('inputStatusText').value) {
 			if (translations['s_type'] == "administrator") {
-				var url = translations['servername']+"administrator.php?ctg=personal&postAjaxRequest=1&setStatus=" + $('inputStatusText').value;
+				var url = translations['servername']+"administrator.php?ctg=personal&op=dashboard&postAjaxRequest=1&setStatus=" + $('inputStatusText').value+'&user='+user_login+'&ajax=ajax';
 			} else {
-				var url = translations['servername']+translations['s_type']+".php?ctg=personal&postAjaxRequest=1&setStatus=" + $('inputStatusText').value;
+				var url = translations['servername']+translations['s_type']+".php?ctg=personal&op=dashboard&postAjaxRequest=1&setStatus=" + $('inputStatusText').value+'&user='+user_login+'&ajax=ajax';;
 			}
 
 			$('inputStatusText').style.display = 'none';

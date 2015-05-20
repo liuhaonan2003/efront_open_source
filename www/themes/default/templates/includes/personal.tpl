@@ -1,6 +1,6 @@
 {capture name = "t_personal_code"}
 	{if $T_OP == 'dashboard'}
-		{if $T_SOCIAL_INTERFACE}
+		{if $T_SOCIAL_USERSTATUS}
 			{capture name = "t_status_change_interface"}
 				<table class = "horizontalBlock">
 					<tr><td>

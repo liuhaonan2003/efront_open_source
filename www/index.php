@@ -27,11 +27,23 @@ if (!is_file($path."configuration.php")) {                        //If the confi
 	require_once $path."configuration.php";
 }
 
+if ($_SESSION['s_login']) {
+	try {
+		$currentUser = EfrontUser :: checkUserAccess(false, $_SESSION['s_type']);
+	} catch (Exception $e) {
+		unset($_SESSION['s_login']);
+		eF_redirect(basename($_SERVER['PHP_SELF'])."?ctg=login&message=".urlencode(_YOURSESSIONHASEXPIREDPLEASELOGINAGAIN));
+		exit;
+	}
+}
+
 if ($GLOBALS['configuration']['webserver_auth']) {
 	eval('$usernameVar='.$GLOBALS['configuration']['username_variable'].';');
 	$currentUser = EfrontUser :: checkWebserverAuthentication();
 	$currentUser -> login($currentUser -> user['password'], true);
 }
+
+
 
 //@todo:temporary here, should leave
 $cacheId = null;
@@ -231,11 +243,10 @@ if (isset($_GET['autologin']) && eF_checkParameter($_GET['autologin'], 'hex')) {
 		$autolinks 	= $result['autologin'];
 		$key 		= array_search($_GET['autologin'], $autolinks);
 		if ($key !==  false) {
-			//pr($result['login'][$key]);
 			$user 		= EfrontUserFactory :: factory($result['login'][$key]);
-			$pattern 	= $user -> user['login']."_".$user -> user['timestamp'];
-			$pattern 	= md5($pattern.G_MD5KEY);
-			if (strcmp($pattern, $_GET['autologin']) == 0) {
+			//$pattern 	= $user -> user['login']."_".$user -> user['timestamp'];
+			//$pattern 	= md5($pattern.G_MD5KEY);
+			//if (strcmp($pattern, $_GET['autologin']) == 0) {
 				$user -> login($user -> user['password'], true);
 				if (isset($_GET['lessons_ID']) && eF_checkParameter($_GET['lessons_ID'], 'id')) {
 				//check for valid lesson
@@ -248,7 +259,7 @@ if (isset($_GET['autologin']) && eF_checkParameter($_GET['autologin'], 'hex')) {
 				EfrontEvent::triggerEvent(array("type" => EfrontEvent::SYSTEM_VISITED, "users_LOGIN" => $user -> user['login'], "users_name" => $user -> user['name'], "users_surname" => $user -> user['surname']));
 				loginRedirect($user -> user['user_type']);
 				exit;
-			}
+			//}
 		}
 	} catch (EfrontUserException $e) {}
 }
@@ -325,7 +336,6 @@ if ($form -> isSubmitted() && $form -> validate()) {
 	try {
 		
 		$user = EfrontUserFactory :: factory(trim($form -> exportValue('login')));
-
 		if ($GLOBALS['configuration']['lock_down'] && $user -> user['user_type'] != 'administrator') {
 			eF_redirect("index.php?message=".urlencode(_LOCKDOWNONLYADMINISTRATORSCANLOGIN)."&message_type=failure");
 			exit;
@@ -335,7 +345,11 @@ if ($form -> isSubmitted() && $form -> validate()) {
 			$branch = new EfrontBranch($_SESSION['s_current_branch']);  
 			$branchUsers = $branch -> getBranchTreeUsers();
 			if ($user->user['user_type'] != 'administrator' && (empty($branchUsers) || in_array($user -> user['login'], array_keys($branchUsers)) === false)) {
-				eF_redirect("index.php?message=".urlencode(_YOUARENOTAMEMBEROFTHISBRANCH));				
+				if(!$user->user['active']) {
+					eF_redirect("index.php?message=".urlencode(_USERINACTIVE));
+				} else {
+					eF_redirect("index.php?message=".urlencode(_YOUARENOTAMEMBEROFTHISBRANCH));
+				}
 			}
 		} else if ($user->user['user_type'] != 'administrator' && !$GLOBALS['configuration']['allow_direct_login']) {
 			eF_redirect("index.php?message=".urlencode(_YOUCANONLYLOGINFROMYOURBRANCHURL));
@@ -401,7 +415,7 @@ if ($form -> isSubmitted() && $form -> validate()) {
 				$fields_insert = array('users_LOGIN' => $user -> user['login'],
 			  		'timestamp'   => time(),
 			   		'action'	     => 'failed_login',
-			   		'session_ip'  => eF_encodeIP($_SERVER['REMOTE_ADDR']));
+			   		'session_ip'  => eF_encodeIP(eF_getRemoteAddress()));
 				eF_insertTableData("logs", $fields_insert);
 				$res_ban = eF_getTableData("logs", "count(id) as ct", "users_LOGIN='".$user -> user['login']."' and action='failed_login'");
 				if ($res_ban[0]['ct'] >= 5 && $user -> user['user_type'] != 'administrator') {
@@ -445,9 +459,7 @@ if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
 					
 					try {
 						new EfrontFacebook($cookie['user_id']);
-						$eF_user = eF_getTableData("facebook_connect JOIN users ON users.login = facebook_connect.users_LOGIN", "users_LOGIN, password", "fb_uid='".$cookie['user_id']."'");
-						//pr($eF_user);
-						
+						$eF_user = eF_getTableData("facebook_connect JOIN users ON users.login = facebook_connect.users_LOGIN", "users_LOGIN, password", "fb_uid='".$cookie['user_id']."'");						
 						
 						$user = EfrontUserFactory :: factory($eF_user[0]['users_LOGIN']);
 						$user -> login($eF_user[0]['password'], true);
@@ -672,6 +684,11 @@ if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
 	}
 } #cpp#endif
 
+if (isset($_GET['ctg']) && $_GET['ctg'] == 'saml') {
+	$saml = new EfrontSaml();
+	$saml->authenticate();	
+}
+
 /* -----------------End of Login part-----------------------------*/
 if (isset($_GET['ctg']) && $_GET['ctg'] == 'agreement' && $_SESSION['s_login']) { //Display license agreement
 
@@ -811,7 +828,7 @@ if (isset($_GET['ctg']) && $_GET['ctg'] == 'reset_pwd' && $GLOBALS['configuratio
 					   'timestamp'   => time(),
 					   'action'	     => 'forms',
 					   'comments'	 => 'reset_password',
-					   'session_ip'  => eF_encodeIP($_SERVER['REMOTE_ADDR']));
+					   'session_ip'  => eF_encodeIP(eF_getRemoteAddress()));
 		eF_insertTableData("logs", $fields_insert);
 		try {
 			if (eF_checkParameter($input, 'email')) {                                               //The user entered an email address
@@ -1108,6 +1125,16 @@ if (isset($_GET['ctg']) && ($_GET['ctg'] == "signup") && $configuration['signup'
 	$form -> addElement('submit', 'submit_register', _REGISTER, 'class = "flatButton"');
 
 	if (isset($_GET['ldap'])) {
+/*	Check #4931 and #5271	
+		if ($_GET['login'] && eF_checkParameter($_GET['login'], 'login')) {
+			$res = eF_getTableData("users", "*", "login='".$_GET['login']."'");
+			if (!empty($res)) {
+				eF_redirect(basename($_SERVER['PHP_SELF']));
+			}
+		} else {
+			eF_redirect(basename($_SERVER['PHP_SELF']));
+		}
+*/		
 		$result = eF_getLdapValues($GLOBALS['configuration']['ldap_uid'].'='.$_GET['login'], array($GLOBALS['configuration']['ldap_preferredlanguage'],
 		$GLOBALS['configuration']['ldap_mail'],
 		$GLOBALS['configuration']['ldap_cn'],
@@ -1138,7 +1165,7 @@ if (isset($_GET['ctg']) && ($_GET['ctg'] == "signup") && $configuration['signup'
 					   'timestamp'   => time(),
 					   'action'	     => 'forms',
 					   'comments'	 => 'signup',
-					   'session_ip'  => eF_encodeIP($_SERVER['REMOTE_ADDR']));
+					   'session_ip'  => eF_encodeIP(eF_getRemoteAddress()));
 		eF_insertTableData("logs", $fields_insert);
 		if ($form -> validate()) {
             try {
@@ -1201,7 +1228,6 @@ if (isset($_GET['ctg']) && ($_GET['ctg'] == "signup") && $configuration['signup'
 	        	
 	        	// send not-visited notifications for the newly registered user
 	        	//EfrontEvent::triggerEvent(array("type" => (-1) * EfrontEvent::SYSTEM_VISITED, "users_LOGIN" => $user_data['login'], "users_name" => $user_data['name'], "users_surname" => $user_data['surname']));
-	        	//pr($self_registered_jobs);
 
                 if (G_VERSIONTYPE == 'enterprise') { #cpp#ifdef ENTERPRISE
 
@@ -1350,7 +1376,7 @@ if (isset($_GET['ctg']) && $_GET['ctg'] == 'contact') {                         
 					   'timestamp'   => time(),
 					   'action'	     => 'forms',
 					   'comments'	 => 'contact',
-					   'session_ip'  => eF_encodeIP($_SERVER['REMOTE_ADDR']));
+					   'session_ip'  => eF_encodeIP(eF_getRemoteAddress()));
 		eF_insertTableData("logs", $fields_insert);
 		if ($form -> validate()) {
 			$to      = $form -> exportValue("email");

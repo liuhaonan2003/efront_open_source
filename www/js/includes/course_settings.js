@@ -77,9 +77,8 @@ function onSetAllUsersStatusCompleted(el, response) {
 }
 function setShownUsersStatusCompleted(el) {
 	Element.extend(el).insert(new Element('img', {src:'themes/default/images/others/progress1.gif'}).addClassName('handle'));
-
-	parameters = {set_all_completed:1, only_shown:1, method: 'get'};	
-	ajaxRequest(el, location.toString(), parameters, onSetAllUsersStatusCompleted);
+	eF_js_redrawPage('courseUsersTable', false, '&set_all_completed=1&only_shown=1');
+	setTimeout(function(){ document.location.href = document.location.href;}, 2001);
 }
 
 function resetAllUsers(el) {

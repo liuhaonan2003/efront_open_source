@@ -7,7 +7,7 @@
 */
 define("G_VERSIONTYPE_CODEBASE", "community");
 define("G_VERSIONTYPE", "community");
-define("G_BUILD", "18016");
+define("G_BUILD", "18024");
 
 //This file cannot be called directly, only included.
 if (str_replace(DIRECTORY_SEPARATOR, "/", __FILE__) == $_SERVER['SCRIPT_FILENAME']) {
@@ -134,7 +134,9 @@ if (defined('G_BRANCH_URL')) {
 		$branch = EfrontBranch::getBranchByUrl(G_BRANCH_URL);
 		$_SESSION['s_current_branch'] = $branch->branch['branch_ID'];
 		if ($branch->branch['languages_NAME'] && in_array($branch->branch['languages_NAME'], array_keys(EfrontSystem::getLanguages(true, true)))) {
-			$_SESSION['s_language'] = $branch->branch['languages_NAME'];
+			if(!$_SESSION['s_login']) {
+				$_SESSION['s_language'] = $branch->branch['languages_NAME'];
+			}
 		}
 		if ($theme = $branch->branch['themes_ID']) {
 			$theme = new themes($theme);
@@ -301,7 +303,10 @@ $_monthNames = array(1=>_JANUARYSHORTHAND,
 						_DECEMBERSHORTHAND);
 
 $loadScripts = array();
-
+if ($_GET['ajax'] == 'ajax' && $_GET['csrf_id'] != session_id()) {
+	throw new Exception("CSRF check failed");
+	exit;
+}
 
 /**
  * Setup version
@@ -803,6 +808,8 @@ function Efront_Autoload($className) {
         require_once "versions/sso/sumtotal.class.php";
     } else if (strpos($className, "calendar") !== false) {
         require_once "calendar.class.php";
+    } else if (strpos($className, "efrontsaml") !== false) {
+    	require_once "saml.class.php";
     } else if (strpos($className, "efrontpdf") !== false) {
     	require_once "pdf.class.php";
     } else if (strpos($className, "efrontfacebook") !== false) {

@@ -63,7 +63,11 @@ try {
 
     if (isset($_GET['forum'])) {
     	if (!$_GET['forum']) {
-    		eF_redirect(basename($_SERVER['PHP_SELF'])."?ctg=forum&message=".urlencode(_AFORUMDOESNOTEXISTFORTHISLESSONCREATE)."&message_type=failure");    		
+    		if (!$_student_) {
+    			eF_redirect(basename($_SERVER['PHP_SELF'])."?ctg=forum&message=".urlencode(_AFORUMDOESNOTEXISTFORTHISLESSONCREATE)."&message_type=failure");    		
+    		} else {
+    			eF_redirect(basename($_SERVER['PHP_SELF'])."?ctg=forum&message=".urlencode(_AFORUMDOESNOTEXISTFORTHISLESSON)."&message_type=failure");    			
+    		}
     	} else if (!in_array($_GET['forum'], $legalForumValues)) {
     		eF_redirect(basename($_SERVER['PHP_SELF'])."?ctg=forum&message=".urlencode(_UNPRIVILEGEDATTEMPT)."&message_type=failure");
     	}
@@ -253,7 +257,7 @@ try {
             $user_posts = array_combine($user_posts['login'], $user_posts['num']);
 
             foreach ($posts as $key => $post) {
-            	$posts[$key]['body'] = preg_replace("/\[quote\](.*)\[\/quote\]/", "<div class = 'quote'><b>"._QUOTE.":</b><div class = 'quoteBody'>\$1</div></div>", $post['body']);
+            	$posts[$key]['body'] = eF_replaceQuotes($post['body']);
             	try {
             		$file = new EfrontFile($post['avatar']);
             		list($posts[$key]['avatar_width'], $posts[$key]['avatar_height']) = eF_getNormalizedDims($file['path'], 150, 150);
@@ -266,7 +270,6 @@ try {
             //    $forum      = eF_getTableData("f_forums", "*", "id=".$topic[0]['f_forums_ID']);
 
             $smarty -> assign("T_USER_POSTS", $user_posts);
-
             $smarty -> assign("T_POSTS", $posts);
             $smarty -> assign("T_TOPIC", $topic[0]);
             //    $smarty -> assign("T_FORUM", $forum[0]);

@@ -25,18 +25,6 @@ var tabberOptions = {ldelim}'rtl':true{rdelim};
 <script type = "text/javascript" src = "{$item}"> </script>		{*///MODULES LINK JAVASCRIPT CODE*}
 {/foreach}
 
-{*
-<script>
-$$('div.block').ancestors().each(function (s) {
-	if (s.readAttribute('collapsed')) {
-		$(t.id+"_content").hide();
-		$(t.id+"t_image").removeClassName("open");
-		$(t.id+"t_image").addClassName("close");
-		$(t.id+"t_image").src = "themes/default/images/16x16/navigate_down.png";
-	}
-});
-</script>
-*}
 <div id = "user_table" style = "display:none">
 {capture name = "t_users_table_code"}
     <table width = "100%">
@@ -104,10 +92,17 @@ $$('div.block').ancestors().each(function (s) {
 {/if}
 
 {if $T_FACEBOOK_ACCOUNT_MERGE_POPUP}
+	var _facebookmergeaccount = '{$smarty.const._FACEBOOKMERGEACCOUNT}';
 	{if $T_FACEBOOK_EXTERNAL_LOGIN}
-	eF_js_showDivPopup(event, '{$smarty.const._FACEBOOKMERGEACCOUNT}', 2, 'facebook_login');
+		//eF_js_showDivPopup(event, '{$smarty.const._FACEBOOKMERGEACCOUNT}', 2, 'facebook_login');
+		{literal}
+			jQuery.fn.efront('modal', {'header': _facebookmergeaccount, 'id':'facebook_login', width:'760px', height:'580px', 'element' :'document.body'});
+		{/literal}
 	{else}
-	eF_js_showDivPopup(event, '{$smarty.const._FACEBOOKMERGEACCOUNT}', 0, 'facebook_login');
+		//eF_js_showDivPopup(event, '{$smarty.const._FACEBOOKMERGEACCOUNT}', 0, 'facebook_login');
+		{literal}
+			jQuery.fn.efront('modal', {'header': _facebookmergeaccount, 'id':'facebook_login', width:'600px', height:'400px', 'element' :'document.body'});
+		{/literal}	
 	{/if}
 {/if}
 
@@ -164,6 +159,7 @@ if (window.location.href.indexOf("#_=_") > 0) { window.location = window.locatio
 	        cookie     : true,
 	        xfbml      : true,
 	        oauth      : true,
+			version    : 'v2.2',
 	 		channelUrl: "{/literal}{$smarty.const.G_SERVERNAME}{literal}channel.php"
 	      });
 	        $$('.fb_login').each(function(element) {
@@ -174,7 +170,8 @@ if (window.location.href.indexOf("#_=_") > 0) { window.location = window.locatio
 	    	   FB.login(Facebook_login);
 		}
 	    };
-	    
+	
+    
 	   (function(d){
 	        var js, id = 'facebook-jssdk'; if (d.getElementById(id)) {return;}
 	        js = d.createElement('script'); js.id = id; js.async = true;
@@ -185,13 +182,14 @@ if (window.location.href.indexOf("#_=_") > 0) { window.location = window.locatio
 	    function Facebook_login () {
 	        FB.getLoginStatus(function(response) {
 	            if (response.status === 'connected') {
-		        window.location = "{/literal}{$smarty.const.G_SERVERNAME}{literal}index.php";  
+				//console.log(response.authResponse);
+		        	window.location = "{/literal}{$smarty.const.G_SERVERNAME}{literal}index.php";  
 	            } else if (response.status === 'not_authorized') {
 	               //
 	            } else {
 	                document.getElementById('fb-logout').style.display = 'block';
 	            }
-	        }, {scope: 'read_stream,publish_stream,status_update'});
+	        }, {scope: 'publish_actions,', return_scopes: true});
 	      } 
 
 	    function facebook_logout() {

@@ -275,6 +275,11 @@ class f_topics extends EfrontEntity
 	    $form -> addRule('title', _THEFIELD.' "'._TITLE.'" '._ISMANDATORY, 'required', null, 'client');
 	    $form -> addElement('select', 'status', _STATUS, array(1 => _PUBLIC, 2 => _LOCKED, 3 => _INVISIBLE));
 	    $form -> addElement('textarea', 'message', _MESSAGE, 'class = "inputTextarea simpleEditor"');	
+	    $form -> addElement('file', 'attachment_upload[0]', _ATTACHMENT, 'class = "inputText"');	  
+	    $form -> addElement('file', 'attachment_upload[1]', _ATTACHMENT, 'class = "inputText"');
+	    $form -> addElement('file', 'attachment_upload[2]', _ATTACHMENT, 'class = "inputText"');
+	    $form -> addElement('file', 'attachment_upload[3]', _ATTACHMENT, 'class = "inputText"');
+	    $form -> addElement('file', 'attachment_upload[4]', _ATTACHMENT, 'class = "inputText"');
 	    $form -> addElement('submit', 'submit_add_topic', _SUBMIT, 'class = "flatButton"');
         $form -> setDefaults(array('title'   => $this -> {$this -> entity}['title'],
                                    'status'  => $this -> {$this -> entity}['status']));
@@ -289,6 +294,23 @@ class f_topics extends EfrontEntity
     public function handleForm($form) {
         $values = $form -> exportValues();
         
+        $forumUser = EfrontUserFactory :: factory($_SESSION['s_login']);
+        $forumAttachmentDirectory = $forumUser -> getDirectory().'forum';
+        if (!is_dir($forumAttachmentDirectory)) {
+        	mkdir($forumAttachmentDirectory, 0755);
+        }
+        
+        $filesystem    = new FileSystemTree($forumAttachmentDirectory);
+        $attachmentBody = '';
+        foreach ($_FILES['attachment_upload']['error'] as $key => $value) {
+        	if ($value != UPLOAD_ERR_NO_FILE) {
+        		$uploadedFile  = $filesystem -> uploadFile('attachment_upload', $certificateDirectory, $key);
+        		$attachmentid = $uploadedFile['id'];
+        		$attachmentBody .= '<p style="font-style:italic"><a href="view_file.php?action=download&file='.$attachmentid.'">'.$uploadedFile['name'].'</a></p>';
+        	}
+        }
+        
+        
         if (isset($_GET['edit'])) {
 	        $fields = array("title"       => $values['title'],
 	                        "status"      => $values['status']);
@@ -296,7 +318,7 @@ class f_topics extends EfrontEntity
             $this -> persist();
         } else {
 	        $fields = array("title"       => $values['title'],
-	                        "message"     => $values['message'],
+	                        "message"     => $values['message'].$attachmentBody,
 	                        "status"      => $values['status'] ? $values['status'] : 1,
 	                        "f_forums_ID" => $_GET['forum_id'],
 	                        "users_LOGIN" => $_SESSION['s_login'],
@@ -393,6 +415,12 @@ class f_messages extends EfrontEntity {
 
 	    $form -> addElement('text', 'title', _TITLE, 'class = "inputText"');
 	    $form -> addElement('textarea', 'body', _BODY, 'id = "editor_message_data" class = "inputTextarea simpleEditor"');
+	    $form -> addElement('file', 'attachment_upload[0]', _ATTACHMENT, 'class = "inputText"');	  
+	    $form -> addElement('file', 'attachment_upload[1]', _ATTACHMENT, 'class = "inputText"');
+	    $form -> addElement('file', 'attachment_upload[2]', _ATTACHMENT, 'class = "inputText"');
+	    $form -> addElement('file', 'attachment_upload[3]', _ATTACHMENT, 'class = "inputText"');
+	    $form -> addElement('file', 'attachment_upload[4]', _ATTACHMENT, 'class = "inputText"');
+	    
 	    $form -> addElement('hidden', 'replyto', null);
 	
 	    $form -> addElement('submit', 'submit_add_message', _SUBMIT, 'class = "flatButton"');
@@ -417,19 +445,44 @@ class f_messages extends EfrontEntity {
      */
     public function handleForm($form) {
         $values = $form -> exportValues();
+     
+		$forumUser = EfrontUserFactory :: factory($_SESSION['s_login']);
+		$forumAttachmentDirectory = $forumUser -> getDirectory().'forum';
+		if (!is_dir($forumAttachmentDirectory)) {
+			mkdir($forumAttachmentDirectory, 0755);
+		}
+        
+        $filesystem    = new FileSystemTree($forumAttachmentDirectory);
+        $attachmentBody = '';
+        foreach ($_FILES['attachment_upload']['error'] as $key => $value) {
+        	if ($value != UPLOAD_ERR_NO_FILE) {
+        		$uploadedFile  = $filesystem -> uploadFile('attachment_upload', $certificateDirectory, $key);
+        		$attachmentid = $uploadedFile['id'];
+        		$attachmentBody .= '<p style="font-style:italic"><a href="view_file.php?action=download&file='.$attachmentid.'">'.$uploadedFile['name'].'</a></p>';
+        	}
+        }
+        
         
         if (isset($_GET['edit'])) {
 	        $fields = array("title" => $values['title'],
-	                        "body"  => $values['body']);        
+	                        "body"  => $values['body'].$attachmentBody);      
+
+	        
+	        if ($this -> {$this -> entity}['users_LOGIN'] != $_SESSION['s_login'] && strstr($fields['body'], _FORUMMESSAGEEDITEDBY." ".formatLogin($_SESSION['s_login'])) === false) {
+	        	$fields['body'] .= " "._FORUMMESSAGEEDITEDBY." ".formatLogin($_SESSION['s_login']). " (".formatTimestamp(time()).")";
+	        }	        
             $this -> {$this -> entity} = array_merge($this -> {$this -> entity}, $fields);
+            
             $this -> persist();
         } else {
+
+        	
             $fields = array("title"       => $values['title'],
-                            "body"        => $values['body'],
+                            "body"        => $values['body'].$attachmentBody,
                             "f_topics_ID" => $_GET['topic_id'],
                             "users_LOGIN" => $_SESSION['s_login'],
                             "timestamp"   => time(),
-                            "replyto"     => $values['replyto'] ? $values['replyto'] : 0);
+                            "replyto"     => $values['replyto'] ? $values['replyto'] : 0);     
             self :: create($fields);
         }        
     }
@@ -532,8 +585,9 @@ class f_poll extends EfrontEntity {
         $form -> setDefaults(array('poll_subject' => $this -> {$this -> entity}['title'], 
                                    'poll_text'    => $this -> {$this -> entity}['question']));
 	    $values['options'] = array_values(unserialize($this -> {$this -> entity}['options']));      //We put array_values to make sure that the array starts from zero
+       
         foreach ($values['options'] as $key => $value) {
-            if ($key > 2) {
+            if ($key > 1) {
 	            $form -> addElement('text', 'options['.$key.']', null, 'class = "inputText inputText_QuestionChoice"');
 	            $form -> addRule('options['.$key.']', _THEFIELD.' '._ISMANDATORY, 'required', null, 'client');
             }
@@ -569,11 +623,13 @@ class f_poll extends EfrontEntity {
             if (isset($_GET['edit'])) {                                                                //If we are changing an existing question
 	            $this -> {$this -> entity} = array_merge($this -> {$this -> entity}, $fields);
 	            $this -> persist();
-            } else {                
-                $fields['timestamp_created'] = time();
-                $fields['f_forums_ID']       = $_GET['forum_id'];
-                $fields['users_LOGIN']       = $_SESSION['s_login'];
-                self :: create($fields);                                
+            } else {   
+            	if (eF_checkParameter($_GET['forum_id'], 'id')) {             
+	                $fields['timestamp_created'] = time();
+	                $fields['f_forums_ID']       = $_GET['forum_id'];
+	                $fields['users_LOGIN']       = $_SESSION['s_login'];
+	                self :: create($fields);  
+            	}                              
             }
         }
     }

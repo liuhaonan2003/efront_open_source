@@ -74,10 +74,9 @@ function prepareFormRenderer($form) {
 
 function createConstraintsFromSortedTable() {
 	$constraints = array();
-
 	isset($_GET['offset']) && eF_checkParameter($_GET['offset'], 'int') 	 		  ? $constraints['offset'] = $_GET['offset'] : null;
 	isset($_GET['limit'])  && eF_checkParameter($_GET['limit'], 'int') 		 		  ? $constraints['limit']  = $_GET['limit']  : $constraints['limit'] = G_DEFAULT_TABLE_SIZE;
-	isset($_GET['sort'])   && eF_checkParameter($_GET['sort'], 'alnum_with_spaces')   ? $constraints['sort']   = $_GET['sort']   : null;
+	isset($_GET['sort'])   && eF_checkParameter($_GET['sort'], 'alnum_with_commas')   ? $constraints['sort']   = $_GET['sort']   : null;
 	isset($_GET['filter'])                                              			  ? $constraints['filter'] = $_GET['filter'] : null;
 	isset($_GET['order'])  && in_array($_GET['order'], array('asc', 'desc')) 		  ? $constraints['order']  = $_GET['order']  : $constraints['order'] = 'asc';
 
@@ -356,6 +355,7 @@ function formatLogin($login, $fields = array(), $duplicate = true) {
 	}	
 	$roles = EfrontUser :: getRoles(true);
 	$tags = array('#surname#', '#name#', '#login#', '#n#', '#type#');
+
 	
 	if (isset($fields['formatted_login'])) {
 		$GLOBALS['_usernames'][$login] = $fields['formatted_login'];
@@ -374,6 +374,27 @@ function formatLogin($login, $fields = array(), $duplicate = true) {
 		
 		$GLOBALS['_usernames'][$login] = $format;
 	}
+	
+	if ($GLOBALS['configuration']['username_format_resolve'] && $duplicate) {
+		$results = eF_getTableData("users", "login, name, surname, user_type");
+		foreach($results as $result){
+			$replacements = array($result['surname'], $result['name'], $result['login'], mb_substr($result['name'], 0, 1), $roles[$result['user_type']]);
+			$format       = str_replace($tags, $replacements, $GLOBALS['configuration']['username_format']);
+			
+			$GLOBALS['_usernames'][$result['login']] = $format;
+		}
+		
+		
+		$common = array_diff_assoc($GLOBALS['_usernames'], array_unique($GLOBALS['_usernames']));
+		if(!empty($common)) {
+			foreach ($common as $key => $value) {
+				$originalKey = array_search($value, $GLOBALS['_usernames']);
+				$GLOBALS['_usernames'][$originalKey] = $value.' ('.$originalKey.')';
+				$GLOBALS['_usernames'][$key] 		 = $value.' ('.$key.')';
+			}
+		}
+	}	
+	
 	EfrontCache::getInstance()->setCache('usernames', $GLOBALS['_usernames']);
 	
 	return $GLOBALS['_usernames'][$login];
@@ -916,12 +937,12 @@ function eF_checkUserLdap($login, $password)
 {
     $basedn   = $GLOBALS['configuration']['ldap_basedn'];
     $ldap_uid = $GLOBALS['configuration']['ldap_uid'];
-
+//     pr($basedn);pr("$ldap_uid=$login");exit;
     $ds = eF_ldapConnect();
     //ldap_set_option($ds, LDAP_OPT_REFERRALS, 0);
 
     $sr = ldap_search($ds, $basedn, "$ldap_uid=$login");
-
+// vd(ldap_count_entries($ds, $sr));vd($sr);exit;
     if (ldap_count_entries($ds, $sr) == 0) {
         return false;                                       //User either does not exist or more than 1 users found
     }
@@ -973,7 +994,7 @@ function eF_ldapConnect() {
 
     $ds = ldap_connect($GLOBALS['configuration']['ldap_server'], $GLOBALS['configuration']['ldap_port']);
     ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, $GLOBALS['configuration']['ldap_protocol']);
-    ldap_set_option($ds, LDAP_OPT_TIMELIMIT, 10);
+    ldap_set_option($ds, LDAP_OPT_TIMELIMIT, 30);
     ldap_set_option($ds, LDAP_OPT_REFERRALS, 0);
 
     $b  = ldap_bind($ds, $GLOBALS['configuration']['ldap_binddn'], $GLOBALS['configuration']['ldap_password']);
@@ -1110,6 +1131,11 @@ function eF_checkParameter($parameter, $type, $correct = false)
                 return false;
             }
        break;
+       case 'alnum_with_commas':
+       	if (!preg_match("/^[A-Za-z0-9_,]{1,100}$/", $parameter)) {
+       		return false;
+       	}
+       	break;
 
        case 'alnum_general':
             if (!preg_match("/^[\.,_\-A-Za-z0-9\s]{1,100}$/", $parameter)) {
@@ -1128,7 +1154,12 @@ function eF_checkParameter($parameter, $type, $correct = false)
                 return false;
             }
        break;
-
+       
+       case 'name':
+       	if (preg_match("/^.*[<>].*$/i", $parameter)) {
+       		return false;
+       	}
+       	break;
        case 'path':
            if (preg_match("/^.*[\"]+.*$/", $parameter)) {
                 return false;
@@ -1626,7 +1657,7 @@ function vd($ar) {
  */
 function eF_filterHcdData($dataSource, $filter, $userField = false) {
 
-    $filters = trim(urldecode(explode("||||", $filter)));
+    $filters = explode("||||", trim($filter));
 
     if ($filters[0] != "" && $filters[0] != _FILTER."...") {
     	$dataSource = eF_filterData($dataSource, $filters[0]);	// the default filter
@@ -1653,13 +1684,14 @@ function eF_filterHcdData($dataSource, $filter, $userField = false) {
     		$all_users_logins[] = $data[$userField];	// get only users that are actually in the table - limit returned results
     	}
     	$filtered_users = eF_getTableDataFlat("users $branchFilterExtraTable $jobFilterExtraTable", "users.login", "users.login IN ('".implode("','", $all_users_logins)."') $branchFilterCondition $jobFilterCondition");
+
 	    foreach ($dataSource as $key => $data) {
 	    	if (!in_array($data[$userField], $filtered_users['login'])) {
 	    		unset($dataSource[$key]);
 	    	}
 	    }
     }
-
+  
     return $dataSource;
 
 }
@@ -1685,7 +1717,7 @@ function eF_filterData($data, $filter) {
 	
 	if (G_VERSIONTYPE == 'enterprise') { #cpp#ifdef ENTERPRISE
 	    if (mb_strpos($filter, "||") !== false) {
-    		//return eF_filterHcdData($data, $filter);
+    		return eF_filterHcdData($data, $filter);
 	    }
 	} #cpp#endif
 	$filter = trim(mb_strtolower($filter), '||');
@@ -1785,9 +1817,9 @@ function eF_loadAllModules($onlyActive = true, $disregardUser = false) {
 		
 			if (!(!empty($_SESSION['s_login']) && $_SESSION['s_type'] == "administrator" && $_GET['ctg'] == "control_panel" && $_GET['op'] == "modules" && $_GET['upgrade'] == $className)) {
 				if (is_file(G_MODULESPATH.$folder."/".$className.".class.php")) {					
-					if (class_exists($className)) {
+					//if (class_exists($className)) {
 						$modules[$className] = $folder;
-					}
+					//}
 				}
 			}
 		}
@@ -2384,7 +2416,7 @@ function detectBrowser() {
  * @param boolean $retainUrl Whether to retain the url as it is
  * @since 3.6.0
  */
-function eF_redirect($url, $js = false, $target = 'top', $retainUrl = false) {
+function eF_redirect($url, $js = false, $target = 'top', $retainUrl = false, $message_by_get = false) {
 	if (!$retainUrl) {
 	    $parts = parse_url($url);
 	    if (isset($parts['query']) && $parts['query']) {
@@ -2408,6 +2440,17 @@ function eF_redirect($url, $js = false, $target = 'top', $retainUrl = false) {
 	    } else {
 	        $parts['query'] = '';
 	    }
+	    // Added $message_by_get because IE seems to lose $_SESSION['s_message'] after redirect from popup iframe (module_documents_exchange $message = _MODULE_DOCUMENTS_EXCHANGE_FILELOCKED)
+	    if ($_SESSION['s_message'] && $message_by_get) {
+		    if ($parts['query'] == '') {
+		    	$parts['query'] = '?message='.$_SESSION['s_message'];
+		    	unset($_SESSION['s_message']);
+		    } else {
+		    	$parts['query'] = $parts['query'].'&message='.$_SESSION['s_message'];
+		    	unset($_SESSION['s_message']);
+		    }
+	    }
+	    
 	    if ($parts['fragment'] == "") {
     		$url = G_SERVERNAME.basename($parts['path']).$parts['query'];
 	    } else {
@@ -2569,6 +2612,22 @@ function eF_mail($sender, $recipient, $subject, $body, $attachments = false, $on
         $toField = 'To';
     }
 */
+	$check_block = eF_getTableDataFlat("users", "email", "email_block=1");
+	$recipientsList = explode(",", $recipient);
+	if (!empty($check_block['email'])) {
+		foreach ($recipientsList as $key => $value) {
+			if (in_array($value, $check_block['email']) !== false) {
+				unset($recipientsList[$key]);
+			}
+		}
+	
+		if (empty($recipientsList)) {
+			return true; //there is no email to be send
+		}
+		
+		$recipient = implode(",", $recipientsList);
+	}
+
     $hdrs = array('From'    => $sender,
                   'Subject' => $subject,
                   'To'  	=> $recipient,
@@ -2641,11 +2700,11 @@ function eF_mail($sender, $recipient, $subject, $body, $attachments = false, $on
         		if ($position !== false) {
         			$sourceLink = mb_substr($sourceFileOffset, $position+1);
         			mkdir($lesson -> getDirectory().$sourceLink.'/', 0755, true);
-					$destinationPath = $lesson -> getDirectory().$sourceLink.'/'.basename($sourceFile['path']);
-        			$copiedFile = $sourceFile -> copy($lesson -> getDirectory().$sourceLink.'/'.basename($sourceFile['path']), false);
+					$destinationPath = $lesson -> getDirectory().$sourceLink.'/'.eFront_basename($sourceFile['path']);
+        			$copiedFile = $sourceFile -> copy($lesson -> getDirectory().$sourceLink.'/'.eFront_basename($sourceFile['path']), false);
         		} else {
-        			$destinationPath = $lesson -> getDirectory().basename($sourceFile['path']);
-        			$copiedFile = $sourceFile -> copy($lesson -> getDirectory().basename($sourceFile['path']), false);
+        			$destinationPath = $lesson -> getDirectory().eFront_basename($sourceFile['path']);
+        			$copiedFile = $sourceFile -> copy($lesson -> getDirectory().eFront_basename($sourceFile['path']), false);
         		}
         		str_replace("view_file.php?file=".$file, "view_file.php?file=".$copiedFile -> offsetGet('id'), $data);
         		$data = preg_replace("#(".G_SERVERNAME.")*content/lessons/".$sourceId."/(.*)#", "content/lessons/".$newId.'/${2}', $data);
@@ -2939,7 +2998,57 @@ function clearTemplatesCache() {
 	} catch (Exception $e) {}
 }
 
+function clearEditorCache() {
+	try {
+		$newEditorTree = new FileSystemTree(G_ROOTPATH.'www/editor/tiny_mce_new/', true);		
+		foreach (new EfrontFileTypeFilterIterator(new EfrontFileOnlyFilterIterator(new EfrontNodeFilterIterator(new RecursiveIteratorIterator($newEditorTree -> tree, RecursiveIteratorIterator :: SELF_FIRST))), array('gz')) as $key => $value) {
+			$value -> delete();
+		}
+		$oldEditorTree = new FileSystemTree(G_ROOTPATH.'www/editor/tiny_mce/', true);
+		foreach (new EfrontFileTypeFilterIterator(new EfrontFileOnlyFilterIterator(new EfrontNodeFilterIterator(new RecursiveIteratorIterator($oldEditorTree -> tree, RecursiveIteratorIterator :: SELF_FIRST))), array('gz')) as $key => $value) {
+			$value -> delete();
+		}
+	} catch (Exception $e) {}
+}
+
+function clearExportedLessonFiles() {
+	try {
+		$lessonsTree = new FileSystemTree(G_LESSONSPATH, true);		
+		foreach (new EfrontFileTypeFilterIterator(new EfrontFileOnlyFilterIterator(new EfrontNodeFilterIterator(new RecursiveIteratorIterator($lessonsTree -> tree, RecursiveIteratorIterator :: SELF_FIRST))), array('zip')) as $key => $value) {
+			if (substr($value['name'], -13) == '_exported.zip') {
+				$value -> delete();
+			}
+		}
+	} catch (Exception $e) {}
+}
+
+function clearExportedCourseFiles() {
+	try {
+		$uploadTree = new FileSystemTree(G_UPLOADPATH, false);
+		foreach (new EfrontDirectoryOnlyFilterIterator($uploadTree -> tree) as $outer_key => $outer_value) {
+			$tempTree = new FileSystemTree($outer_value['path'].'/temp/', true);
+			foreach (new EfrontFileTypeFilterIterator(new EfrontFileOnlyFilterIterator(new EfrontNodeFilterIterator(new RecursiveIteratorIterator($tempTree -> tree, RecursiveIteratorIterator :: SELF_FIRST))), array('zip')) as $key => $value) {
+				//if (substr($value['name'], -13) == '_exported.zip') {
+				$value -> delete();
+				//}
+			}
+		}
+	} catch (Exception $e) {}
+}
+
+function clearBackupTempFolder() {
+	try {
+		$directory = new EfrontDirectory(G_BACKUPPATH.'temp/');
+		$directory -> delete();
+	} catch (Exception $e) {}
+}
+
 function loginRedirect($user_type, $message = '', $message_type = '') {
+	
+	foreach (eF_loadAllModules(true, true) as $module) {
+		$module -> onUserLogin($user_type, $message, $message_type);
+	}
+	
 	$redirectPage = $GLOBALS['configuration']['login_redirect_page'];
 	if ($redirectPage == "user_dashboard" && $user_type != "administrator") {
 		$location = "userpage.php?ctg=personal".($message ? "&message=$message&message_type=$message_type" : '');;
@@ -3034,4 +3143,83 @@ function ef_compare_float($v1, $v2) {
 	$v1 = (float)$v1;
 	$v2 = (float)$v2;
     return round($v1, 5) == round($v2, 5);
+}
+
+function shuffle_assoc(&$array) {
+	$keys = array_keys($array);
+
+	shuffle($keys);
+
+	foreach($keys as $key) {
+		$new[$key] = $array[$key];
+	}
+
+	$array = $new;
+
+	return true;
+}
+
+/**
+ * Get the remote address of the user.
+ *
+ * @return string The remote address of the user
+ * */
+function eF_getRemoteAddress() {
+    foreach (array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'REMOTE_ADDR') as $key){
+        if (array_key_exists($key, $_SERVER) === true){
+            foreach (explode(',', $_SERVER[$key]) as $ip){
+                $ip = trim($ip); // just to be safe
+
+                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false){
+                    return $ip;
+                }
+            }
+        }
+    }	
+}
+
+function eFront_basename($uri, $suffix = NULL) {
+	$separators = '/';
+	if (DIRECTORY_SEPARATOR != '/') {
+		// For Windows OS add special separator.
+		$separators .= DIRECTORY_SEPARATOR;
+	}
+	// Remove right-most slashes when $uri points to directory.
+	$uri = rtrim($uri, $separators);
+	// Returns the trailing part of the $uri starting after one of the directory
+	// separators.
+	$filename = preg_match('@[^' . preg_quote($separators, '@') . ']+$@', $uri, $matches) ? $matches[0] : '';
+	// Cuts off a suffix from the filename.
+	if ($suffix) {
+		$filename = preg_replace('@' . preg_quote($suffix, '@') . '$@', '', $filename);
+	}
+	return $filename;
+}
+
+function checkFunction($func) {
+	if (ini_get('safe_mode')) return false;
+	$disabled = ini_get('disable_functions');
+	if ($disabled) {
+		$disabled = explode(',', $disabled);
+		$disabled = array_map('trim', $disabled);
+		return !in_array($func, $disabled);
+	}
+	return true;
+}
+
+function getRandomString($length = 10, $md = false) {
+	
+	$value = substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, $length);
+	if ($md) {
+		$value = md5($value);
+	}
+	return $value;
+}
+
+function eF_replaceQuotes($string) {
+	$times = substr_count($string, "[quote]");
+	for ($i = 0; $i < $times; $i++ ){
+		$string = preg_replace("/\[quote\](.*)\[\/quote\]/", "<div class = 'quote'><b>Quote:</b><div class = 'quoteBody'>\$1</div></div>", $string);
+	}
+	return $string;	
 }

@@ -528,15 +528,22 @@ if (isset($_GET['fct'])) {
 	                        $currentUser -> addCourses($nonFreeCourses, array_fill(0, sizeof($nonFreeCourses), 'student'), true);
                     	}
                     	$message = _SUCCESSFULLYENROLLED;
+
+						if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
+ 							if (G_VERSIONTYPE != 'standard') { #cpp#ifndef STANDARD
+                    	           
                     	
-                    	$fields = array("amount"      => $totalPrice,
-                    			"timestamp"   => time(),
-                    			"method"	  => "free",
-                    			"status"	  => "completed",
-                    			"users_LOGIN" => $currentUser -> user['login'],
-                    			"lessons"     => $nonFreeLessons,
-                    			"courses"	  => $nonFreeCourses);
-                    	$payment = payments :: create($fields);
+		                    	$fields = array("amount"      => $totalPrice,
+		                    			"timestamp"   => time(),
+		                    			"method"	  => "free",
+		                    			"status"	  => "completed",
+		                    			"users_LOGIN" => $currentUser -> user['login'],
+		                    			"lessons"     => $nonFreeLessons,
+		                    			"courses"	  => $nonFreeCourses);
+		                    	$payment = payments :: create($fields);
+                    	
+                    		}#cpp#endif
+                    	}#cpp#endif                    	
                 	} else {
                     	//Assign new lessons as inactive
                     	if (sizeof($nonFreeLessons) > 0) {
@@ -547,14 +554,20 @@ if (isset($_GET['fct'])) {
                     	}
                     	$message = _ADMINISTRATORCONFIRMENROLLED;
                     	
-                    	$fields = array("amount"      => $totalPrice,
-                    			"timestamp"   => time(),
-                    			"method"	  => "manual",
-                    			"status"	  => "completed",
-                    			"users_LOGIN" => $currentUser -> user['login'],
-                    			"lessons"     => $nonFreeLessons,
-                    			"courses"	  => $nonFreeCourses);
-                    	$payment = payments :: create($fields);
+						if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
+ 							if (G_VERSIONTYPE != 'standard') { #cpp#ifndef STANDARD
+
+		                    	$fields = array("amount"      => $totalPrice,
+		                    			"timestamp"   => time(),
+		                    			"method"	  => "manual",
+		                    			"status"	  => "completed",
+		                    			"users_LOGIN" => $currentUser -> user['login'],
+		                    			"lessons"     => $nonFreeLessons,
+		                    			"courses"	  => $nonFreeCourses);
+		                    	$payment = payments :: create($fields);
+                    	
+ 		                   	}#cpp#endif
+                    	}#cpp#endif                    	
                 	}
                 	
                 	if ($coupon) {

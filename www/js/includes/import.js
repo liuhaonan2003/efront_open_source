@@ -3,7 +3,7 @@ function addBox(el) {
 }
 
 
-function changeCategory(select_type) {
+function changeCategoryImport(select_type) {
 	$('password_explaination').hide();
 	$('users_help').hide();
 	$('users_to_courses_help').hide();
@@ -19,6 +19,10 @@ function changeCategory(select_type) {
 			$('skills_help').hide();
 			$('users_to_jobs_help').hide();
 			$('users_to_skills_help').hide();
+			$('users_to_lessons_help').hide();
+			$('users_to_groups_help').hide();
+			$('courses_to_branches_help').hide();
+			$('users_to_courses_help').hide();
 		}
 	}
 	

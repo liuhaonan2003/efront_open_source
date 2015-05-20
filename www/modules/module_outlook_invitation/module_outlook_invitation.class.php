@@ -296,14 +296,18 @@ class module_outlook_invitation extends EfrontModule {
 
 
 	public function onAddUsersToCourse($courseId, $users, $lessonUsers) {
-		$result = eF_getTableDataFlat("users", "login,email");
-		$emails = array_combine($result['login'], $result['email']);
+		$course =  new EfrontCourse($courseId);	
 		
-		foreach ($users as $value) {
-			$recipients[] = $emails[$value['users_LOGIN']];
+		if($course -> course['start_date'] > time()) {	
+			$result = eF_getTableDataFlat("users", "login,email");
+			$emails = array_combine($result['login'], $result['email']);
+			
+			foreach ($users as $value) {
+				$recipients[] = $emails[$value['users_LOGIN']];
+			}
+	
+			$this->sendInvitation($courseId, $recipients);
 		}
-
-		$this->sendInvitation($courseId, $recipients);
 	}
 	
 	public function onRemoveUsersFromCourse($courseId, $users) {
@@ -392,7 +396,7 @@ class module_outlook_invitation extends EfrontModule {
 		$end_date->setTimezone(new DateTimeZone('utc'));
 		
 		//$uid = $created_date->format('Ymd\THis\Z').'-'.$event['course_id'].'@'.G_SERVERNAME;
-		$uid = 'c'.$event['course_id'].'@'.G_SERVERNAME;
+		$uid = 'c'.$event['course_id'].'@'.str_replace('www.', '', getHttpHost().G_OFFSET);
 
 		//Based on RFC 5545, http://tools.ietf.org/html/rfc5545
 		$components[] = "BEGIN:VCALENDAR";

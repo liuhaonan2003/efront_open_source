@@ -84,3 +84,13 @@ function removeImgNode(el, question_type) {
         }
     }
 }
+function addUploadBoxForum(el) {
+	Element.extend(el);
+	var show = false;
+	el.up().up().up().select("tr").each(function (s) {
+		if (!s.visible() && !show) {
+			s.show();
+			show = true;
+			}
+	});
+}

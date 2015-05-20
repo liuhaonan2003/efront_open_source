@@ -1,3 +1,4 @@
+var include_backup = false;
 function showVersionFileDetails() {
 	el = $('download_version');
 	url = location.toString();
@@ -14,7 +15,8 @@ function onShowVersionFileDetails(el, response) {
 		$('version_file_details').show();
 	} catch (e) {alert(e);}
 }
-function downloadVersionFile(el) {
+function downloadVersionFile(el, backup) {
+	include_backup = backup;
 	url = location.toString();
 	parameters = {download_file:true, method:'get'};
 	ajaxRequest(el, url, parameters, onDownloadVersionFile, onProcessFailure);
@@ -42,7 +44,7 @@ function onCheckPermissions(el, response) {
 }
 function installVersionFile(el) {
 	url = location.toString();
-	parameters = {uncompress_file:true, method:'get'};
+	parameters = {uncompress_file:true,method:'get'};
 	ajaxRequest(el, url, parameters, onInstallVersionFile, onProcessFailure);	
 }
 function onInstallVersionFile(el, response) {
@@ -53,7 +55,7 @@ function onInstallVersionFile(el, response) {
 }
 function autoUpgrade(el) {
 	url = "install/install.php";
-	parameters = {unattended:1, upgrade:1, ajax:1, method:'get'};
+	parameters = {unattended:1, upgrade:1, force_backup:include_backup, ajax:1, method:'get'};
 	ajaxRequest(el, url, parameters, onAutoUpgrade, onProcessFailure);
 }
 function onAutoUpgrade(el, response) {

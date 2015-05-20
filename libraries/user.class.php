@@ -353,10 +353,10 @@ abstract class EfrontUser
 		foreach ($userProfile as $field) {
 			if(isset($userProperties[$field['name']])) {
 				$options = unserialize($field['options']);
-				$userProperties[$field['name']] = array_search($userProperties[$field['name']], $options);
+				//$userProperties[$field['name']] = array_search($userProperties[$field['name']], $options);
+				$userProperties[$field['name']] = $userProperties[$field['name']];
 			}
 		}
-				
 		eF_insertTableData("users", $userProperties);
 
 		// Assign to the new user all skillgap tests that should be automatically assigned to every new student
@@ -752,10 +752,14 @@ abstract class EfrontUser
 				}
 			} #cpp#endif
 		} #cpp#endif
-
+		
+		// Clear logs for failed login attempts
+		eF_deleteTableData("logs", "users_LOGIN = '".$this -> user['login']."' AND action='failed_login'");
+		
 		$this -> user['active']  = 1;
 		$this -> user['pending'] = 0;
 		$this -> persist();
+		EfrontEvent::triggerEvent(array("type" => EfrontEvent::SYSTEM_USER_ACTIVATE, "users_LOGIN" => $this -> user['login'], "users_name" => $this -> user['name'], "users_surname" => $this -> user['surname']));
 		return true;
 	}
 
@@ -842,7 +846,6 @@ abstract class EfrontUser
 	 * @access public
 	 */
 	public function setStatus($status) {
-		//echo $status;
 		if ($_SESSION['facebook_user'] && $_SESSION['facebook_details']['status']['message'] != $status) {
 			$path = "../libraries/";
 			require_once $path . "external/facebook/facebook.php";
@@ -853,11 +856,33 @@ abstract class EfrontUser
 			));
 			//$access_token = $facebook -> getAccessToken();			
 			
+			$cookie = get_new_facebook_cookie($GLOBALS['configuration']['facebook_api_key'], $GLOBALS['configuration']['facebook_secret']);
+		
+			/*
+			try {
+				$status_ret = file_get_contents('http://graph.facebook.com/v2.2/'.$_SESSION['facebook_user'].'/feed?access_token='.$cookie['access_token'].'&message='.$status);
+				$status_ret_object = json_decode($status_ret, true);
+			} catch (Exception $e) {
+				//pr($e);
+			}
+
+
+			try	{
+				$permissions = $facebook -> api('/'.$_SESSION['facebook_user'].'/permissions');
+				$postResult = $facebook -> api('/'.$_SESSION['facebook_user'].'/feed', 'post', array('message' => $status));
+			
+			} catch (Exception $e) {
+				//pr($e);
+			}
+
+
+			//old way
 			$fql = "SELECT publish_stream FROM permissions WHERE uid =".$_SESSION['facebook_user'];
 			$publish_info = $facebook->api(array(
 					'method' => 'fql.query',
 					'query' => $fql,
 			));
+		
 			
 			$canPublish = 0;
 			if (!empty($publish_info)) {
@@ -884,9 +909,10 @@ abstract class EfrontUser
 			//	$facebook->api_client->call_method("facebook.users.setStatus", array("status" => $status, "status_includes_verb" => true));
 			//	$temp = $facebook->api_client->fql_query("SELECT status FROM user WHERE uid = " . $_SESSION['facebook_user']);
 			$_SESSION['facebook_details']['status'] = $status;
+			*/
 
 		}
-		
+
 		eF_updateTableData("users", array("status" => $status), "login = '".$this -> user['login']."'");
 		$this -> user['status'] = $status;
 		EfrontEvent::triggerEvent(array("type" => EfrontEvent::STATUS_CHANGE, "users_LOGIN" => $this -> user['login'], "users_name" => $this->user['name'], "users_surname" => $this->user['surname'], "entity_name" => $status));
@@ -948,7 +974,7 @@ abstract class EfrontUser
 								   'timestamp'   => time(),
 								   'action'	     => 'logout',
 								   'comments'	 => 0,
-								   'session_ip'  => eF_encodeIP($_SERVER['REMOTE_ADDR']));
+								   'session_ip'  => eF_encodeIP(eF_getRemoteAddress()));
 			eF_insertTableData("logs", $fields_insert);
 		}
 
@@ -1070,7 +1096,7 @@ abstract class EfrontUser
 							   'timestamp'   => time(),
 							   'action'	 	 => 'login',
 							   'comments'	 => session_id(),
-							   'session_ip'  => eF_encodeIP($_SERVER['REMOTE_ADDR']));
+							   'session_ip'  => eF_encodeIP(eF_getRemoteAddress()));
 		eF_insertTableData("logs", $fields_insert);
 		eF_updateTableData("users", array('last_login' => time()), "login='{$this -> user['login']}'");
 		if ($GLOBALS['configuration']['ban_failed_logins']) {
@@ -1149,10 +1175,10 @@ abstract class EfrontUser
 		$usersOnline = array();
 
 		//A user may have multiple active entries on the user_times table, one for system, one for unit etc. Pick the most recent
-		$result  = eF_getTableData("user_times,users", "users.login, users.name, users.surname, users.user_type, timestamp_now, session_timestamp, session_id", "users.login=user_times.users_LOGIN and session_expired=0", "timestamp_now desc");
-		foreach ($result as $value) {
-			if (!isset($parsedUsers[$value['login']])) {
-				if ((time() - $value['timestamp_now'] < $interval) || !$interval) {
+		$result  = eF_getTableData("user_times,users", "users.login, users.name, users.surname, users.user_type, timestamp_now, session_timestamp, session_id", "users.login=user_times.users_LOGIN and session_expired=0", "timestamp_now desc");		
+		foreach ($result as $value) {			
+			if ((time() - $value['timestamp_now'] < $interval) || !$interval) {		
+				if (!isset($parsedUsers[$value['login']])) {	// This is moved here because of #6310 in order to delete all old entries of each user in else statement		
 					$usersOnline[] = array('login' 		   => $value['login'],
 										   //'name'		   => $value['name'],
 										   //'surname'	   => $value['surname'],
@@ -1161,18 +1187,22 @@ abstract class EfrontUser
 										   'timestamp_now' 	   => $value['timestamp_now'],
 										   'session_timestamp' => $value['session_timestamp'],
 										   'time'		   	   => EfrontTimes::formatTimeForReporting(time() - $value['session_timestamp']));
-				} else {
-					//pr($result);
-					//pr("interval: $interval, time: ".time().", timestamp_now:".$value['timestamp_now']);
-					EfrontUserFactory :: factory($value['login']) -> logout($value['session_id']);
-					//exit;
 				}
-				$parsedUsers[$value['login']] = true;
+			} else {
+				//pr($result);
+				//pr("interval: $interval, time: ".time().", timestamp_now:".$value['timestamp_now']);
+				EfrontUserFactory :: factory($value['login']) -> logout($value['session_id']);
+				//exit;
 			}
+			$parsedUsers[$value['login']] = true;
 		}
 		
+		$distinct_users = array();
+		foreach ($result as $key => $value) {
+			$distinct_users[$value['login']] = $value;
+		}
+		$online_users = sizeof($distinct_users);
 		
-		$online_users = sizeof($result);
 		if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
 			if (G_VERSIONTYPE != 'standard') { #cpp#ifndef STANDARD
 				$threshold = $GLOBALS['configuration']['max_online_users_threshold'];
@@ -1297,15 +1327,27 @@ abstract class EfrontUser
 		eF_deleteTableData("users_to_lessons", "users_LOGIN='".$this -> user['login']."'");
 		eF_deleteTableData("users_to_courses", "users_LOGIN='".$this -> user['login']."'");
 		
+		eF_deleteTableData("scorm_data", "users_LOGIN='".$this -> user['login']."'");
+		
 		if (G_VERSIONTYPE != 'community') { #cpp#ifndef COMMUNITY
 			eF_deleteTableData("payments", "users_LOGIN='".$this -> user['login']."'");
 			eF_deleteTableData("facebook_connect", "users_LOGIN='".$this -> user['login']."'");
 			eF_deleteTableData("users_to_skillgap_tests", "users_LOGIN='".$this -> user['login']."'");
-
+			eF_deleteTableData("scorm_data_2004", "users_LOGIN='".$this -> user['login']."'");
+			eF_deleteTableData("scorm_sequencing_activity_progress_information", "users_LOGIN='".$this -> user['login']."'");
+			eF_deleteTableData("scorm_sequencing_activity_state_information", "users_LOGIN='".$this -> user['login']."'");
+			eF_deleteTableData("scorm_sequencing_comments_from_learner", "users_LOGIN='".$this -> user['login']."'");
+			eF_deleteTableData("scorm_sequencing_global_state_information", "users_LOGIN='".$this -> user['login']."'");
+			eF_deleteTableData("scorm_sequencing_interactions", "users_LOGIN='".$this -> user['login']."'");
+			eF_deleteTableData("scorm_sequencing_learner_preferences", "users_LOGIN='".$this -> user['login']."'");
+			eF_deleteTableData("scorm_sequencing_maps_info", "users_LOGIN='".$this -> user['login']."'");
+			eF_deleteTableData("scorm_sequencing_objective_progress_information", "users_LOGIN='".$this -> user['login']."'");
+			eF_deleteTableData("scorm_sequencing_shared_data", "users_LOGIN='".$this -> user['login']."'");
+			eF_deleteTableData("scorm_sequencing_shared_data_not_g", "users_LOGIN='".$this -> user['login']."'");
+			eF_deleteTableData("scorm_sequencing_objective_progress_information_all", "users_LOGIN='".$this -> user['login']."'");				
 		} #cpp#endif
-
-
-
+				
+		
 		//This line was in EfrontProfessor and EfrontStudent without an obvious reason. Admins may also be members of groups
 		eF_deleteTableData("users_to_groups", "users_LOGIN='".$this -> user['login']."'");
 
@@ -1361,26 +1403,27 @@ abstract class EfrontUser
 	 * @access public
 	 */
 	public function persist() {
-		$fields = array('password'	   => $this -> user['password'],
-						'email'		  => $this -> user['email'],
-						'languages_NAME' => $this -> user['languages_NAME'],
-						'name'		   => $this -> user['name'],
-						'surname'		=> $this -> user['surname'],
-						'active'		 => $this -> user['active'],
-						'comments'	   => $this -> user['comments'],
-						'user_type'	  => $this -> user['user_type'],
-						'timestamp'	  => $this -> user['timestamp'],
-						'avatar'		 => $this -> user['avatar'],
-						'pending'		=> $this -> user['pending'],
-						'user_types_ID'  => $this -> user['user_types_ID'],
-						'status'		 => $this -> user['status'],
-						'balance'		=> $this -> user['balance'],
-						'archive'		=> $this -> user['archive'],
-						'timezone'		=> $this -> user['timezone'],
-						'need_pwd_change' => $this -> user['need_pwd_change'] ? 1 : 0,
-						'additional_accounts' => $this -> user['additional_accounts'],
-						'short_description'   => $this -> user['short_description'],
-						'autologin'   => $this -> user['autologin']);
+		$fields = array('password'	   			=> $this -> user['password'],
+						'email'		  			=> $this -> user['email'],
+						'email_block'			=> $this -> user['email_block'],
+						'languages_NAME'		=> $this -> user['languages_NAME'],
+						'name'		   			=> $this -> user['name'],
+						'surname'				=> $this -> user['surname'],
+						'active'		 		=> $this -> user['active'],
+						'comments'	   			=> $this -> user['comments'],
+						'user_type'	 			=> $this -> user['user_type'],
+						'timestamp'	  			=> $this -> user['timestamp'],
+						'avatar'		 		=> $this -> user['avatar'],
+						'pending'				=> $this -> user['pending'],
+						'user_types_ID'  		=> $this -> user['user_types_ID'],
+						'status'		 		=> $this -> user['status'],
+						'balance'				=> $this -> user['balance'],
+						'archive'				=> $this -> user['archive'],
+						'timezone'				=> $this -> user['timezone'],
+						'need_pwd_change' 		=> $this -> user['need_pwd_change'] ? 1 : 0,
+						'additional_accounts'	=> $this -> user['additional_accounts'],
+						'short_description'		=> $this -> user['short_description'],
+						'autologin'				=> $this -> user['autologin']);
 		
 		if ($GLOBALS['configuration']['reset_license_note_always']) {
 			$fields['viewed_license'] =  0;
@@ -1426,7 +1469,7 @@ abstract class EfrontUser
 	 */
 	public function getGroups() {
 		if (! $this -> groups ) {
-			$result = eF_getTableData("users_to_groups ug, groups g", "g.*", "ug.users_LOGIN = '".$this -> login."' and g.id=ug.groups_ID and g.active=1");
+			$result = eF_getTableData("users_to_groups ug, groups g", "g.*", "ug.users_LOGIN = '".$this -> login."' and g.id=ug.groups_ID and g.active=1", 'g.name');
 			foreach ($result as $group) {
 				$this -> groups[$group['id']] = $group;
 			}
@@ -1622,6 +1665,7 @@ abstract class EfrontUser
 		$this -> user['archive'] = time();
 		$this -> persist();
 		$this -> deactivate();
+		EfrontEvent::triggerEvent(array("type" => EfrontEvent::SYSTEM_USER_ARCHIVE, "users_LOGIN" => $this -> user['login'], "users_name" => $this -> user['name'], "users_surname" => $this -> user['surname']));		
 	}
 
 	/**
@@ -1642,6 +1686,7 @@ abstract class EfrontUser
 		$this -> activate();
 		$this -> user['archive'] = 0;
 		$this -> persist();
+		EfrontEvent::triggerEvent(array("type" => EfrontEvent::SYSTEM_USER_UNARCHIVE, "users_LOGIN" => $this -> user['login'], "users_name" => $this -> user['name'], "users_surname" => $this -> user['surname']));
 	}
 
 	/**
@@ -1796,7 +1841,7 @@ abstract class EfrontUser
 			$result 	 = eF_describeTable("users");
 			$tableFields = array();
 			foreach ($result as $value) {
-				if ($value['Field'] != 'password' && $value['Field'] != 'timestamp') {
+				if ($value['Field'] != 'password' && $value['Field'] != 'timestamp' && $value['Field'] != 'additional_accounts' && $value['Field'] != 'timezone') {
 					$tableFields[] = "u.".$value['Field'].' like "%'.$constraints['filter'].'%"';
 				}
 			}
@@ -1836,9 +1881,12 @@ abstract class EfrontUser
 	}
 	private static function addSortOrderConditionToConstraints($constraints) {
 		$order = '';
-		if (isset($constraints['sort']) && eF_checkParameter($constraints['sort'], 'alnum_with_spaces')) {
+		if (isset($constraints['sort']) && eF_checkParameter($constraints['sort'], 'alnum_with_commas')) {
 			$order = $constraints['sort'];
-			if (isset($constraints['order']) && in_array($constraints['order'], array('asc', 'desc'))) {
+			$num_fields = explode(',', $order);
+			if (sizeof($num_fields) > 1) {
+				$order = $num_fields[0].' '.$constraints['order'].', '.$num_fields[0].' '.$constraints['order'];
+			} else if (isset($constraints['order']) && in_array($constraints['order'], array('asc', 'desc'))) {
 				$order .= ' '.$constraints['order'];
 			}
 		}
@@ -2141,6 +2189,7 @@ abstract class EfrontLessonUser extends EfrontUser
 	 * @access public
 	 */
 	public function resetProgressInLesson($lesson) {
+		
 		if (!($lesson instanceOf EfrontLesson)) {
 			$lesson = new EfrontLesson($lesson);
 		}
@@ -2159,7 +2208,9 @@ abstract class EfrontLessonUser extends EfrontUser
 		eF_deleteTableData("completed_tests", "users_LOGIN = '".$this -> user['login']."' and tests_ID in (select id from tests where lessons_ID='".$lesson -> lesson['id']."')");
 		eF_deleteTableData("scorm_data", "users_LOGIN = '".$this -> user['login']."' and content_ID in (select id from content where lessons_ID='".$lesson -> lesson['id']."')");
 		eF_deleteTableData("users_to_content", "users_LOGIN = '".$this -> user['login']."' and content_ID in (select id from content where lessons_ID='".$lesson -> lesson['id']."')");
-		eF_deleteTableData("user_times", "users_LOGIN = '".$this -> user['login']."' and lessons_ID=".$lesson -> lesson['id']);
+		//preserve last occurrence to be deleted and change it to system entry because user was logged out if he was in this lesson
+		eF_deleteTableData("user_times", "users_LOGIN = '".$this -> user['login']."' and session_expired=1 and lessons_ID=".$lesson -> lesson['id']);		
+		eF_updateTableData("user_times", array('entity' => 'system', 'entity_ID' => 0, 'lessons_ID' => null), "users_LOGIN = '".$this -> user['login']."' and session_expired=0 and lessons_ID=".$lesson -> lesson['id']);
 		
 		$event = array(	"type"				=> EfrontEvent::LESSON_PROGRESS_RESET,
 				"users_LOGIN"		=> $this -> user['login'],
@@ -2633,7 +2684,7 @@ abstract class EfrontLessonUser extends EfrontUser
 		$sql	= prepareGetTableData($from, implode(",", $select), implode(" and ", $where), $orderby, false, $limit);
 		$result = eF_getTableData(
 					"courses, ($sql) t",
-					"courses.*, (select count(id) from courses c1 where c1.instance_source=courses.id ) as has_instances, t.*",
+					"courses.*, (select count(id) from courses c1 where c1.instance_source=courses.id and c1.active=1) as has_instances, t.*",
 					"courses.id=t.id");
 
 		//THIS WAS THE OLD QUERY, MUCH SLOWER
@@ -2701,7 +2752,7 @@ abstract class EfrontLessonUser extends EfrontUser
 		$sql	= prepareGetTableData("courses c left outer join (select id from courses) r on c.id=r.id", implode(",", $select), implode(" and ", $where), $orderby, false, $limit);
 		$result = eF_getTableData(
 					"courses, ($sql) t",
-					"courses.*, (select count(id) from courses c1 where c1.instance_source=courses.id ) as has_instances, t.*",
+					"courses.*, (select count(id) from courses c1 where c1.instance_source=courses.id and c1.active=1) as has_instances, t.*",
 					"courses.id=t.id");
 
 		//THIS WAS THE OLD QUERY, MUCH SLOWER
@@ -2818,17 +2869,21 @@ abstract class EfrontLessonUser extends EfrontUser
 		if (!$onlyContent) {
 			$activeTimes = $this->getLessonsActiveTimeForUser();
 		}
-		foreach ($userLessons as $key => $lesson) {
+		$roles = EfrontLessonUser::getRoles();
+		foreach ($userLessons as $key => $lesson) {			
 			$lesson = $this -> checkUserAccessToLessonBasedOnDuration($lesson);			
 			if ((!$this -> user['user_types_ID'] && $lesson -> lesson['user_type'] != $this -> user['user_type']) || ($this -> user['user_types_ID'] && $lesson -> lesson['user_type'] != $this -> user['user_types_ID'])) {
 				$lesson -> lesson['different_role'] = 1;
 			}
-			$userLessons[$key] -> lesson['overall_progress'] = $this -> getUserOverallProgressInLesson($lesson);
-			if (!$onlyContent) {
-				$userLessons[$key] -> lesson['project_status']   = $this -> getUserProjectsStatusInLesson($lesson);
-				$userLessons[$key] -> lesson['test_status']	     = $this -> getUserTestsStatusInLesson($lesson);
-				$userLessons[$key] -> lesson['time_in_lesson']   = $this -> getUserTimeInLesson($lesson);
-				$userLessons[$key] -> lesson['active_time_in_lesson']   = EfrontTimes::formatTimeForReporting($activeTimes[$key]);
+			
+			if ($roles[$lesson -> lesson['user_type']] == 'student') {
+				$userLessons[$key] -> lesson['overall_progress'] = $this -> getUserOverallProgressInLesson($lesson);
+				if (!$onlyContent) {
+					$userLessons[$key] -> lesson['project_status']   = $this -> getUserProjectsStatusInLesson($lesson);
+					$userLessons[$key] -> lesson['test_status']	     = $this -> getUserTestsStatusInLesson($lesson);
+					$userLessons[$key] -> lesson['time_in_lesson']   = $this -> getUserTimeInLesson($lesson);
+					$userLessons[$key] -> lesson['active_time_in_lesson']   = EfrontTimes::formatTimeForReporting($activeTimes[$key]);
+				}
 			}
 		}
 		
@@ -3792,7 +3847,8 @@ class EfrontStudent extends EfrontLessonUser
 				}
 				$employee = $this -> aspects['hcd'];
 
-				$newSkills = eF_getTableDataFlat("module_hcd_lesson_offers_skill","skill_ID, specification","lesson_ID = '".$lesson -> lesson['id']."'");
+				$newSkills = eF_getTableDataFlat("module_hcd_lesson_offers_skill JOIN module_hcd_skills ON module_hcd_skills.skill_ID=module_hcd_lesson_offers_skill.skill_ID","module_hcd_lesson_offers_skill.skill_ID, module_hcd_lesson_offers_skill.specification","lesson_ID = '".$lesson -> lesson['id']."'");
+				
 				// The lesson associated skills will *complement* the existing ones - last argument = true
 				$employee -> addSkills( $newSkills['skill_ID'],  $newSkills['specification'], array_fill(0, sizeof($newSkills['skill_ID']), $score), true);
 			} #cpp#endif
@@ -3903,7 +3959,7 @@ class EfrontStudent extends EfrontLessonUser
 					$this -> aspects['hcd'] = EfrontEmployeeFactory :: factory($this -> user['login']);
 				}
 				$employee = $this -> aspects['hcd'];
-				$newSkills = eF_getTableDataFlat("module_hcd_course_offers_skill","skill_ID, specification","courses_ID = '".$course -> course['id']."'");
+				$newSkills = eF_getTableDataFlat("module_hcd_course_offers_skill JOIN module_hcd_skills ON module_hcd_skills.skill_ID=module_hcd_course_offers_skill.skill_ID","module_hcd_course_offers_skill.skill_ID, module_hcd_course_offers_skill.specification","courses_ID = '".$course -> course['id']."'");
 
 				// The course associated skills will *complement* the existing ones - last argument = true
 				$employee -> addSkills( $newSkills['skill_ID'],  $newSkills['specification'], array_fill(0, sizeof($newSkills['skill_ID']), $score), true);
@@ -4023,11 +4079,29 @@ class EfrontStudent extends EfrontLessonUser
 	 * @access public
 	 */
 	public function getNextLesson($lesson, $course = false, $assumeCurrentLessonCompleted = false) {
+		
 		$nextLesson = false;
 		if ($course) {
 			($course instanceOf EfrontCourse) OR $course = new EfrontCourse($course);
-			//$courseLessons = $this -> getUserStatusInCourseLessons($course);			
-			$result = eF_getTableData("users_to_lessons ul join lessons_to_courses lc on ul.lessons_ID=lc.lessons_ID", "ul.lessons_ID as id,completed", "users_LOGIN='{$this->user['login']}' AND courses_ID={$course->course['id']}");
+			//$courseLessons = $this -> getUserStatusInCourseLessons($course);
+			
+			$result = eF_getTableData("users_to_lessons ul join lessons_to_courses lc on ul.lessons_ID=lc.lessons_ID", "ul.lessons_ID as id,completed", "users_LOGIN='{$this->user['login']}' AND courses_ID={$course->course['id']}");			
+
+			//Set ids for keys
+			$temp = array();
+			foreach ($result as $value) {
+				$temp[$value['id']] = $value;
+			}
+			$result = $temp;
+
+			//Put the result in correct order					
+			$lessons_order = array_keys($course->getCourseLessons());
+			$temp = array();
+			foreach ($lessons_order as $value) {
+				$temp[$value] = $result[$value];
+			}
+			$result = $temp;
+
 			$courseLessons = array();
 			if ($assumeCurrentLessonCompleted) {
 				foreach ($result as $value) {

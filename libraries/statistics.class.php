@@ -1206,20 +1206,22 @@ class EfrontStats
                 $testIds = array();
 
                 foreach ($iterator = new EfrontVisitableFilterIterator(new EfrontNodeFilterIterator(new RecursiveIteratorIterator(new RecursiveArrayIterator($lessonContent -> tree), RecursiveIteratorIterator :: SELF_FIRST))) as $key => $value) {
-                    switch($value -> offsetGet('ctg_type')) {
-                    	case 'theory':
-                    	case 'scorm':
-                    	case 'feedback':
-                    		$visitableContentIds[$key] = $key;                                                    //Get the not-test unit ids for this content
-                    		break;
-                    	case 'examples':
-                    		$visitableExampleIds[$key] = $key;                                                    //Get the not-test unit ids for this content
-                    		break;
-                    	case 'tests':
-                    	case 'scorm_test':
-                    		$visitableTestIds[$key] = $key;                                                    //Get the scorm test unit ids for this content
-                    		$testIds[$key] = $key;                                                    //Get the test unit ids for this content
-                    		break;
+                    if($value['active']) {
+	                	switch($value -> offsetGet('ctg_type')) {
+	                    	case 'theory':
+	                    	case 'scorm':
+	                    	case 'feedback':
+	                    		$visitableContentIds[$key] = $key;                                                    //Get the not-test unit ids for this content
+	                    		break;
+	                    	case 'examples':
+	                    		$visitableExampleIds[$key] = $key;                                                    //Get the not-test unit ids for this content
+	                    		break;
+	                    	case 'tests':
+	                    	case 'scorm_test':
+	                    		$visitableTestIds[$key] = $key;                                                    //Get the scorm test unit ids for this content
+	                    		$testIds[$key] = $key;                                                    //Get the test unit ids for this content
+	                    		break;
+	                    }
                     }
                 }
 
@@ -1615,7 +1617,14 @@ class EfrontStats
             $testInfo['questions']['medium']        = 0;
             $testInfo['questions']['high']          = 0;
 
-            $questions = $test -> getQuestions(true);
+
+            if (!empty($test -> options['random_test'])) {
+            	$questions =  $test -> getQuestionsForRandomSolvedTests(true);
+            } else {
+            	 $questions = $test -> getQuestions(true);
+            }
+            
+            
             foreach ($questions as $question) {
                 $testInfo['questions']['total']++;
                 $testInfo['questions'][$question -> question['type']]++;
@@ -2115,29 +2124,49 @@ class EfrontStats
 
 	        	if (!isset($questionStats[$id]['answers_per_option'])) {
 		         	$questionStats[$id]['answers_per_option'] = array();
-		        }
-
+		        }	        
 	            if (!is_array($question -> results)) {
-
-	            	// Single answer MultChoiceQ, True/false
-		            $selected_option = $question -> userAnswer;
-		            if ($selected_option !== false) {
-			            if (!isset($questionStats[$id]['answers_per_option'][$selected_option])) {	            	
-			            	$questionStats[$id]['answers_per_option'][$selected_option] = 100;
-			            } else {   	
-			            	$questionStats[$id]['answers_per_option'][$selected_option] += 100;
-			            }
-		            }
-	            } else {
-	            	// Emtpy spaces
-	            	foreach ($question -> userAnswer as $selected_option => $result) {
-	            		if (!isset($questionStats[$id]['answers_per_option'][$selected_option])) {	
-			            	$questionStats[$id]['answers_per_option'][$selected_option] = ($result)?100:0;
-	            		} else {	    	
-			            	$questionStats[$id]['answers_per_option'][$selected_option] += 100 * ($result)?100:0;
+	            	if ($question -> question['type'] == 'hotspot') {
+	            		$questionStats[$id]['type'] = 'hotspot';
+	            		if (!isset($questionStats[$id]['answers_per_option'])) {
+	            			$questionStats[$id]['answers_per_option'][0] = 100;
+	            		} else {
+	            			$questionStats[$id]['answers_per_option'][0] += 100;
+	            		}
+	            	} else {
+		            	// Single answer MultChoiceQ, True/false
+			            $selected_option = $question -> userAnswer;
+			            if ($selected_option !== false) {
+				            if (!isset($questionStats[$id]['answers_per_option'][$selected_option])) {	            	
+				            	$questionStats[$id]['answers_per_option'][$selected_option] = 100;
+				            } else {   	
+				            	$questionStats[$id]['answers_per_option'][$selected_option] += 100;
+				            }
 			            }
 	            	}
-
+	            } else {	   
+					if ($question -> question['type'] == 'grid') {
+						$questionStats[$id]['type'] = 'grid';
+						foreach ($question -> userAnswer as $row => $row_array) {
+							foreach ($row_array as $column => $result) {
+								if (!isset($questionStats[$id]['answers_per_option'][$row][$column])) {
+									$questionStats[$id]['answers_per_option'][$row][$column] = ($result)?100:0;
+								} else {
+									$questionStats[$id]['answers_per_option'][$row][$column]+= 100 * ($result)?100:0;
+								}
+							}
+						}
+						
+					} else {      	
+		            	// Emtpy spaces
+		            	foreach ($question -> userAnswer as $selected_option => $result) {
+		            		if (!isset($questionStats[$id]['answers_per_option'][$selected_option])) {	
+				            	$questionStats[$id]['answers_per_option'][$selected_option] = ($result)?100:0;
+		            		} else {	    	
+				            	$questionStats[$id]['answers_per_option'][$selected_option] += 100 * ($result)?100:0;
+				            }
+		            	}
+					}
 	            }
 	        }
 	    }
@@ -2147,8 +2176,18 @@ class EfrontStats
 	        $questionStats[$id]['max_score']  = max($question['score']) ? max($question['score']) : 0;
 	        $questionStats[$id]['min_score']  = min($question['score']) ? min($question['score']) : 0;
 	        $questionStats[$id]['percent_per_option'] = array();
-	        foreach ($questionStats[$id]['answers_per_option'] as $key => $optionAnswers) {
-	        	$questionStats[$id]['percent_per_option'][$key] = round($optionAnswers / sizeof($question['score']),2);
+	        if ($questionStats[$id]['type'] == 'grid') {
+	        	foreach ($questionStats[$id]['answers_per_option'] as $row => $row_array) {
+					foreach ($row_array as $column => $optionAnswers) {
+	        			$questionStats[$id]['percent_per_option'][$row][$column] = round($optionAnswers / sizeof($question['score']),2);
+	        		}
+	        	}
+	        } else if ($questionStats[$id]['type'] == 'hotspot') {		       
+		        $questionStats[$id]['percent_per_option'][0] = round($questionStats[$id]['answers_per_option'][0] / sizeof($question['score']),2);
+	        } else {
+		        foreach ($questionStats[$id]['answers_per_option'] as $key => $optionAnswers) {
+		        	$questionStats[$id]['percent_per_option'][$key] = round($optionAnswers / sizeof($question['score']),2);
+		        }
 	        }
 	        $questionStats[$id]['correct_percent']  = round(array_sum($question['correct']) / sizeof($question['score']),2);
 	    }
@@ -2376,10 +2415,12 @@ class EfrontStats
 	
 	public static function lightGetUserStatusInLesson($login, $currentLesson, $seenContent, $visitableIterator) {
 		$visitableTestIds = $visitableUnits = array();
-		foreach ($visitableIterator as $key => $value) {			
-			$visitableUnits[$key] = $key;
-			if ($value['ctg_type'] == 'tests' || $value['ctg_type'] == 'scorm_test') {
-				$visitableTestIds[$key] = $key;
+		foreach ($visitableIterator as $key => $value) {
+			if($value['active']) {			
+				$visitableUnits[$key] = $key;
+				if ($value['ctg_type'] == 'tests' || $value['ctg_type'] == 'scorm_test') {
+					$visitableTestIds[$key] = $key;
+				}
 			}
 		}	
 		$overallProgress = 0;
