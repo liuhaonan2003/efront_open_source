@@ -105,7 +105,7 @@
 {capture name = "center_code"}
 	{if isset($T_MODULE_INDEX_PAGE)}
 		{include file = $T_MODULE_INDEX_PAGE}
-	{/if}		
+	{/if}
 
     {if $T_MESSAGE && !$T_FACEBOOK_ACCOUNT_MERGE_POPUP}
     		{eF_template_printMessageBlock content = $T_MESSAGE type = $T_MESSAGE_TYPE}
