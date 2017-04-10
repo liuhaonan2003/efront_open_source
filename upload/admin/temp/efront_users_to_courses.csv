@@ -1,0 +1,7 @@
+users_login,courses_name,course_start_date,course_user_type,course_completed,course_comments,course_score,course_active,course_archive,course_end_date
+student,How to be a programmer,01/04/2017,student,0,,0,1,0,
+teacher,How to be a programmer,01/04/2017,teacher,0,,0,1,0,
+student,eFront,01/04/2017,student,0,,0,1,0,
+teacher,eFront,01/04/2017,teacher,0,,0,1,0,
+alpha,Scratch,01/04/2017,student,0,,0,1,0,
+teacher,Scratch,01/04/2017,professor,0,,0,1,0,
